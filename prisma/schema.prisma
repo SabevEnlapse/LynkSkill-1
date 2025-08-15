@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id      String   @id @default(cuid())
+  clerkId String   @unique
+  role    Role
+  email   String   @unique
+  profile Profile?
+}
+
+enum Role {
+  STUDENT
+  COMPANY
+}
+
+model Profile {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  name   String
+  bio    String?
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Internship {
+  id           String        @id @default(cuid())
+  companyId    String
+  title        String
+  description  String
+  sector       String
+  location     String
+  applications Application[]
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  internshipId String
+  studentId    String
+  status       ApplicationStatus @default(PENDING)
+  internship   Internship        @relation(fields: [internshipId], references: [id])
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
