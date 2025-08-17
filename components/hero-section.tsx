@@ -56,7 +56,7 @@ export default function Component() {
                                     </Button>
                                 </SignUpButton>
 
-                                <SignUpButton forceRedirectUrl="/onboarding?role=company">
+                                <SignInButton forceRedirectUrl="/redirect-after-signin">
                                     <Button className="group relative overflow-hidden rounded-full px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto text-sm sm:text-base lg:text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95 min-h-[48px] sm:min-h-[56px]">
                                         {/* Glass morphism background */}
                                         <div className="absolute inset-0 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full" />
@@ -65,12 +65,12 @@ export default function Component() {
                                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                         {/* Button content */}
-                                        <div className="relative flex items-center justify-center text-white"> Register as Company</div>
+                                        <div className="relative flex items-center justify-center text-black"> Log In</div>
 
                                         {/* Subtle shine effect */}
                                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                                     </Button>
-                                </SignUpButton>
+                                </SignInButton>
                             </SignedOut>
 
                             <SignedIn>

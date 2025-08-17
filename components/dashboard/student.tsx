@@ -432,7 +432,7 @@ const sidebarItems = [
     },
 ]
 
-export function DesignaliCreative() {
+export default function StudentDashboardPage() {
     const [, setProgress] = useState(0)
     const [notifications,] = useState(5)
     const [activeTab, setActiveTab] = useState("home")
@@ -601,7 +601,7 @@ export function DesignaliCreative() {
                                 <Wand2 className="size-5" />
                             </div>
                             <div>
-                                <h2 className="font-semibold text-foreground">Designali</h2>
+                                <h2 className="font-semibold text-foreground">Student</h2>
                                 <p className="text-xs text-foreground">Creative Suite</p>
                             </div>
                         </div>
