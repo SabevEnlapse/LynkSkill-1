@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Download, Plus } from "lucide-react"
-
+import { InternshipModal } from "@/components/internship-modal"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -33,6 +33,21 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [showInternshipModal, setShowInternshipModal] = useState(false)
+  const [internships, setInternships] = useState<any[]>([])
+  const [modalOpen, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    async function loadInternships() {
+      const res = await fetch("/api/internships")
+      if (res.ok) setInternships(await res.json())
+    }
+    loadInternships()
+  }, [])
+
+  function handleCreateInternship(newInternship: any) {
+    setInternships((prev) => [newInternship, ...prev])
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -163,11 +178,12 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
 
       {/* Main Content */}
       <div className={cn("min-h-screen transition-all duration-300 ease-in-out", sidebarOpen ? "md:pl-64" : "md:pl-0")}>
+
         <DashboardHeader
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          onToggleMobileMenu={() => setMobileMenuOpen(true)}
-          userType={userType}
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            onToggleMobileMenu={() => setMobileMenuOpen(true)}
+            userType={userType}
         />
 
         <main className="flex-1 p-4 md:p-6 text-foreground">
@@ -195,12 +211,17 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                   <Download className="mr-2 h-4 w-4" />
                   Install App
                 </Button>
-                <Button className="rounded-2xl">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Project
-                </Button>
+                {userType === "Company" && (
+                    <Button className="rounded-2xl" onClick={() => setModalOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Internship
+                    </Button>
+                )}
               </div>
             </div>
+
+            {/* Modal */}
+            <InternshipModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateInternship} />
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -212,9 +233,9 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
               >
                 <TabsContent value="home" className="space-y-8 mt-0">
                   <DashboardHero userType={userType} />
-                  <RecentAppsSection userType={userType} />
+                  <RecentAppsSection userType={userType} internships={internships} />
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                    <RecentFilesSection userType={userType} />
+                    <RecentFilesSection userType={userType}/>
                     <ActiveProjectsSection />
                   </div>
                   <CommunityHighlightsSection />

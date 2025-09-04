@@ -1,50 +1,56 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs"; // ако ползваш Clerk
+// app/api/internships/route.ts
+import { auth } from "@clerk/nextjs/server"
+import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server"
 
-// Създаване на нов Internship
+// Create internship (for Company)
 export async function POST(req: Request) {
-    try {
-        const { userId } = auth();
-        if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId } = await auth()
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-        const body = await req.json();
-        const { title, description, qualifications, location, paid, salary } = body;
-
-        // Взимаме company user
-        const company = await prisma.user.findUnique({ where: { clerkId: userId } });
-        if (!company || company.role !== "COMPANY") {
-            return NextResponse.json({ error: "Only companies can post internships" }, { status: 403 });
-        }
-
-        const internship = await prisma.internship.create({
-            data: {
-                companyId: company.id,
-                title,
-                description,
-                qualifications,
-                location,
-                paid,
-                salary: paid ? salary : null,
-            },
-        });
-
-        return NextResponse.json(internship, { status: 201 });
-    } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: "Server error" }, { status: 500 });
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+    })
+    if (!user || user.role !== "COMPANY") {
+        return new NextResponse("Forbidden", { status: 403 })
     }
+
+    const body = await req.json()
+    const internship = await prisma.internship.create({
+        data: {
+            companyId: user.id,
+            title: body.title,
+            description: body.description,
+            location: body.location,
+            qualifications: body.qualifications || null,
+            paid: body.paid,
+            salary: body.paid ? body.salary : null,
+        },
+    })
+
+    return NextResponse.json(internship)
 }
 
-// Взимане на всички стажове (за ученици)
+// Get internships (for Company & Student)
 export async function GET() {
-    try {
-        const internships = await prisma.internship.findMany({
-            orderBy: { createdAt: "desc" },
-        });
-        return NextResponse.json(internships);
-    } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: "Server error" }, { status: 500 });
-    }
+    const { userId } = await auth()
+
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
+
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+    })
+    if (!user) return new NextResponse("Unauthorized", { status: 401 })
+
+    const internships =
+        user.role === "COMPANY"
+            ? await prisma.internship.findMany({
+                where: { companyId: user.id },
+                orderBy: { createdAt: "desc" },
+            })
+            : await prisma.internship.findMany({
+                orderBy: { createdAt: "desc" },
+            })
+
+    return NextResponse.json(internships)
 }
