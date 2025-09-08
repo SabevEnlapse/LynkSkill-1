@@ -2,7 +2,6 @@
 
 import {motion} from "framer-motion"
 import {useEffect, useState} from "react"
-import {Star} from "lucide-react"
 import {Internship} from "@/app/types"
 import {Button} from "@/components/ui/button"
 import {
@@ -15,6 +14,9 @@ import {
 } from "@/components/ui/card"
 import {CardSkeleton} from "@/components/card-skeleton"
 import {InternshipDetailsModal} from "@/components/internship-details-modal"
+import { Trash2 } from "lucide-react";
+
+
 
 interface RecentAppsSectionProps {
     userType: "Student" | "Company"
@@ -62,9 +64,34 @@ export function RecentAppsSection({userType, internships = []}: RecentAppsSectio
                                             className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
                                             {userType === "Company" ? "🏢" : "📌"}
                                         </div>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-2xl">
-                                            <Star className="h-4 w-4"/>
-                                        </Button>
+                                        {userType === "Company" ? (
+                                            <button
+                                                onClick={async () => {
+                                                    const confirm = window.confirm("Are you sure you want to delete this internship?");
+                                                    if (!confirm) return;
+
+                                                    try {
+                                                        const res = await fetch("/api/internship/delete", {
+                                                            method: "DELETE",
+                                                            headers: { "Content-Type": "application/json" },
+                                                            body: JSON.stringify({ id: item.id }),
+                                                        });
+                                                        const data = await res.json();
+
+                                                        if (data.error) throw new Error(data.error);
+
+                                                        // Remove from local state so it disappears immediately
+                                                        setInternshipList((prev) => prev.filter((i) => i.id !== item.id));
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                    }
+                                                }}
+                                            >
+                                                <Trash2 className="w-5 h-5 text-red-500" />
+                                            </button>
+                                        ) : (
+                                            ""
+                                        )}
                                     </div>
                                 </CardHeader>
 

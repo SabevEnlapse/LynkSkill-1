@@ -84,7 +84,86 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
   if (isInitialLoading) {
     return (
         <div className="relative min-h-screen overflow-hidden bg-background">
-          {/* Skeleton loader ... (keep your existing code here) */}
+          {/* Animated gradient background */}
+          <motion.div
+              className="absolute inset-0 -z-10 opacity-20"
+              animate={{
+                background: [
+                  "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+                  "radial-gradient(circle at 30% 70%, rgba(233, 30, 99, 0.5) 0%, rgba(81, 45, 168, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+                  "radial-gradient(circle at 70% 30%, rgba(76, 175, 80, 0.5) 0%, rgba(32, 119, 188, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+                  "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+                ],
+              }}
+              transition={{ duration: 30, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          />
+
+          {/* Sidebar Skeleton */}
+          <div className="fixed inset-y-0 left-0 z-30 hidden w-64 transform border-r bg-background md:block">
+            <div className="flex h-full flex-col">
+              <div className="p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-2xl" />
+                  <div>
+                    <Skeleton className="h-4 w-20 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              </div>
+              <div className="px-3 py-2">
+                <Skeleton className="h-10 w-full rounded-2xl" />
+              </div>
+              <div className="flex-1 px-3 py-2 space-y-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full rounded-2xl" />
+                ))}
+              </div>
+              <div className="border-t p-3 space-y-2">
+                <Skeleton className="h-10 w-full rounded-2xl" />
+                <Skeleton className="h-10 w-full rounded-2xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="min-h-screen md:pl-64">
+            {/* Header Skeleton */}
+            <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+              <Skeleton className="h-8 w-8 rounded md:hidden" />
+              <Skeleton className="h-8 w-8 rounded hidden md:block" />
+              <div className="flex flex-1 items-center justify-between">
+                <Skeleton className="h-6 w-48" />
+                <div className="flex items-center gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                      <Skeleton key={i} className="h-8 w-8 rounded-2xl" />
+                  ))}
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                </div>
+              </div>
+            </header>
+
+            {/* Main Content Skeleton */}
+            <main className="flex-1 p-4 md:p-6">
+              <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <Skeleton className="h-12 w-full max-w-[600px] rounded-2xl" />
+                <div className="hidden md:flex gap-2">
+                  <Skeleton className="h-10 w-32 rounded-2xl" />
+                  <Skeleton className="h-10 w-32 rounded-2xl" />
+                </div>
+              </div>
+              <div className="space-y-8">
+                <Skeleton className="h-48 w-full rounded-3xl" />
+                <div className="space-y-4">
+                  <Skeleton className="h-8 w-48" />
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-64 w-full rounded-3xl" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
     )
   }
