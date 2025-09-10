@@ -47,7 +47,6 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                 setInternships(data)
             }
         }
-
         loadInternships()
     }, [])
 
@@ -69,17 +68,34 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                 console.error("Error loading company:", err)
             }
         }
-
         if (userType === "Company") {
             loadCompany()
         }
     }, [userType])
 
+    // ✅ Listen for internship events from children
+    useEffect(() => {
+        function handleDeleted(e: Event) {
+            const customEvent = e as CustomEvent<string>
+            setInternships(prev => prev.filter(i => i.id !== customEvent.detail))
+        }
+        function handleUpdated(e: Event) {
+            const customEvent = e as CustomEvent<Internship>
+            setInternships(prev => prev.map(i => i.id === customEvent.detail.id ? customEvent.detail : i))
+        }
+
+        window.addEventListener("internshipDeleted", handleDeleted)
+        window.addEventListener("internshipUpdated", handleUpdated)
+
+        return () => {
+            window.removeEventListener("internshipDeleted", handleDeleted)
+            window.removeEventListener("internshipUpdated", handleUpdated)
+        }
+    }, [])
+
     // ✅ Fake loading animation
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsInitialLoading(false)
-        }, 1000)
+        const timer = setTimeout(() => setIsInitialLoading(false), 1000)
         return () => clearTimeout(timer)
     }, [])
 

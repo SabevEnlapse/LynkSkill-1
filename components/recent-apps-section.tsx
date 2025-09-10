@@ -23,118 +23,100 @@ interface RecentAppsSectionProps {
     internships?: Internship[]
 }
 
-export function RecentAppsSection({userType, internships = []}: RecentAppsSectionProps) {
+export function RecentAppsSection({ userType, internships = [] }: RecentAppsSectionProps) {
     const [isLoading, setIsLoading] = useState(true)
-    const [internshipList, setInternshipList] = useState<Internship[]>(internships)
     const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null)
 
-    const sectionTitle = userType === "Company" ? "My Recent Internship" : "Recent Apps"
+    const sectionTitle = userType === "Company" ? "My Recent Internships" : "Recent Internships"
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 2000)
+        const timer = setTimeout(() => setIsLoading(false), 2000)
         return () => clearTimeout(timer)
     }, [])
-
-    const items = internshipList
 
     return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
-                <Button variant="ghost" className="rounded-2xl">
-                    View All
-                </Button>
+                <Button variant="ghost" className="rounded-2xl">View All</Button>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {isLoading
-                    ? Array.from({length: 3}).map((_, i) => <CardSkeleton key={i}/>)
-                    : items.map((item: Internship) => (
-                        <motion.div
-                            key={item.id}
-                            whileHover={{scale: 1.02, y: -5}}
-                            whileTap={{scale: 0.98}}
-                        >
-                            <Card
-                                className="flex flex-col overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300 h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center justify-between">
-                                        <div
-                                            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
-                                            {userType === "Company" ? "🏢" : "📌"}
+
+            {internships.length === 0 && !isLoading ? (
+                <p className="text-muted-foreground">No internships yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {isLoading
+                        ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                        : internships.map((item: Internship) => (
+                            <motion.div key={item.id} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
+                                <Card className="flex flex-col overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300 h-full">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                                                {userType === "Company" ? "🏢" : "📌"}
+                                            </div>
+                                            {userType === "Company" && (
+                                                <button
+                                                    onClick={async () => {
+                                                        const confirm = window.confirm("Are you sure you want to delete this internship?")
+                                                        if (!confirm) return
+
+                                                        try {
+                                                            const res = await fetch("/api/internships", {
+                                                                method: "DELETE",
+                                                                headers: { "Content-Type": "application/json" },
+                                                                body: JSON.stringify({ id: item.id }),
+                                                            })
+                                                            const data = await res.json()
+                                                            if (data.error) throw new Error(data.error)
+
+                                                            // 🔥 Instead of local state, tell parent to update
+                                                            window.dispatchEvent(new CustomEvent("internshipDeleted", { detail: item.id }))
+                                                        } catch (err) {
+                                                            console.error(err)
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 className="w-5 h-5 text-red-500" />
+                                                </button>
+                                            )}
                                         </div>
-                                        {userType === "Company" ? (
-                                            <button
-                                                onClick={async () => {
-                                                    const confirm = window.confirm("Are you sure you want to delete this internship?");
-                                                    if (!confirm) return;
+                                    </CardHeader>
 
-                                                    try {
-                                                        const res = await fetch("/api/internship/delete", {
-                                                            method: "DELETE",
-                                                            headers: { "Content-Type": "application/json" },
-                                                            body: JSON.stringify({ id: item.id }),
-                                                        });
-                                                        const data = await res.json();
+                                    <CardContent className="flex-1 flex flex-col w-full gap-2 break-words">
+                                        <CardTitle className="text-lg">{item.title}</CardTitle>
+                                        <CardDescription className="text-sm text-muted-foreground">{item.description}</CardDescription>
+                                        <div className="mt-1 text-sm text-muted-foreground">
+                                            📍 {item.location}
+                                            {item.qualifications && ` • 🎓 ${item.qualifications}`}
+                                            {item.paid && ` • 💰 ${item.salary ?? "Negotiable"}`}
+                                        </div>
+                                    </CardContent>
 
-                                                        if (data.error) throw new Error(data.error);
+                                    <CardFooter>
+                                        <Button
+                                            variant="secondary"
+                                            className="w-full rounded-2xl"
+                                            onClick={() => setSelectedInternship(item)}
+                                        >
+                                            {userType === "Company" ? "Manage" : "Open"}
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
 
-                                                        // Remove from local state so it disappears immediately
-                                                        setInternshipList((prev) => prev.filter((i) => i.id !== item.id));
-                                                    } catch (err) {
-                                                        console.error(err);
-                                                    }
-                                                }}
-                                            >
-                                                <Trash2 className="w-5 h-5 text-red-500" />
-                                            </button>
-                                        ) : (
-                                            ""
-                                        )}
-                                    </div>
-                                </CardHeader>
-
-                                <CardContent className="flex-1 flex flex-col w-full gap-2 break-words">
-                                    <CardTitle className="text-lg">{item.title}</CardTitle>
-                                    <CardDescription className="text-sm text-muted-foreground">
-                                        {item.description}
-                                    </CardDescription>
-
-                                    {/* Always show location, qualifications, salary */}
-                                    <div className="mt-1 text-sm text-muted-foreground">
-                                        📍 {item.location}
-                                        {item.qualifications && ` • 🎓 ${item.qualifications}`}
-                                        {item.paid && ` • 💰 ${item.salary ?? "Negotiable"}`}
-                                    </div>
-                                </CardContent>
-
-                                <CardFooter>
-                                    <Button
-                                        variant="secondary"
-                                        className="w-full rounded-2xl"
-                                        onClick={() => setSelectedInternship(item)}
-                                    >
-                                        {userType === "Company" ? "Manage" : "Open"}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-
-                            {/* Modal */}
-                            <InternshipDetailsModal
-                                open={!!selectedInternship && selectedInternship.id === item.id}
-                                onClose={() => setSelectedInternship(null)}
-                                internship={selectedInternship}
-                                userType={userType}
-                                onUpdate={(updated: Internship) =>
-                                    setInternshipList((prev: Internship[]) =>
-                                        prev.map((i: Internship) => (i.id === updated.id ? updated : i))
-                                    )
-                                }
-                            />
-                        </motion.div>
-                    ))}
-            </div>
+                                <InternshipDetailsModal
+                                    open={!!selectedInternship && selectedInternship.id === item.id}
+                                    onClose={() => setSelectedInternship(null)}
+                                    internship={selectedInternship}
+                                    userType={userType}
+                                    onUpdate={(updated: Internship) =>
+                                        window.dispatchEvent(new CustomEvent("internshipUpdated", { detail: updated }))
+                                    }
+                                />
+                            </motion.div>
+                        ))}
+                </div>
+            )}
         </section>
     )
 }
