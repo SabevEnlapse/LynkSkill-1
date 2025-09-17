@@ -21,16 +21,22 @@ const internshipSchema = z.object({
     }
 })
 
-
-
 // ------------------- CREATE internship -------------------
 export async function POST(req: Request) {
     const { userId } = await auth()
     if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: { companies: true },
+    })
     if (!user || user.role !== "COMPANY") {
         return new NextResponse("Forbidden", { status: 403 })
+    }
+
+    const company = user.companies[0] // ✅ assuming 1 company per user for now
+    if (!company) {
+        return new NextResponse("Company not found", { status: 404 })
     }
 
     const body = await req.json()
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
 
     const internship = await prisma.internship.create({
         data: {
-            companyId: user.id,
+            companyId: company.id,
             title: parsed.data.title,
             description: parsed.data.description,
             location: parsed.data.location,
@@ -62,46 +68,49 @@ export async function GET() {
     const { userId } = await auth()
     if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: { companies: true },
+    })
     if (!user) return new NextResponse("Unauthorized", { status: 401 })
 
     const internships =
         user.role === "COMPANY"
             ? await prisma.internship.findMany({
-                where: { companyId: user.id },
+                where: { companyId: user.companies[0]?.id }, // internships for this company
                 orderBy: { createdAt: "desc" },
             })
             : await prisma.internship.findMany({
                 orderBy: { createdAt: "desc" },
+                include: { company: true }, // 👈 for students, fetch company info too
             })
 
     return NextResponse.json(internships)
 }
 
 // ------------------- UPDATE internship -------------------
-// ------------------- UPDATE internship -------------------
 export async function PUT(req: Request) {
     const { userId } = await auth()
     if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: { companies: true },
+    })
     if (!user || user.role !== "COMPANY") {
         return new NextResponse("Forbidden", { status: 403 })
     }
+
+    const company = user.companies[0]
+    if (!company) return new NextResponse("Company not found", { status: 404 })
 
     const body = await req.json()
     const { id, title, description, location, qualifications, paid, salary } = body
 
     if (!id) return new NextResponse("Internship ID required", { status: 400 })
 
-    // ✅ Validation
-    if (!title || title.length < 3) return NextResponse.json({ error: "Title too short" }, { status: 400 })
-    if (!description || description.length < 10) return NextResponse.json({ error: "Description too short" }, { status: 400 })
-    if (!location || location.length < 2) return NextResponse.json({ error: "Location too short" }, { status: 400 })
-    if (paid && (salary == null || salary <= 0)) return NextResponse.json({ error: "Salary required for paid internship" }, { status: 400 })
-
     const existing = await prisma.internship.findUnique({ where: { id } })
-    if (!existing || existing.companyId !== user.id) {
+    if (!existing || existing.companyId !== company.id) {
         return new NextResponse("Not found or unauthorized", { status: 404 })
     }
 
@@ -111,7 +120,7 @@ export async function PUT(req: Request) {
             title,
             description,
             location,
-            qualifications: qualifications ?? null, // always update
+            qualifications: qualifications ?? null,
             paid,
             salary: paid ? salary : null,
         },
@@ -120,22 +129,27 @@ export async function PUT(req: Request) {
     return NextResponse.json(updated)
 }
 
-
 // ------------------- DELETE internship -------------------
 export async function DELETE(req: Request) {
     const { userId } = await auth()
     if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+    const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: { companies: true },
+    })
     if (!user || user.role !== "COMPANY") {
         return new NextResponse("Forbidden", { status: 403 })
     }
+
+    const company = user.companies[0]
+    if (!company) return new NextResponse("Company not found", { status: 404 })
 
     const { id } = await req.json()
     if (!id) return new NextResponse("Internship ID required", { status: 400 })
 
     const existing = await prisma.internship.findUnique({ where: { id } })
-    if (!existing || existing.companyId !== user.id) {
+    if (!existing || existing.companyId !== company.id) {
         return new NextResponse("Not found or unauthorized", { status: 404 })
     }
 

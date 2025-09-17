@@ -9,3 +9,21 @@ export interface Internship {
     salary?: number | null
     createdAt: string
 }
+
+export interface Application {
+    id: string
+    status: "PENDING" | "APPROVED" | "REJECTED"
+    studentId: string
+    internshipId: string
+    student?: {
+        id: string
+        email: string
+        profile?: { name: string }
+    }
+    internship?: {
+        id: string
+        title: string
+        company?: { id: string; name: string }
+    }
+}
+

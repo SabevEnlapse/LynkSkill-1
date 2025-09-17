@@ -8,58 +8,87 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ---------------------
+// USERS
+// ---------------------
 model User {
-  id                 String    @id @default(cuid())
-  clerkId            String    @unique
+  id                 String        @id @default(cuid())
+  clerkId            String        @unique
   email              String
   role               Role
-  onboardingComplete Boolean   @default(false) // <-- add this
+  onboardingComplete Boolean       @default(false)
   profile            Profile?
-  companies          Company[]
+  companies          Company[]     // companies owned by user
+  applications       Application[] @relation("StudentApplications") // applications made by student
 }
 
+// ---------------------
+// COMPANIES
+// ---------------------
 model Company {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   description String
   location    String
-  website     String? // optional
-  logo        String? // optional (url to image)
+  website     String?
+  logo        String?
   ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  owner       User         @relation(fields: [ownerId], references: [id])
+  internships Internship[] // ✅ internships owned by this company
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
+// ---------------------
+// USER PROFILE
+// ---------------------
 model Profile {
-  id     String  @id @default(cuid())
-  userId String  @unique
+  id     String @id @default(cuid())
+  userId String @unique
   name   String
   bio    String?
-  user   User    @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 }
 
+// ---------------------
+// INTERNSHIPS
+// ---------------------
 model Internship {
-  id             String        @id @default(cuid())
+  id             String   @id @default(cuid())
   companyId      String
   title          String
   description    String
-  qualifications String? // НЕ е задължително
+  qualifications String?
   location       String
-  paid           Boolean       @default(false)
-  salary         Float? // Ако paid = true
-  createdAt      DateTime      @default(now())
+  paid           Boolean  @default(false)
+  salary         Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company        Company       @relation(fields: [companyId], references: [id]) // ✅ mirror on Company.internships
   applications   Application[]
 }
 
+// ---------------------
+// APPLICATIONS
+// ---------------------
 model Application {
   id           String            @id @default(cuid())
   internshipId String
   studentId    String
   status       ApplicationStatus @default(PENDING)
-  internship   Internship        @relation(fields: [internshipId], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  internship   Internship @relation(fields: [internshipId], references: [id])
+  student      User       @relation("StudentApplications", fields: [studentId], references: [id])
+
+  @@unique([internshipId, studentId]) // prevent duplicate applications
 }
 
+// ---------------------
+// ENUMS
+// ---------------------
 enum Role {
   STUDENT
   COMPANY
@@ -70,3 +99,4 @@ enum ApplicationStatus {
   APPROVED
   REJECTED
 }
+

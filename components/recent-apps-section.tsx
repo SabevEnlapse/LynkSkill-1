@@ -15,7 +15,7 @@ import {
 import {CardSkeleton} from "@/components/card-skeleton"
 import {InternshipDetailsModal} from "@/components/internship-details-modal"
 import { Trash2 } from "lucide-react";
-
+import ApplyButton from "@/components/ApplyBtn";
 
 
 interface RecentAppsSectionProps {
@@ -93,7 +93,7 @@ export function RecentAppsSection({ userType, internships = [] }: RecentAppsSect
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter>
+                                    <CardFooter className={"w-fit"}>
                                         <Button
                                             variant="secondary"
                                             className="w-full rounded-2xl"
@@ -101,6 +101,7 @@ export function RecentAppsSection({ userType, internships = [] }: RecentAppsSect
                                         >
                                             {userType === "Company" ? "Manage" : "Open"}
                                         </Button>
+                                        {userType === "Student" && <ApplyButton internshipId={item.id} />}
                                     </CardFooter>
                                 </Card>
 
