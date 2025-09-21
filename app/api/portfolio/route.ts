@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-// GET /api/portfolio/me
+// ✅ GET /api/portfolio/me
 export async function GET() {
     try {
         const { userId } = await auth()
@@ -22,7 +22,7 @@ export async function GET() {
     }
 }
 
-// POST /api/portfolio (create or update)
+// ✅ POST /api/portfolio (create or update)
 export async function POST(req: Request) {
     try {
         const { userId } = await auth()
@@ -33,22 +33,51 @@ export async function POST(req: Request) {
 
         const body = await req.json()
 
+        // ✅ If age < 18, require approval
+        const needsApproval = body.age && body.age < 18
+
         const portfolio = await prisma.portfolio.upsert({
-            where: { studentId: student.id },
+            where: {
+                studentId: student.id,
+            },
             update: {
-                skills: body.skills ?? [],
-                interests: body.interests ?? [],
-                experience: body.experience ?? null,
-                projects: body.projects ?? null,
+                fullName: body.fullName,
+                headline: body.headline,
+                age: body.age,
+                bio: body.bio,
+                skills: body.skills,
+                interests: body.interests,
+                experience: body.experience,
+                education: body.education,
+                projects: body.projects,
+                certifications: body.certifications,
+                linkedin: body.linkedin,
+                github: body.github,
+                portfolioUrl: body.portfolioUrl,
+                approvalStatus: "APPROVED",
             },
             create: {
-                studentId: student.id,
-                skills: body.skills ?? [],
-                interests: body.interests ?? [],
-                experience: body.experience ?? null,
-                projects: body.projects ?? null,
+                student: {
+                    connect: {
+                        id: student.id
+                    }
+                },
+                fullName: body.fullName,
+                headline: body.headline,
+                age: body.age,
+                bio: body.bio,
+                skills: body.skills,
+                interests: body.interests,
+                experience: body.experience,
+                education: body.education,
+                projects: body.projects,
+                certifications: body.certifications,
+                linkedin: body.linkedin,
+                github: body.github,
+                portfolioUrl: body.portfolioUrl,
+                approvalStatus: "APPROVED",
             },
-        })
+        });
 
         return NextResponse.json(portfolio)
     } catch (err) {

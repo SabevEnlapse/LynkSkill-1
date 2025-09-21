@@ -87,19 +87,39 @@ model Application {
   @@unique([internshipId, studentId]) // prevent duplicate applications
 }
 
+// ---------------------
+// Portfolio
+// ---------------------
+
 model Portfolio {
   id        String   @id @default(cuid())
   student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String   @unique
 
-  skills     String[]  // Array of skills
-  interests  String[]  // Array of interests
-  experience String?   // Free text bio
-  projects   Json?     // JSON for {title, description, link} objects
+  fullName     String?
+  headline     String?   // e.g. "Aspiring Web Developer"
+  age          Int?
+  bio          String?   // short introduction
+
+  skills       String[]
+  interests    String[]
+  experience   String?
+  education    Json?     // [{school, degree, startYear, endYear}]
+  projects     Json?     // [{title, description, link, techStack}]
+  certifications Json?   // [{name, authority, issuedAt, expiresAt?}]
+
+  linkedin     String?
+  github       String?
+  portfolioUrl String?
+
+  needsApproval   Boolean @default(false)
+  approvedBy      String?
+  approvalStatus  ApprovalStatus @default(PENDING)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 
 // ---------------------
 // ENUMS
@@ -115,3 +135,9 @@ enum ApplicationStatus {
   REJECTED
 }
 
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

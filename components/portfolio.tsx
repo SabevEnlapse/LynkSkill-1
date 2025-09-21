@@ -6,15 +6,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import {useUser} from "@clerk/nextjs";
 
-interface PortfolioData {
-  skills: string[]
-  interests: string[]
-  experience: string
-  projects: { title: string; description: string; link?: string }[]
+interface Education {
+  school: string
+  degree: string
+  startYear: number
+  endYear?: number
 }
 
+interface Project {
+  title: string
+  description: string
+  link?: string
+  techStack?: string[]
+}
+
+interface Certification {
+  name: string
+  authority: string
+  issuedAt: string
+  expiresAt?: string
+}
+
+interface PortfolioData {
+  fullName?: string
+  headline?: string
+  age?: number
+  bio?: string
+  skills: string[]
+  interests: string[]
+  experience?: string
+  education: Education[]
+  projects: Project[]
+  certifications: Certification[]
+  linkedin?: string
+  github?: string
+  portfolioUrl?: string
+  needsApproval: boolean
+  approvedBy?: string
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED"
+}
+
+
 export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
+  const { user } = useUser() // ✅ Clerk user
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -25,13 +62,13 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
       if (res.ok) {
         const data = await res.json()
         setPortfolio({
+          ...data,
           skills: data.skills ?? [],
           interests: data.interests ?? [],
-          experience: data.experience ?? "",
+          education: data.education ?? [],
           projects: data.projects ?? [],
+          certifications: data.certifications ?? [],
         })
-      } else {
-        setPortfolio({ skills: [], interests: [], experience: "", projects: [] })
       }
       setLoading(false)
     }
@@ -51,20 +88,67 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
 
   if (loading) return <p>Loading...</p>
 
+  // ✅ Default name from Clerk if portfolio.fullName is missing
+  const displayName =
+      portfolio?.fullName ||
+      user?.fullName ||
+      user?.username ||
+      user?.primaryEmailAddress?.emailAddress ||
+      "Unnamed Student"
+
   return (
       <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
+          className="space-y-8"
       >
+        {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold">My Portfolio</h2>
+          <div>
+            <h2 className="text-3xl font-bold">{displayName}</h2>
+            <p className="text-muted-foreground">{portfolio?.headline || "No headline yet"}</p>
+            {portfolio?.needsApproval && (
+                <Badge
+                    variant={
+                      portfolio.approvalStatus === "APPROVED"
+                          ? "default"
+                          : portfolio.approvalStatus === "PENDING"
+                              ? "secondary"
+                              : "destructive"
+                    }
+                    className="mt-2"
+                >
+                  {portfolio.approvalStatus}
+                </Badge>
+            )}
+          </div>
           {userType === "Student" && (
-              <Button onClick={() => (isEditing ? handleSave() : setIsEditing(true))} className="rounded-2xl">
+              <Button
+                  onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                  className="rounded-2xl"
+              >
                 {isEditing ? "Save" : "Edit"}
               </Button>
           )}
         </div>
+
+        {/* Bio */}
+        <Card className="rounded-3xl border-2">
+          <CardHeader>
+            <CardTitle>About Me</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+                <Textarea
+                    placeholder="Write a short bio..."
+                    value={portfolio?.bio || ""}
+                    onChange={(e) => setPortfolio((prev) => ({ ...prev!, bio: e.target.value }))}
+                />
+            ) : (
+                <p>{portfolio?.bio || "No bio added yet."}</p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Skills */}
         <Card className="rounded-3xl border-2">
@@ -77,78 +161,347 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                     placeholder="Enter skills separated by commas"
                     value={portfolio?.skills.join(", ") || ""}
                     onChange={(e) =>
-                        setPortfolio((prev) => ({ ...prev!, skills: e.target.value.split(",").map((s) => s.trim()) }))
+                        setPortfolio((prev) => ({
+                          ...prev!,
+                          skills: e.target.value.split(",").map((s) => s.trim()),
+                        }))
                     }
                 />
             ) : (
                 <div className="flex flex-wrap gap-2">
-                  {portfolio?.skills.length ? (
+                  {portfolio?.skills?.length ? (
                       portfolio.skills.map((skill, i) => (
-                          <span key={i} className="px-3 py-1 rounded-xl bg-primary/10 text-primary">
+                          <span
+                              key={i}
+                              className="px-3 py-1 rounded-xl bg-primary/10 text-primary"
+                          >
                     {skill}
                   </span>
                       ))
                   ) : (
-                      <p className="text-muted-foreground">No skills added yet.</p>
+                      <p className="text-muted-foreground">No skills yet.</p>
                   )}
                 </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Interests */}
+        {/* Education */}
         <Card className="rounded-3xl border-2">
           <CardHeader>
-            <CardTitle>Interests</CardTitle>
+            <CardTitle>Education</CardTitle>
           </CardHeader>
           <CardContent>
             {isEditing ? (
-                <Input
-                    placeholder="Enter interests separated by commas"
-                    value={portfolio?.interests.join(", ") || ""}
-                    onChange={(e) =>
-                        setPortfolio((prev) => ({ ...prev!, interests: e.target.value.split(",").map((s) => s.trim()) }))
-                    }
-                />
-            ) : (
-                <div className="flex flex-wrap gap-2">
-                  {portfolio?.interests.length ? (
-                      portfolio.interests.map((interest, i) => (
-                          <span key={i} className="px-3 py-1 rounded-xl bg-primary/10 text-primary">
-                    {interest}
-                  </span>
-                      ))
-                  ) : (
-                      <p className="text-muted-foreground">No interests added yet.</p>
-                  )}
+                <div className="space-y-3">
+                  {(portfolio?.education || []).map((edu, i) => (
+                      <div key={i} className="space-y-2 border p-3 rounded-xl">
+                        <Input
+                            placeholder="School"
+                            value={edu.school || ""}
+                            onChange={(e) =>
+                                setPortfolio((prev) => {
+                                  const copy = [...(prev?.education || [])]
+                                  copy[i].school = e.target.value
+                                  return { ...prev!, education: copy }
+                                })
+                            }
+                        />
+                        <Input
+                            placeholder="Degree"
+                            value={edu.degree || ""}
+                            onChange={(e) =>
+                                setPortfolio((prev) => {
+                                  const copy = [...(prev?.education || [])]
+                                  copy[i].degree = e.target.value
+                                  return { ...prev!, education: copy }
+                                })
+                            }
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                              placeholder="Start Year"
+                              type="number"
+                              value={edu.startYear || ""}
+                              onChange={(e) =>
+                                  setPortfolio((prev) => {
+                                    const copy = [...(prev?.education || [])]
+                                    copy[i].startYear = Number(e.target.value)
+                                    return { ...prev!, education: copy }
+                                  })
+                              }
+                          />
+                          <Input
+                              placeholder="End Year"
+                              type="number"
+                              value={edu.endYear || ""}
+                              onChange={(e) =>
+                                  setPortfolio((prev) => {
+                                    const copy = [...(prev?.education || [])]
+                                    copy[i].endYear = Number(e.target.value)
+                                    return { ...prev!, education: copy }
+                                  })
+                              }
+                          />
+                        </div>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                                setPortfolio((prev) => ({
+                                  ...prev!,
+                                  education: (prev?.education || []).filter((_, idx) => idx !== i),
+                                }))
+                            }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                  ))}
+                  <Button
+                      onClick={() =>
+                          setPortfolio((prev) => ({
+                            ...prev!,
+                            education: [...(prev?.education || []), { school: "", degree: "", startYear: 0, endYear: 0 }],
+                          }))
+                      }
+                  >
+                    + Add Education
+                  </Button>
                 </div>
+            ) : portfolio?.education?.length ? (
+                portfolio.education.map((edu, i) => (
+                    <div key={i} className="mb-3">
+                      <p className="font-medium">{edu.degree}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {edu.school} ({edu.startYear} - {edu.endYear || "Present"})
+                      </p>
+                    </div>
+                ))
+            ) : (
+                <p className="text-muted-foreground">No education added yet.</p>
             )}
           </CardContent>
         </Card>
 
-        {/* Experience */}
+        {/* Projects */}
         <Card className="rounded-3xl border-2">
           <CardHeader>
-            <CardTitle>Experience</CardTitle>
+            <CardTitle>Projects</CardTitle>
           </CardHeader>
           <CardContent>
             {isEditing ? (
-                <Textarea
-                    placeholder="Write about your background and experience"
-                    value={portfolio?.experience || ""}
-                    onChange={(e) => setPortfolio((prev) => ({ ...prev!, experience: e.target.value }))}
-                />
-            ) : portfolio?.experience ? (
-                <p>{portfolio.experience}</p>
+                <div className="space-y-3">
+                  {(portfolio?.projects || []).map((proj, i) => (
+                      <div key={i} className="space-y-2 border p-3 rounded-xl">
+                        <Input
+                            placeholder="Title"
+                            value={proj.title || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.projects || [])]
+                              copy[i].title = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, projects: copy }))
+                            }}
+                        />
+                        <Textarea
+                            placeholder="Description"
+                            value={proj.description || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.projects || [])]
+                              copy[i].description = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, projects: copy }))
+                            }}
+                        />
+                        <Input
+                            placeholder="Link"
+                            value={proj.link || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.projects || [])]
+                              copy[i].link = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, projects: copy }))
+                            }}
+                        />
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                                setPortfolio((prev) => ({
+                                  ...prev!,
+                                  projects: (prev?.projects || []).filter((_, idx) => idx !== i),
+                                }))
+                            }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                  ))}
+                  <Button
+                      onClick={() =>
+                          setPortfolio((prev) => ({
+                            ...prev!,
+                            projects: [...(prev?.projects || []), { title: "", description: "", link: "" }],
+                          }))
+                      }
+                  >
+                    + Add Project
+                  </Button>
+                </div>
+            ) : portfolio?.projects?.length ? (
+                portfolio.projects.map((proj, i) => (
+                    <div key={i} className="mb-4">
+                      <p className="font-semibold">{proj.title}</p>
+                      <p className="text-sm">{proj.description}</p>
+                      {proj.link && (
+                          <a href={proj.link} target="_blank" className="text-primary underline">
+                            View Project
+                          </a>
+                      )}
+                    </div>
+                ))
             ) : (
-                <p className="text-muted-foreground">No experience added yet.</p>
+                <p className="text-muted-foreground">No projects yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Certifications */}
+        <Card className="rounded-3xl border-2">
+          <CardHeader>
+            <CardTitle>Certifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+                <div className="space-y-3">
+                  {(portfolio?.certifications || []).map((cert, i) => (
+                      <div key={i} className="space-y-2 border p-3 rounded-xl">
+                        <Input
+                            placeholder="Name"
+                            value={cert.name || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.certifications || [])]
+                              copy[i].name = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                            }}
+                        />
+                        <Input
+                            placeholder="Authority"
+                            value={cert.authority || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.certifications || [])]
+                              copy[i].authority = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                            }}
+                        />
+                        <Input
+                            placeholder="Issued At (YYYY-MM-DD)"
+                            value={cert.issuedAt || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.certifications || [])]
+                              copy[i].issuedAt = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                            }}
+                        />
+                        <Input
+                            placeholder="Expires At (optional)"
+                            value={cert.expiresAt || ""}
+                            onChange={(e) => {
+                              const copy = [...(portfolio?.certifications || [])]
+                              copy[i].expiresAt = e.target.value
+                              setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                            }}
+                        />
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                                setPortfolio((prev) => ({
+                                  ...prev!,
+                                  certifications: (prev?.certifications || []).filter((_, idx) => idx !== i),
+                                }))
+                            }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                  ))}
+                  <Button
+                      onClick={() =>
+                          setPortfolio((prev) => ({
+                            ...prev!,
+                            certifications: [...(prev?.certifications || []), { name: "", authority: "", issuedAt: "", expiresAt: "" }],
+                          }))
+                      }
+                  >
+                    + Add Certification
+                  </Button>
+                </div>
+            ) : portfolio?.certifications?.length ? (
+                portfolio.certifications.map((cert, i) => (
+                    <div key={i} className="mb-3">
+                      <p className="font-medium">{cert.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {cert.authority} — Issued {cert.issuedAt}
+                        {cert.expiresAt ? ` (Expires: ${cert.expiresAt})` : ""}
+                      </p>
+                    </div>
+                ))
+            ) : (
+                <p className="text-muted-foreground">No certifications yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Links */}
+        <Card className="rounded-3xl border-2">
+          <CardHeader>
+            <CardTitle>Links</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+                <div className="space-y-2">
+                  <Input
+                      placeholder="LinkedIn"
+                      value={portfolio?.linkedin || ""}
+                      onChange={(e) => setPortfolio((prev) => ({ ...prev!, linkedin: e.target.value }))}
+                  />
+                  <Input
+                      placeholder="GitHub"
+                      value={portfolio?.github || ""}
+                      onChange={(e) => setPortfolio((prev) => ({ ...prev!, github: e.target.value }))}
+                  />
+                  <Input
+                      placeholder="Portfolio Website"
+                      value={portfolio?.portfolioUrl || ""}
+                      onChange={(e) => setPortfolio((prev) => ({ ...prev!, portfolioUrl: e.target.value }))}
+                  />
+                </div>
+            ) : (
+                <div className="space-y-2">
+                  {portfolio?.linkedin && (
+                      <a href={portfolio.linkedin} target="_blank" className="block text-primary underline">
+                        LinkedIn
+                      </a>
+                  )}
+                  {portfolio?.github && (
+                      <a href={portfolio.github} target="_blank" className="block text-primary underline">
+                        GitHub
+                      </a>
+                  )}
+                  {portfolio?.portfolioUrl && (
+                      <a href={portfolio.portfolioUrl} target="_blank" className="block text-primary underline">
+                        Personal Website
+                      </a>
+                  )}
+                  {!portfolio?.linkedin && !portfolio?.github && !portfolio?.portfolioUrl && (
+                      <p className="text-muted-foreground">No links added yet.</p>
+                  )}
+                </div>
             )}
           </CardContent>
         </Card>
       </motion.div>
   )
 }
-
 
 
 

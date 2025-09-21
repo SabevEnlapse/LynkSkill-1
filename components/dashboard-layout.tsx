@@ -240,19 +240,19 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                         <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
-                                    <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
+                                    <TabsTrigger value="home" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Home
                                     </TabsTrigger>
-                                    <TabsTrigger value="apps" className="rounded-xl data-[state=active]:rounded-xl">
+                                    <TabsTrigger value="apps" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Portfolio
                                     </TabsTrigger>
-                                    <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
+                                    <TabsTrigger value="files" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Applied
                                     </TabsTrigger>
-                                    <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
+                                    <TabsTrigger value="projects" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Projects
                                     </TabsTrigger>
-                                    <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
+                                    <TabsTrigger value="learn" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Learn
                                     </TabsTrigger>
                                 </TabsList>
