@@ -12,7 +12,7 @@ import {cn} from "@/lib/utils"
 import {DashboardSidebar} from "./dashboard-sidebar"
 import {DashboardHeader} from "./dashboard-header"
 import {DashboardHero} from "./dashboard-hero"
-import {RecentAppsSection} from "./recent-apps-section"
+import {RecentInternshipsSection} from "./recent-internships-section"
 import {RecentFilesSection} from "./recent-files-section"
 import {ActiveProjectsSection} from "./active-projects-section"
 import {CommunityHighlightsSection} from "./community-highlights-section"
@@ -284,7 +284,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                 >
                                     <TabsContent value="home" className="space-y-8 mt-0">
                                         <DashboardHero userType={userType}/>
-                                        <RecentAppsSection userType={userType} internships={internships}/>
+                                        <RecentInternshipsSection userType={userType} internships={internships}/>
                                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                             <RecentFilesSection userType={userType}/>
                                             <ActiveProjectsSection/>

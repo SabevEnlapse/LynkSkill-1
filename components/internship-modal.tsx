@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { ComponentType, SVGProps } from "react";
 import { motion, AnimatePresence } from "framer-motion"
+import { Internship } from "@/app/types"
 import {
     Briefcase,
     MapPin,
@@ -21,7 +22,7 @@ import {
     Sparkles,
 } from "lucide-react"
 
-interface Internship {
+interface InternshipFormData  {
     title: string
     description: string
     location: string
@@ -113,7 +114,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             })
 
             if (res.ok) {
-                const data = await res.json()
+                const data: Internship = await res.json()  // ✅ full type
                 onCreate(data)
                 onClose()
 
