@@ -129,6 +129,30 @@
   --internship-status-pending: oklch(0.828 0.189 84.429);
   --internship-status-approved: oklch(0.769 0.188 145);
   --internship-status-rejected: oklch(0.577 0.245 27.325);
+
+  /* Experience component specific color variables */
+  --experience-hero-gradient-from: oklch(0.646 0.222 264.376);
+  --experience-hero-gradient-to: oklch(0.627 0.265 303.9);
+  --experience-step-background: oklch(0.985 0 0);
+  --experience-step-border: oklch(0.922 0 0);
+  --experience-upload-zone: oklch(0.97 0 0);
+  --experience-upload-zone-hover: oklch(0.95 0 0);
+  --experience-upload-zone-active: oklch(0.488 0.243 264.376);
+  --experience-card-gradient-from: oklch(0.985 0 0);
+  --experience-card-gradient-to: oklch(0.97 0 0);
+  --experience-card-hover-from: oklch(0.646 0.222 264.376);
+  --experience-card-hover-to: oklch(0.627 0.265 303.9);
+  --experience-card-shadow: oklch(0 0 0 / 8%);
+  --experience-card-shadow-hover: oklch(0 0 0 / 20%);
+  --experience-button-primary: oklch(0.488 0.243 264.376);
+  --experience-button-primary-hover: oklch(0.627 0.265 303.9);
+  --experience-button-secondary: oklch(0.97 0 0);
+  --experience-button-secondary-hover: oklch(0.95 0 0);
+  --experience-accent: oklch(0.646 0.222 264.376);
+  --experience-accent-foreground: oklch(0.985 0 0);
+  --experience-success: oklch(0.625 0.204 140.529);
+  --experience-warning: oklch(0.828 0.189 84.429);
+  --experience-error: oklch(0.577 0.245 27.325);
 }
 
 .dark {
@@ -216,6 +240,30 @@
   --internship-status-pending: oklch(0.828 0.189 84.429);
   --internship-status-approved: oklch(0.769 0.188 145);
   --internship-status-rejected: oklch(0.704 0.191 22.216);
+
+  /* Dark theme experience component colors */
+  --experience-hero-gradient-from: oklch(0.488 0.243 264.376);
+  --experience-hero-gradient-to: oklch(0.627 0.265 303.9);
+  --experience-step-background: oklch(0.269 0 0);
+  --experience-step-border: oklch(1 0 0 / 10%);
+  --experience-upload-zone: oklch(0.205 0 0);
+  --experience-upload-zone-hover: oklch(0.269 0 0);
+  --experience-upload-zone-active: oklch(0.488 0.243 264.376);
+  --experience-card-gradient-from: oklch(0.205 0 0);
+  --experience-card-gradient-to: oklch(0.269 0 0);
+  --experience-card-hover-from: oklch(0.488 0.243 264.376);
+  --experience-card-hover-to: oklch(0.627 0.265 303.9);
+  --experience-card-shadow: oklch(1 0 0 / 10%);
+  --experience-card-shadow-hover: oklch(1 0 0 / 25%);
+  --experience-button-primary: oklch(0.488 0.243 264.376);
+  --experience-button-primary-hover: oklch(0.627 0.265 303.9);
+  --experience-button-secondary: oklch(0.269 0 0);
+  --experience-button-secondary-hover: oklch(0.205 0 0);
+  --experience-accent: oklch(0.488 0.243 264.376);
+  --experience-accent-foreground: oklch(0.985 0 0);
+  --experience-success: oklch(0.625 0.204 140.529);
+  --experience-warning: oklch(0.828 0.189 84.429);
+  --experience-error: oklch(0.704 0.191 22.216);
 }
 
 @layer base {

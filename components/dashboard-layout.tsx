@@ -19,7 +19,7 @@ import {CommunityHighlightsSection} from "./community-highlights-section"
 import {Portfolio} from "./portfolio"
 import {ApplicationsTabContent} from "./apply-tab-content"
 import {ProjectsTabContent} from "./projects-tab-content"
-import {LearnTabContent} from "./learn-tab-content"
+import MyExperienceTabContent from "./my-experience-tab-content"
 import {Internship} from "@/app/types"
 import RequireAuth from "./RequireAuth"
 
@@ -305,7 +305,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                     </TabsContent>
 
                                     <TabsContent value="learn" className="space-y-8 mt-0">
-                                        <LearnTabContent/>
+                                        <MyExperienceTabContent/>
                                     </TabsContent>
                                 </motion.div>
                             </AnimatePresence>

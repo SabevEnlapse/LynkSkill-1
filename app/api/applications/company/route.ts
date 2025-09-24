@@ -1,3 +1,4 @@
+//For applications and internships related to a company
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
