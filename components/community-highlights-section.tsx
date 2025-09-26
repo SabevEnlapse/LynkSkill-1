@@ -1,65 +1,77 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
-import { Heart, MessageSquare } from "lucide-react"
-import Image from "next/image"
-
-import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
+import { FileImage, FileVideo, Download } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { communityPosts } from "@/lib/dashboard-data"
-import { CommunityCardSkeleton } from "@/components/card-skeleton"
+import { Button } from "@/components/ui/button"
 
-export function CommunityHighlightsSection() {
-  const [isLoading, setIsLoading] = useState(true)
+type RecentFile = {
+    url: string
+    createdAt: string
+}
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2600)
+export function RecentFilesSection() {
+    const [files, setFiles] = useState<RecentFile[]>([])
+    const [loading, setLoading] = useState(true)
 
-    return () => clearTimeout(timer)
-  }, [])
+    useEffect(() => {
+        const fetchFiles = async () => {
+            try {
+                const res = await fetch("/api/experience/recent-files")
+                const data = await res.json()
+                if (!res.ok) throw new Error(data.error || "Failed to fetch recent files")
+                setFiles(data)
+            } catch (err) {
+                console.error("RecentFilesSection error:", err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchFiles()
+    }, [])
 
-  return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Community Highlights</h2>
-        <Button variant="ghost" className="rounded-2xl">
-          Explore
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => <CommunityCardSkeleton key={i} />)
-          : communityPosts.map((post) => (
-              <motion.div key={post.title} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
-                <Card className="overflow-hidden rounded-3xl">
-                  <div className="aspect-[4/3] overflow-hidden bg-muted relative">
-                    <Image
-                      src={post.image || "/placeholder.svg"}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold">{post.title}</h3>
-                    <p className="text-sm text-foreground">by {post.author}</p>
-                    <div className="mt-2 flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        {post.likes}
-                        <MessageSquare className="ml-2 h-4 w-4 text-blue-500" />
-                        {post.comments}
-                      </div>
-                      <span className="text-foreground">{post.time}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-      </div>
-    </section>
-  )
+
+    const getFileIcon = (url: string) =>
+        url.match(/\.(mp4|mov|avi)$/) ? (
+            <FileVideo className="h-5 w-5 text-blue-500" />
+        ) : (
+            <FileImage className="h-5 w-5 text-green-500" />
+        )
+
+    return (
+        <section className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">Recent Files</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {loading ? (
+                    <p className="text-muted-foreground">Loading files...</p>
+                ) : files.length === 0 ? (
+                    <p className="text-muted-foreground">No files uploaded yet</p>
+                ) : (
+                    files.map((file, i) => (
+                        <motion.div key={i} whileHover={{ scale: 1.02 }}>
+                            <Card className="overflow-hidden rounded-2xl">
+                                <CardContent className="flex flex-col items-center gap-2 p-4">
+                                    {getFileIcon(file.url)}
+                                    <span className="truncate text-sm max-w-[150px]">{file.url.split("/").pop()}</span>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="rounded-xl"
+                                        onClick={() => window.open(file.url, "_blank")}
+                                    >
+                                        <Download className="h-4 w-4 mr-1" />
+                                        View
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))
+                )}
+            </div>
+        </section>
+    )
 }
