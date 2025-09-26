@@ -3,7 +3,7 @@
 import type React from "react"
 import {useState, useEffect} from "react"
 import {motion, AnimatePresence} from "framer-motion"
-import {Download, Plus} from "lucide-react"
+import {Plus} from "lucide-react"
 import {InternshipModal} from "@/components/internship-modal"
 import {Button} from "@/components/ui/button"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
@@ -13,7 +13,7 @@ import {DashboardSidebar} from "./dashboard-sidebar"
 import {DashboardHeader} from "./dashboard-header"
 import {DashboardHero} from "./dashboard-hero"
 import {RecentInternshipsSection} from "./recent-internships-section"
-import {RecentFilesSection} from "./recent-files-section"
+import {RecentApplicationsSection} from "./recent-applications-section"
 import {ActiveProjectsSection} from "./active-projects-section"
 import {CommunityHighlightsSection} from "./community-highlights-section"
 import {Portfolio} from "./portfolio"
@@ -239,7 +239,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                     <main className="flex-1 p-4 md:p-6 text-foreground">
                         <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
+                                <TabsList className="grid w-full max-w-[650px] grid-cols-5 rounded-2xl p-1">
                                     <TabsTrigger value="home" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Home
                                     </TabsTrigger>
@@ -253,14 +253,14 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         Projects
                                     </TabsTrigger>
                                     <TabsTrigger value="learn" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
-                                        Learn
+                                        My Experience
                                     </TabsTrigger>
                                 </TabsList>
                                 <div className="hidden md:flex gap-2">
-                                    <Button variant="outline" className="rounded-2xl bg-transparent">
-                                        <Download className="mr-2 h-4 w-4"/>
-                                        Install App
-                                    </Button>
+                                    {/*<Button variant="outline" className="rounded-2xl bg-transparent">*/}
+                                    {/*    <Download className="mr-2 h-4 w-4"/>*/}
+                                    {/*    Install App*/}
+                                    {/*</Button>*/}
                                     {userType === "Company" && (
                                         <Button className="rounded-2xl" onClick={() => setModalOpen(true)}>
                                             <Plus className="mr-2 h-4 w-4"/>
@@ -286,7 +286,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         <DashboardHero userType={userType}/>
                                         <RecentInternshipsSection userType={userType} internships={internships}/>
                                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                                            <RecentFilesSection userType={userType}/>
+                                            <RecentApplicationsSection userType={userType} setActiveTab={setActiveTab}/>
                                             <ActiveProjectsSection/>
                                         </div>
                                         <CommunityHighlightsSection/>

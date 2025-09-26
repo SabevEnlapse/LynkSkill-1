@@ -17,6 +17,7 @@ export interface Application {
     studentId: string
     internshipId: string
     student?: {
+        name: string | undefined;
         id: string
         email: string
         profile?: { name: string }
