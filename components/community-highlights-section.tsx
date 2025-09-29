@@ -2,11 +2,29 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { FileImage, FileVideo, Download, Sparkles, Users, TrendingUp } from "lucide-react"
+import {
+    FileImage,
+    FileVideo,
+    Download,
+    Sparkles,
+    Users,
+    TrendingUp,
+    ShieldAlert,
+    ShieldCheck,
+} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Progress } from "@/components/ui/progress"
 
 type RecentFile = {
     url: string
@@ -16,6 +34,9 @@ type RecentFile = {
 export function CommunityHighlights() {
     const [files, setFiles] = useState<RecentFile[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedFile, setSelectedFile] = useState<RecentFile | null>(null)
+    const [scanProgress, setScanProgress] = useState(0)
+    const [scanStatus, setScanStatus] = useState<"idle" | "scanning" | "safe" | "danger">("idle")
 
     useEffect(() => {
         const fetchFiles = async () => {
@@ -33,43 +54,66 @@ export function CommunityHighlights() {
         fetchFiles()
     }, [])
 
-    const getFileIcon = (url: string) =>
-        url.match(/\.(mp4|mov|avi)$/) ? (
-            <FileVideo className="h-5 w-5 text-[var(--experience-accent)]" />
-        ) : (
-            <FileImage className="h-5 w-5 text-[var(--experience-success)]" />
-        )
-
     const getFileType = (url: string) => (url.match(/\.(mp4|mov|avi)$/) ? "Video" : "Image")
+
+    const handleDownloadClick = (file: RecentFile) => {
+        setSelectedFile(file)
+        setScanProgress(0)
+        setScanStatus("idle")
+    }
+
+    const startScan = () => {
+        setScanStatus("scanning")
+        let progress = 0
+        const interval = setInterval(() => {
+            progress += 20
+            setScanProgress(progress)
+            if (progress >= 100) {
+                clearInterval(interval)
+                // Simulate result (90% chance safe, 10% flagged as dangerous)
+                const safe = Math.random() > 0.1
+                setScanStatus(safe ? "safe" : "danger")
+            }
+        }, 500)
+    }
+
+    const confirmDownload = () => {
+        if (selectedFile && scanStatus === "safe") {
+            window.open(selectedFile.url, "_blank")
+            setSelectedFile(null)
+        }
+    }
 
     return (
         <section className="space-y-6">
+            {/* Banner */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="overflow-hidden rounded-3xl bg-card border border-border p-8 relative"
+                className="overflow-hidden rounded-3xl bg-gradient-to-r from-blue-500 to-purple-600 text-white p-8 relative"
             >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-bold text-foreground text-balance">Community Highlights</h2>
-                        <p className="max-w-[600px] text-muted-foreground text-pretty">
-                            Discover the latest creative work and achievements shared by our community members.
+                        <h2 className="text-3xl font-bold text-balance">Community Highlights</h2>
+                        <p className="max-w-[600px] text-pretty">
+                            Discover the latest creative work and achievements shared by our community.
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 text-muted-foreground">
-                        <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-                            <Sparkles className="h-4 w-4 text-[var(--experience-accent)]" />
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
+                            <Sparkles className="h-4 w-4" />
                             <span className="text-sm font-medium">{Math.min(files.length, 4)} Files</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-                            <TrendingUp className="h-4 w-4 text-[var(--experience-success)]" />
+                        <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
+                            <TrendingUp className="h-4 w-4" />
                             <span className="text-sm font-medium">Recent Activity</span>
                         </div>
                     </div>
                 </div>
             </motion.div>
 
+            {/* Latest submissions */}
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
@@ -99,7 +143,9 @@ export function CommunityHighlights() {
                             </div>
                             <div>
                                 <h4 className="font-medium">No community files yet</h4>
-                                <p className="text-sm text-muted-foreground">Community submissions will appear here when available</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Community submissions will appear here when available
+                                </p>
                             </div>
                         </div>
                     </Card>
@@ -118,12 +164,7 @@ export function CommunityHighlights() {
                                     <div className="relative">
                                         <div className="aspect-square bg-muted flex items-center justify-center border-b border-border overflow-hidden">
                                             {file.url.match(/\.(mp4|mov|avi)$/) ? (
-                                                <video
-                                                    src={file.url}
-                                                    className="h-full w-full object-cover"
-                                                    controls={false}
-                                                    muted
-                                                />
+                                                <video src={file.url} className="h-full w-full object-cover" muted />
                                             ) : (
                                                 <img
                                                     src={file.url}
@@ -137,7 +178,7 @@ export function CommunityHighlights() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-8 w-8 p-0 text-white hover:bg-white/20"
-                                                onClick={() => window.open(file.url, "_blank")}
+                                                onClick={() => handleDownloadClick(file)}
                                             >
                                                 <Download className="h-4 w-4" />
                                             </Button>
@@ -150,8 +191,8 @@ export function CommunityHighlights() {
                                                 {getFileType(file.url)}
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
-                                                {new Date(file.createdAt).toLocaleDateString()}
-                                            </span>
+                        {new Date(file.createdAt).toLocaleDateString()}
+                      </span>
                                         </div>
 
                                         <div>
@@ -176,6 +217,61 @@ export function CommunityHighlights() {
                     </div>
                 )}
             </div>
+
+            {/* Download modal */}
+            <Dialog open={!!selectedFile} onOpenChange={() => setSelectedFile(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Download File</DialogTitle>
+                        <DialogDescription>
+                            Before downloading, we&apos;ll quickly scan this file for potential risks.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {scanStatus === "idle" && (
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                File: <strong>{selectedFile?.url.split("/").pop()}</strong>
+                            </p>
+                            <Button onClick={startScan} className="w-full">
+                                Start Scan
+                            </Button>
+                        </div>
+                    )}
+
+                    {scanStatus === "scanning" && (
+                        <div className="space-y-3">
+                            <Progress value={scanProgress} />
+                            <p className="text-sm text-muted-foreground">Scanning for viruses...</p>
+                        </div>
+                    )}
+
+                    {scanStatus === "safe" && (
+                        <div className="flex flex-col items-center gap-3 text-green-600">
+                            <ShieldCheck className="h-8 w-8" />
+                            <p className="text-sm">No threats detected. File is safe.</p>
+                        </div>
+                    )}
+
+                    {scanStatus === "danger" && (
+                        <div className="flex flex-col items-center gap-3 text-red-600">
+                            <ShieldAlert className="h-8 w-8" />
+                            <p className="text-sm">Warning: Suspicious content detected! Download at your own risk.</p>
+                        </div>
+                    )}
+
+                    <DialogFooter className="flex justify-between">
+                        <Button variant="outline" onClick={() => setSelectedFile(null)}>
+                            Cancel
+                        </Button>
+                        {scanStatus === "safe" && (
+                            <Button onClick={confirmDownload} className="bg-green-600 hover:bg-green-700">
+                                Download
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </section>
     )
 }
