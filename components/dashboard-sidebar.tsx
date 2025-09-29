@@ -1,22 +1,14 @@
 "use client"
 
 import {useState} from "react"
-import {ChevronDown, Search, Settings, Wand2, X, LogOut, User} from "lucide-react"
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {ChevronDown, Search, Settings, X, } from "lucide-react"
+import Image from "next/image"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {cn} from "@/lib/utils"
 import {sidebarItems} from "@/lib/dashboard-data"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {SignedIn, UserButton} from "@clerk/nextjs";
 
 interface DashboardSidebarProps {
@@ -35,7 +27,6 @@ export function DashboardSidebar({
                               isMobile = false,
                               onClose,
                               companyName,
-                              companyLogo,
                           }: DashboardSidebarProps) {
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
@@ -51,18 +42,13 @@ export function DashboardSidebar({
         <div className="flex h-full flex-col border-r text-foreground">
             <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                    {userType === "Company" && companyLogo ? (
-                        <img
-                            src={companyLogo}
-                            alt="Company Logo"
-                            className="h-10 w-10 rounded-2xl object-cover"
-                        />
-                    ) : (
-                        <div
-                            className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                            <Wand2 className="size-5"/>
-                        </div>
-                    )}
+                    <Image
+                        src="/LynkSkill-logo-full.png"
+                        alt="Company Logo"
+                        width={40}
+                        height={40}
+                        className="rounded-2xl object-cover"
+                    />
                     <div>
                         <h2 className="font-semibold">
                             {userType === "Company" ? companyName ?? "Loading..." : "Student"}
