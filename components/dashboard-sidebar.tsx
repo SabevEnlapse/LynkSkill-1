@@ -1,7 +1,7 @@
 "use client"
 
 import {useState} from "react"
-import {ChevronDown, Search, Settings, X, } from "lucide-react"
+import {ChevronDown, Search, Settings, X,} from "lucide-react"
 import Image from "next/image"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
@@ -18,16 +18,19 @@ interface DashboardSidebarProps {
     onClose?: () => void
     companyName?: string | null
     companyLogo?: string | null
+    setActiveTab: (tab: string) => void   // 👈 add this
 }
 
 
 export function DashboardSidebar({
-                              userType,
-                              isOpen,
-                              isMobile = false,
-                              onClose,
-                              companyName,
-                          }: DashboardSidebarProps) {
+                                     userType,
+                                     isOpen,
+                                     isMobile = false,
+                                     onClose,
+                                     companyName,
+                                     setActiveTab,  // 👈 add this
+                                 }: DashboardSidebarProps) {
+
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
 
@@ -76,50 +79,25 @@ export function DashboardSidebar({
             <ScrollArea className="flex-1 px-3 py-2">
                 <div className="space-y-1">
                     {sidebarItems.map((item) => (
-                        <div key={item.title} className="mb-1">
-                            <button
-                                className={cn(
-                                    "flex w-full items-center justify-between text-foreground rounded-2xl px-3 py-2 text-sm font-medium",
-                                    item.isActive ? "bg-primary/10 text-primary" : "hover:bg-muted",
-                                )}
-                                onClick={() => item.items && toggleExpanded(item.title)}
-                            >
-                                <div className="flex items-center text-foreground gap-3">
-                                    {item.icon}
-                                    <span>{item.title}</span>
-                                </div>
-                                {item.badge && (
-                                    <Badge variant="outline" className="ml-auto rounded-full px-2 py-0.5 text-xs">
-                                        {item.badge}
-                                    </Badge>
-                                )}
-                                {item.items && (
-                                    <ChevronDown
-                                        className={cn("ml-2 h-4 w-4 transition-transform", expandedItems[item.title] ? "rotate-180" : "")}
-                                    />
-                                )}
-                            </button>
+                        <button
+                            key={item.title}
+                            onClick={() => setActiveTab(item.value)} // 👈 switch active tab
+                            className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted"
+                        >
+                            <div className="flex items-center gap-2">
+                                {item.icon}
+                                <span>{item.title}</span>
+                            </div>
 
-                            {item.items && expandedItems[item.title] && (
-                                <div className="mt-1 ml-6 space-y-1 border-l pl-3">
-                                    {item.items.map((subItem) => (
-                                        <a
-                                            key={subItem.title}
-                                            href={subItem.url}
-                                            className="flex items-center justify-between text-foreground rounded-2xl px-3 py-2 text-sm hover:bg-muted"
-                                        >
-                                            {subItem.title}
-                                            {subItem.badge && (
-                                                <Badge variant="outline"
-                                                       className="ml-auto rounded-full px-2 py-0.5 text-xs">
-                                                    {subItem.badge}
-                                                </Badge>
-                                            )}
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                            {/*{item.badge && (*/}
+                            {/*    <Badge*/}
+                            {/*        variant="outline"*/}
+                            {/*        className="ml-auto rounded-full px-2 py-0.5 text-xs"*/}
+                            {/*    >*/}
+                            {/*        {item.badge}*/}
+                            {/*    </Badge>*/}
+                            {/*)}*/}
+                        </button>
                     ))}
                 </div>
             </ScrollArea>

@@ -211,19 +211,22 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                 <DashboardSidebar
                     userType={userType}
                     isOpen={mobileMenuOpen}
-                    isMobile={true}
+                    isMobile
                     onClose={() => setMobileMenuOpen(false)}
                     companyName={companyName}
                     companyLogo={companyLogo}
+                    setActiveTab={setActiveTab}   // 👈 pass state
                 />
 
                 {/* Sidebar - Desktop */}
+
                 <DashboardSidebar
                     userType={userType}
                     isOpen={sidebarOpen}
                     isMobile={false}
                     companyName={companyName}
                     companyLogo={companyLogo}
+                    setActiveTab={setActiveTab}   // 👈 pass state
                 />
 
                 {/* Main Content */}
@@ -289,7 +292,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                             <RecentApplicationsSection userType={userType} setActiveTab={setActiveTab}/>
                                             <ActiveProjectsSection setActiveTab={setActiveTab}/>
                                         </div>
-                                        <CommunityHighlights/>
+                                        <CommunityHighlights setActiveTab={setActiveTab}/>
                                     </TabsContent>
 
                                     <TabsContent value="apps" className="space-y-8 mt-0">

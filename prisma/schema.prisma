@@ -162,6 +162,8 @@ model Experience {
   grade     Int?     // 1–6 (given when approved)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  uploaderName  String?
+  uploaderImage String?
 
   student User    @relation(fields: [studentId], references: [id])
   company Company @relation(fields: [companyId], references: [id])

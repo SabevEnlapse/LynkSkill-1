@@ -1,10 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import {useEffect, useState} from "react"
+import {motion} from "framer-motion"
 import {
-    FileImage,
-    FileVideo,
     Download,
     Sparkles,
     Users,
@@ -12,10 +10,10 @@ import {
     ShieldAlert,
     ShieldCheck,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {Card, CardContent} from "@/components/ui/card"
+import {Button} from "@/components/ui/button"
+import {Badge} from "@/components/ui/badge"
+import {Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
     Dialog,
     DialogContent,
@@ -24,14 +22,22 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
+import {Progress} from "@/components/ui/progress"
 
 type RecentFile = {
     url: string
     createdAt: string
+    uploader: {
+        name: string
+        image: string | null
+    }
 }
 
-export function CommunityHighlights() {
+interface CommunityHighlightsProps {
+    setActiveTab: (tab: string) => void
+}
+
+export function CommunityHighlights({setActiveTab}: CommunityHighlightsProps) {
     const [files, setFiles] = useState<RecentFile[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedFile, setSelectedFile] = useState<RecentFile | null>(null)
@@ -88,9 +94,9 @@ export function CommunityHighlights() {
         <section className="space-y-6">
             {/* Banner */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.5}}
                 className="overflow-hidden rounded-3xl bg-gradient-to-r from-blue-500 to-purple-600 text-white p-8 relative"
             >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -102,11 +108,11 @@ export function CommunityHighlights() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
-                            <Sparkles className="h-4 w-4" />
+                            <Sparkles className="h-4 w-4"/>
                             <span className="text-sm font-medium">{Math.min(files.length, 4)} Files</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
-                            <TrendingUp className="h-4 w-4" />
+                            <TrendingUp className="h-4 w-4"/>
                             <span className="text-sm font-medium">Recent Activity</span>
                         </div>
                     </div>
@@ -116,7 +122,8 @@ export function CommunityHighlights() {
             {/* Latest submissions */}
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
+                    <div
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
                         1
                     </div>
                     <h3 className="text-xl font-semibold">Latest Submissions</h3>
@@ -124,13 +131,13 @@ export function CommunityHighlights() {
 
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {Array.from({ length: 4 }).map((_, i) => (
+                        {Array.from({length: 4}).map((_, i) => (
                             <Card key={i} className="overflow-hidden rounded-3xl">
-                                <div className="aspect-square bg-muted animate-pulse" />
+                                <div className="aspect-square bg-muted animate-pulse"/>
                                 <CardContent className="p-4 space-y-2">
-                                    <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                                    <div className="h-6 w-24 bg-muted rounded animate-pulse" />
-                                    <div className="h-8 w-full bg-muted rounded-xl animate-pulse" />
+                                    <div className="h-4 w-16 bg-muted rounded animate-pulse"/>
+                                    <div className="h-6 w-24 bg-muted rounded animate-pulse"/>
+                                    <div className="h-8 w-full bg-muted rounded-xl animate-pulse"/>
                                 </CardContent>
                             </Card>
                         ))}
@@ -139,7 +146,7 @@ export function CommunityHighlights() {
                     <Card className="rounded-3xl border-2 border-dashed border-[var(--experience-step-border)] p-12 text-center">
                         <div className="space-y-3">
                             <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                                <Users className="h-8 w-8 text-muted-foreground" />
+                                <Users className="h-8 w-8 text-muted-foreground"/>
                             </div>
                             <div>
                                 <h4 className="font-medium">No community files yet</h4>
@@ -154,17 +161,20 @@ export function CommunityHighlights() {
                         {files.slice(0, 4).map((file, i) => (
                             <motion.div
                                 key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: i * 0.1 }}
-                                whileHover={{ scale: 1.02, y: -5 }}
-                                whileTap={{ scale: 0.98 }}
+                                initial={{opacity: 0, y: 20}}
+                                animate={{opacity: 1, y: 0}}
+                                transition={{duration: 0.3, delay: i * 0.1}}
+                                whileHover={{scale: 1.02, y: -5}}
+                                whileTap={{scale: 0.98}}
                             >
-                                <Card className="overflow-hidden rounded-3xl border border-border bg-card hover:shadow-lg hover:shadow-muted/50 transition-all duration-300 group">
+                                <Card
+                                    onClick={() => setActiveTab("learn")}
+                                    className="overflow-hidden rounded-3xl border border-border bg-card hover:shadow-lg hover:shadow-muted/50 transition-all duration-300 group">
                                     <div className="relative">
-                                        <div className="aspect-square bg-muted flex items-center justify-center border-b border-border overflow-hidden">
+                                        <div
+                                            className="aspect-square bg-muted flex items-center justify-center border-b border-border overflow-hidden">
                                             {file.url.match(/\.(mp4|mov|avi)$/) ? (
-                                                <video src={file.url} className="h-full w-full object-cover" muted />
+                                                <video src={file.url} className="h-full w-full object-cover" muted/>
                                             ) : (
                                                 <img
                                                     src={file.url}
@@ -173,14 +183,15 @@ export function CommunityHighlights() {
                                                 />
                                             )}
                                         </div>
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <div
+                                            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-8 w-8 p-0 text-white hover:bg-white/20"
                                                 onClick={() => handleDownloadClick(file)}
                                             >
-                                                <Download className="h-4 w-4" />
+                                                <Download className="h-4 w-4"/>
                                             </Button>
                                         </div>
                                     </div>
@@ -191,8 +202,8 @@ export function CommunityHighlights() {
                                                 {getFileType(file.url)}
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
-                        {new Date(file.createdAt).toLocaleDateString()}
-                      </span>
+                                                {new Date(file.createdAt).toLocaleDateString()}
+                                            </span>
                                         </div>
 
                                         <div>
@@ -204,11 +215,23 @@ export function CommunityHighlights() {
 
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-6 w-6 border border-[var(--experience-accent)]/20">
-                                                <AvatarFallback className="bg-[var(--experience-accent)]/10 text-[var(--experience-accent)] text-xs font-semibold">
-                                                    U
-                                                </AvatarFallback>
+                                                {file.uploader?.image ? (
+                                                    <img
+                                                        src={file.uploader.image}
+                                                        alt={file.uploader?.name || "Anonymous"}
+                                                        className="h-full w-full object-cover rounded-full"
+                                                    />
+                                                ) : (
+                                                    <AvatarFallback
+                                                        className="bg-[var(--experience-accent)]/10 text-[var(--experience-accent)] text-xs font-semibold">
+                                                        {file.uploader?.name?.charAt(0).toUpperCase() || "?"}
+                                                    </AvatarFallback>
+                                                )}
                                             </Avatar>
-                                            <span className="text-xs text-muted-foreground">Anonymous</span>
+
+                                            <span className="text-xs text-muted-foreground">
+                                              {file.uploader?.name || "Anonymous"}
+                                            </span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -241,21 +264,21 @@ export function CommunityHighlights() {
 
                     {scanStatus === "scanning" && (
                         <div className="space-y-3">
-                            <Progress value={scanProgress} />
+                            <Progress value={scanProgress}/>
                             <p className="text-sm text-muted-foreground">Scanning for viruses...</p>
                         </div>
                     )}
 
                     {scanStatus === "safe" && (
                         <div className="flex flex-col items-center gap-3 text-green-600">
-                            <ShieldCheck className="h-8 w-8" />
+                            <ShieldCheck className="h-8 w-8"/>
                             <p className="text-sm">No threats detected. File is safe.</p>
                         </div>
                     )}
 
                     {scanStatus === "danger" && (
                         <div className="flex flex-col items-center gap-3 text-red-600">
-                            <ShieldAlert className="h-8 w-8" />
+                            <ShieldAlert className="h-8 w-8"/>
                             <p className="text-sm">Warning: Suspicious content detected! Download at your own risk.</p>
                         </div>
                     )}
