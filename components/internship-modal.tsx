@@ -8,21 +8,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, SVGProps } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Internship } from "@/app/types"
-import {
-    Briefcase,
-    MapPin,
-    FileText,
-    GraduationCap,
-    DollarSign,
-    CheckCircle,
-    AlertCircle,
-    Sparkles,
-} from "lucide-react"
+import type { Internship } from "@/app/types"
+import { Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle } from "lucide-react"
 
-interface InternshipFormData  {
+interface InternshipFormData {
     title: string
     description: string
     location: string
@@ -73,7 +64,6 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
     async function handleSubmit() {
         setIsLoading(true)
-        setErrors({})
 
         const vals = readValues()
         const newErrors: Errors = {}
@@ -114,11 +104,10 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             })
 
             if (res.ok) {
-                const data: Internship = await res.json()  // ✅ full type
+                const data: Internship = await res.json()
                 onCreate(data)
                 onClose()
 
-                // reset uncontrolled inputs by setting their .value directly
                 if (titleRef.current) titleRef.current.value = ""
                 if (descriptionRef.current) descriptionRef.current.value = ""
                 if (locationRef.current) locationRef.current.value = ""
@@ -138,7 +127,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         }
     }
 
-    // Form field wrapper (keeps same usage)
+    // Form field wrapper
     const FormField = ({
                            label,
                            icon: Icon,
@@ -151,8 +140,8 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         children: React.ReactNode
     }) => (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <Label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Icon className="h-4 w-4 text-muted-foreground" />
+            <Label className="flex items-center gap-2 text-sm font-medium text-slate-200">
+                <Icon className="h-4 w-4" style={{ color: "var(--internship-modal-gradient-from)" }} />
                 {label}
             </Label>
             {children}
@@ -162,7 +151,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-2 text-sm text-[color:var(--internship-error)]"
+                        className="flex items-center gap-2 text-sm text-red-400"
                     >
                         <AlertCircle className="h-3 w-3" />
                         {error[0]}
@@ -174,29 +163,48 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            {/* keep content mounted so dialog open/close doesn't unmount */}
-            <DialogContent forceMount className="max-w-2xl rounded-2xl border-0 bg-gradient-to-br from-[color:var(--internship-modal-gradient-from)] to-[color:var(--internship-modal-gradient-to)] p-0 shadow-2xl">
-                <div className="relative overflow-hidden rounded-t-2xl h-full bg-gradient-to-r from-[color:var(--internship-modal-gradient-from)] to-[color:var(--internship-modal-gradient-to)] px-8 py-6">
+            <DialogContent
+                forceMount
+                className="max-w-2xl rounded-2xl border bg-slate-900 p-0 shadow-2xl"
+                style={{
+                    borderColor: "color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+                    boxShadow: "0 25px 50px -12px color-mix(in oklch, var(--internship-modal-gradient-from) 10%, transparent)",
+                }}
+            >
+                <div
+                    className="relative overflow-hidden rounded-t-2xl px-8 py-6"
+                    style={{
+                        background:
+                            "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                    }}
+                >
                     <DialogHeader className="relative">
-                        <DialogTitle className="flex items-center gap-2 text-2xl font-bold text-white">
-                            <div className="rounded-full bg-white/20 p-2 backdrop-blur-sm">
+                        <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-white">
+                            <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
                                 <Briefcase className="h-6 w-6" />
                             </div>
                             Create New Internship
-                            <Sparkles className="h-5 w-5 text-yellow-300" />
                         </DialogTitle>
-                        <p className="text-white/80">Fill in the details to create an exciting internship opportunity</p>
+                        <p className="text-white/80 text-sm">Fill in the details to create an internship opportunity</p>
                     </DialogHeader>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                 </div>
 
-                <div className="bg-card/95 backdrop-blur-sm p-8 rounded-b-2xl">
+                <div className="bg-slate-900 p-8 rounded-b-2xl">
                     <div className="space-y-6">
                         <FormField label="Internship Title" icon={Briefcase} error={errors.title}>
                             <Input
                                 ref={titleRef}
                                 defaultValue=""
                                 placeholder="e.g., Software Development Intern"
-                                className="h-12 rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm transition-all duration-200 focus:border-[color:var(--internship-field-focus)] focus:ring-2 focus:ring-[color:var(--internship-field-focus)]/20"
+                                className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                style={
+                                    {
+                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                    } as React.CSSProperties
+                                }
+                                onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                             />
                         </FormField>
 
@@ -205,7 +213,14 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 ref={descriptionRef}
                                 defaultValue=""
                                 placeholder="Describe the internship role, responsibilities, and what the intern will learn..."
-                                className="min-h-[120px] rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm transition-all duration-200 focus:border-[color:var(--internship-field-focus)] focus:ring-2 focus:ring-[color:var(--internship-field-focus)]/20 resize-none"
+                                className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200 resize-none"
+                                style={
+                                    {
+                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                    } as React.CSSProperties
+                                }
+                                onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                             />
                         </FormField>
 
@@ -215,7 +230,14 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                     ref={locationRef}
                                     defaultValue=""
                                     placeholder="e.g., San Francisco, CA"
-                                    className="h-12 rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm transition-all duration-200 focus:border-[color:var(--internship-field-focus)] focus:ring-2 focus:ring-[color:var(--internship-field-focus)]/20"
+                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                    style={
+                                        {
+                                            "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                        } as React.CSSProperties
+                                    }
+                                    onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                    onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                 />
                             </FormField>
 
@@ -224,25 +246,37 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                     ref={qualificationsRef}
                                     defaultValue=""
                                     placeholder="e.g., Computer Science student"
-                                    className="h-12 rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm transition-all duration-200 focus:border-[color:var(--internship-field-focus)] focus:ring-2 focus:ring-[color:var(--internship-field-focus)]/20"
+                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                    style={
+                                        {
+                                            "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                        } as React.CSSProperties
+                                    }
+                                    onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                    onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                 />
                             </FormField>
                         </div>
 
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                            <div className="flex items-center space-x-3 rounded-xl bg-muted/50 p-4 backdrop-blur-sm">
+                            <div className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
                                 <Checkbox
                                     checked={paid}
                                     onCheckedChange={(val) => setPaid(!!val)}
-                                    className="h-5 w-5 rounded-md border-2 data-[state=checked]:bg-[color:var(--internship-field-focus)] data-[state=checked]:border-[color:var(--internship-field-focus)]"
+                                    className="h-5 w-5 rounded-md border-slate-600"
+                                    style={
+                                        {
+                                            "--checkbox-checked-bg": "var(--internship-modal-gradient-from)",
+                                            "--checkbox-checked-border": "var(--internship-modal-gradient-from)",
+                                        } as React.CSSProperties
+                                    }
                                 />
-                                <Label className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                                    <DollarSign className="h-4 w-4 text-[color:var(--internship-success)]" />
+                                <Label className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
+                                    <DollarSign className="h-4 w-4 text-emerald-400" />
                                     This is a paid internship
                                 </Label>
                             </div>
 
-                            {/* keep salary input mounted to avoid unmount/remount (don't use conditional unmounting) */}
                             <div
                                 className={`transition-all duration-200 overflow-hidden ${
                                     paid ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
@@ -255,7 +289,14 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                         defaultValue=""
                                         type="number"
                                         placeholder="e.g., 2000"
-                                        className="h-12 rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm transition-all duration-200 focus:border-[color:var(--internship-field-focus)] focus:ring-2 focus:ring-[color:var(--internship-field-focus)]/20"
+                                        className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                        style={
+                                            {
+                                                "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                            } as React.CSSProperties
+                                        }
+                                        onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                        onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                     />
                                 </FormField>
                             </div>
@@ -266,7 +307,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <Button
                             variant="outline"
                             onClick={onClose}
-                            className="h-12 px-6 rounded-xl border-2 hover:bg-muted/50 transition-all duration-200 bg-transparent"
+                            className="h-11 px-6 rounded-xl border border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 transition-all duration-200"
                             disabled={isLoading}
                         >
                             Cancel
@@ -274,7 +315,13 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <Button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="h-12 px-8 rounded-xl bg-gradient-to-r from-[color:var(--internship-modal-gradient-from)] to-[color:var(--internship-modal-gradient-to)] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            className="h-11 px-8 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                                boxShadow:
+                                    "0 10px 25px -5px color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+                            }}
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-2">

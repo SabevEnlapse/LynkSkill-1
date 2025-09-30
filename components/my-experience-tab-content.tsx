@@ -22,6 +22,7 @@ import {
   Search,
   Layers,
 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -190,14 +191,14 @@ export default function ExperienceTabContent() {
   }
 
   // ✅ Approve/reject (company)
-  const handleAction = async (id: string, action: "approve" | "reject") => {
+  const handleAction = async (id: string, action: "approve" | "reject", grade?: number | null) => {
     try {
       const res = await fetch(`/api/experience/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: action === "approve" ? "approved" : "rejected",
-          grade: action === "approve" ? 6 : null,
+          grade: action === "approve" ? (grade ?? null) : null, // <-- use provided grade
         }),
       })
       if (!res.ok) throw new Error("Action failed")
@@ -635,23 +636,118 @@ export default function ExperienceTabContent() {
                                   )}
                                 </div>
                             )}
-
                             {/* Company Actions */}
                             {role === "COMPANY" && exp.status === "pending" && (
-                                <div className="flex gap-2 pt-2">
-                                  <Button
-                                      size="sm"
-                                      onClick={() => handleAction(exp.id, "approve")}
-                                      className="flex-1 bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white"
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Approve
-                                  </Button>
+                                <div className="pt-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button
+                                          size="sm"
+                                          className="w-full bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white rounded-2xl"
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Approve
+                                      </Button>
+                                    </DialogTrigger>
+
+                                    <DialogContent className="sm:max-w-[500px] rounded-3xl border-2 border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)]">
+                                      <DialogHeader className="space-y-3">
+                                        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] flex items-center justify-center">
+                                          <CheckCircle className="h-8 w-8 text-white" />
+                                        </div>
+                                        <DialogTitle className="text-2xl text-center">Approve Experience</DialogTitle>
+                                        <p className="text-sm text-muted-foreground text-center">
+                                          Select a grade to evaluate the student's performance
+                                        </p>
+                                      </DialogHeader>
+
+                                      <div className="space-y-6 py-4">
+                                        {/* Grade Selection Grid */}
+                                        <div className="space-y-3">
+                                          <label className="text-sm font-semibold flex items-center gap-2">
+                                            <Sparkles className="h-4 w-4 text-[var(--experience-accent)]" />
+                                            Select Grade (2-6)
+                                          </label>
+                                          <div className="grid grid-cols-5 gap-3">
+                                            {[2, 3, 4, 5, 6].map((gradeValue) => (
+                                                <button
+                                                    key={gradeValue}
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setExperiences((prev) =>
+                                                          prev.map((ex) => (ex.id === exp.id ? { ...ex, grade: gradeValue } : ex)),
+                                                      )
+                                                    }}
+                                                    className={`
+                                                                                    relative aspect-square rounded-2xl border-2 transition-all duration-300
+                                                                                    flex flex-col items-center justify-center gap-1 p-3
+                                                                                    hover:scale-105 hover:shadow-lg
+                                                                                    ${
+                                                        exp.grade === gradeValue
+                                                            ? "border-[var(--experience-accent)] bg-gradient-to-br from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] text-white shadow-lg shadow-[var(--experience-accent)]/30"
+                                                            : "border-[var(--experience-step-border)] bg-[var(--experience-step-background)] hover:border-[var(--experience-accent)]/50"
+                                                    }
+                                                                                `}
+                                                >
+                                        <span
+                                            className={`text-2xl font-bold ${exp.grade === gradeValue ? "text-white" : "text-foreground"}`}
+                                        >
+                                          {gradeValue}
+                                        </span>
+                                                  {exp.grade === gradeValue && (
+                                                      <CheckCircle className="h-4 w-4 text-white absolute top-1 right-1" />
+                                                  )}
+                                                </button>
+                                            ))}
+                                          </div>
+
+                                          {/* Grade Description */}
+                                          {exp.grade && (
+                                              <div className="mt-4 p-4 rounded-2xl bg-[var(--experience-step-background)] border border-[var(--experience-step-border)]">
+                                                <p className="text-sm font-medium text-[var(--experience-accent)] mb-1">
+                                                  Grade {exp.grade} Selected
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                  {exp.grade === 2 && "Basic performance - Needs significant improvement"}
+                                                  {exp.grade === 3 && "Satisfactory performance - Meets minimum requirements"}
+                                                  {exp.grade === 4 && "Good performance - Meets expectations"}
+                                                  {exp.grade === 5 && "Very good performance - Exceeds expectations"}
+                                                  {exp.grade === 6 && "Excellent performance - Outstanding work"}
+                                                </p>
+                                              </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <DialogFooter className="flex gap-3 sm:gap-3">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 rounded-2xl border-2 bg-transparent"
+                                            onClick={() => {
+                                              const dialog = document.querySelector<HTMLButtonElement>("[data-state='open']")
+                                              dialog?.click()
+                                            }}
+                                        >
+                                          Cancel
+                                        </Button>
+
+                                        <Button
+                                            disabled={exp.grade == null || exp.grade < 2 || exp.grade > 6}
+                                            onClick={() => handleAction(exp.id, "approve", exp.grade!)}
+                                            className="flex-1 rounded-2xl bg-gradient-to-r from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] hover:opacity-90 text-white font-semibold disabled:opacity-50"
+                                        >
+                                          <CheckCircle className="h-4 w-4 mr-2" />
+                                          Confirm Approval
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+
                                   <Button
                                       size="sm"
                                       variant="destructive"
                                       onClick={() => handleAction(exp.id, "reject")}
-                                      className="flex-1"
+                                      className="w-full mt-2 rounded-2xl"
                                   >
                                     <AlertCircle className="h-4 w-4 mr-1" />
                                     Reject

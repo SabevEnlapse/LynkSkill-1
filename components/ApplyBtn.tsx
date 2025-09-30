@@ -33,7 +33,12 @@ export default function ApplyButton({ internshipId, onApplied }: ApplyButtonProp
 
     return (
         <Button
-            className="flex-1 rounded-2xl"
+            className="flex-1 rounded-2xl font-medium text-white shadow-lg transition-all duration-300 hover:scale-105"
+            style={{
+                background:
+                    "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                boxShadow: "0 10px 25px -5px color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+            }}
             disabled={loading || applied}
             onClick={handleApply}
         >

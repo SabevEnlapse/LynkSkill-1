@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useRef, useState, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -9,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Internship } from "@/app/types"
-import { Briefcase, MapPin, GraduationCap, DollarSign, FileText, Building2, Loader2 } from "lucide-react"
+import { Briefcase, MapPin, GraduationCap, DollarSign, FileText, Building2, Loader2, AlertCircle } from "lucide-react"
 
 interface InternshipDetailsModalProps {
     open: boolean
@@ -29,38 +31,57 @@ interface Errors {
 }
 
 export function InternshipDetailsModal({ open, onClose, internship, userType, onUpdate }: InternshipDetailsModalProps) {
-    const [title, setTitle] = useState("")
-    const [description, setDescription] = useState("")
-    const [location, setLocation] = useState("")
-    const [qualifications, setQualifications] = useState("")
+    const titleRef = useRef<HTMLInputElement | null>(null)
+    const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
+    const locationRef = useRef<HTMLInputElement | null>(null)
+    const qualificationsRef = useRef<HTMLInputElement | null>(null)
+    const salaryRef = useRef<HTMLInputElement | null>(null)
+
     const [paid, setPaid] = useState(false)
-    const [salary, setSalary] = useState("")
     const [errors, setErrors] = useState<Errors>({})
     const [isSaving, setIsSaving] = useState(false)
 
-    // Populate form when internship changes
     useEffect(() => {
         if (internship) {
-            setTitle(internship.title)
-            setDescription(internship.description)
-            setLocation(internship.location)
-            setQualifications(internship.qualifications || "")
+            if (titleRef.current) titleRef.current.value = internship.title
+            if (descriptionRef.current) descriptionRef.current.value = internship.description
+            if (locationRef.current) locationRef.current.value = internship.location
+            if (qualificationsRef.current) qualificationsRef.current.value = internship.qualifications || ""
+            if (salaryRef.current) salaryRef.current.value = internship.salary?.toString() || ""
             setPaid(internship.paid)
-            setSalary(internship.salary?.toString() || "")
             setErrors({})
         }
     }, [internship])
 
+    const readValues = useCallback(() => {
+        return {
+            title: titleRef.current?.value ?? "",
+            description: descriptionRef.current?.value ?? "",
+            location: locationRef.current?.value ?? "",
+            qualifications: qualificationsRef.current?.value ?? "",
+            paid,
+            salary: salaryRef.current?.value ?? "",
+        }
+    }, [paid])
+
     async function handleSave() {
         if (!internship) return
-        setErrors({})
 
-        // Validation
+        const vals = readValues()
+
         const newErrors: Errors = {}
-        if (!title) newErrors.title = ["Title is required"]
-        if (!description) newErrors.description = ["Description is required"]
-        if (!location) newErrors.location = ["Location is required"]
-        if (paid && !salary) newErrors.salary = ["Salary is required for paid internships"]
+        if (!vals.title || vals.title.length < 3) {
+            newErrors.title = ["Title must be at least 3 characters"]
+        }
+        if (!vals.description || vals.description.length < 10) {
+            newErrors.description = ["Description must be at least 10 characters"]
+        }
+        if (!vals.location || vals.location.length < 2) {
+            newErrors.location = ["Location must be at least 2 characters"]
+        }
+        if (vals.paid && (!vals.salary || Number.parseFloat(vals.salary) <= 0)) {
+            newErrors.salary = ["Salary is required and must be positive for paid internships"]
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
@@ -75,18 +96,19 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: internship.id,
-                    title,
-                    description,
-                    location,
-                    qualifications: qualifications || null,
-                    paid,
-                    salary: paid && salary ? Number.parseFloat(salary) : null,
+                    title: vals.title,
+                    description: vals.description,
+                    location: vals.location,
+                    qualifications: vals.qualifications || null,
+                    paid: vals.paid,
+                    salary: vals.paid && vals.salary ? Number.parseFloat(vals.salary) : null,
                 }),
             })
 
             if (!res.ok) throw new Error("Failed to update internship")
 
             const updated: Internship = await res.json()
+            setErrors({})
             onUpdate(updated)
             onClose()
         } catch (err) {
@@ -103,18 +125,31 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
         <AnimatePresence>
             {open && (
                 <Dialog open={open} onOpenChange={onClose}>
-                    <DialogContent className="rounded-3xl max-w-2xl max-h-[90vh] overflow-hidden p-0 border-0 bg-transparent">
+                    <DialogContent
+                        className="rounded-2xl max-w-2xl max-h-[90vh] overflow-hidden p-0 border bg-slate-900 shadow-2xl"
+                        style={{
+                            borderColor: "color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+                            boxShadow:
+                                "0 25px 50px -12px color-mix(in oklch, var(--internship-modal-gradient-from) 10%, transparent)",
+                        }}
+                    >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="bg-card/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-border/50"
+                            className="bg-slate-900 rounded-2xl"
                         >
-                            <div className="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[var(--internship-modal-gradient-from)] to-[var(--internship-modal-gradient-to)] p-8">
+                            <div
+                                className="relative overflow-hidden rounded-t-2xl p-8"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                                }}
+                            >
                                 <div className="relative z-10 flex items-center gap-4">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                                        <Building2 className="h-8 w-8 text-white" />
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                                        <Building2 className="h-7 w-7 text-white" />
                                     </div>
                                     <div>
                                         <DialogTitle className="text-2xl font-bold text-white mb-1">
@@ -125,7 +160,7 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                         </p>
                                     </div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent" />
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                             </div>
 
                             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
@@ -138,23 +173,30 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     {/* Title Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Briefcase className="h-5 w-5 text-[var(--internship-modal-gradient-from)]" />
-                                            <Label className="text-base font-semibold">Position Title</Label>
+                                            <Briefcase className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Position Title</Label>
                                         </div>
                                         <Input
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
+                                            ref={titleRef}
                                             readOnly={userType === "Student"}
-                                            className="rounded-xl border-2 focus:border-[var(--internship-modal-gradient-from)] transition-colors duration-200 py-3"
+                                            className="rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-colors duration-200 py-3"
                                             placeholder="Enter internship title"
+                                            style={
+                                                {
+                                                    "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                                } as React.CSSProperties
+                                            }
+                                            onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                            onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                         />
                                         {errors.title && (
                                             <motion.p
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
-                                                className="text-sm text-red-500 flex items-center gap-1"
+                                                className="text-sm text-red-400 flex items-center gap-2"
                                             >
-                                                ⚠️ {errors.title[0]}
+                                                <AlertCircle className="h-3 w-3" />
+                                                {errors.title[0]}
                                             </motion.p>
                                         )}
                                     </div>
@@ -162,23 +204,31 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     {/* Description Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <FileText className="h-5 w-5 text-[var(--internship-modal-gradient-from)]" />
-                                            <Label className="text-base font-semibold">Description</Label>
+                                            <FileText className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Description</Label>
                                         </div>
                                         <Textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
+                                            ref={descriptionRef}
+                                            defaultValue=""
                                             readOnly={userType === "Student"}
-                                            className="rounded-xl border-2 focus:border-[var(--internship-modal-gradient-from)] transition-colors duration-200 min-h-[120px] resize-none"
+                                            className="rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-colors duration-200 min-h-[120px] resize-none"
                                             placeholder="Describe the internship role and responsibilities"
+                                            style={
+                                                {
+                                                    "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                                } as React.CSSProperties
+                                            }
+                                            onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                            onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                         />
                                         {errors.description && (
                                             <motion.p
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
-                                                className="text-sm text-red-500 flex items-center gap-1"
+                                                className="text-sm text-red-400 flex items-center gap-2"
                                             >
-                                                ⚠️ {errors.description[0]}
+                                                <AlertCircle className="h-3 w-3" />
+                                                {errors.description[0]}
                                             </motion.p>
                                         )}
                                     </div>
@@ -187,56 +237,62 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <MapPin className="h-5 w-5 text-[var(--internship-modal-gradient-from)]" />
-                                                <Label className="text-base font-semibold">Location</Label>
+                                                <MapPin className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Location</Label>
                                             </div>
                                             <Input
-                                                value={location}
-                                                onChange={(e) => setLocation(e.target.value)}
+                                                ref={locationRef}
+                                                defaultValue=""
                                                 readOnly={userType === "Student"}
-                                                className="rounded-xl border-2 focus:border-[var(--internship-modal-gradient-from)] transition-colors duration-200 py-3"
+                                                className="rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-colors duration-200 py-3"
                                                 placeholder="e.g., San Francisco, CA"
+                                                style={
+                                                    {
+                                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                                    } as React.CSSProperties
+                                                }
+                                                onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                                onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                             />
                                             {errors.location && (
                                                 <motion.p
                                                     initial={{ opacity: 0, x: -10 }}
                                                     animate={{ opacity: 1, x: 0 }}
-                                                    className="text-sm text-red-500 flex items-center gap-1"
+                                                    className="text-sm text-red-400 flex items-center gap-2"
                                                 >
-                                                    ⚠️ {errors.location[0]}
+                                                    <AlertCircle className="h-3 w-3" />
+                                                    {errors.location[0]}
                                                 </motion.p>
                                             )}
                                         </div>
 
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <GraduationCap className="h-5 w-5 text-[var(--internship-modal-gradient-from)]" />
-                                                <Label className="text-base font-semibold">Qualifications</Label>
+                                                <GraduationCap className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Qualifications</Label>
                                             </div>
                                             <Input
-                                                value={qualifications}
-                                                onChange={(e) => setQualifications(e.target.value)}
+                                                ref={qualificationsRef}
+                                                defaultValue=""
                                                 readOnly={userType === "Student"}
-                                                className="rounded-xl border-2 focus:border-[var(--internship-modal-gradient-from)] transition-colors duration-200 py-3"
+                                                className="rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-colors duration-200 py-3"
                                                 placeholder="e.g., Computer Science major"
+                                                style={
+                                                    {
+                                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                                    } as React.CSSProperties
+                                                }
+                                                onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                                onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                             />
-                                            {errors.qualifications && (
-                                                <motion.p
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    className="text-sm text-red-500 flex items-center gap-1"
-                                                >
-                                                    ⚠️ {errors.qualifications[0]}
-                                                </motion.p>
-                                            )}
                                         </div>
                                     </div>
 
                                     {/* Compensation Section */}
-                                    <div className="space-y-4 p-6 rounded-2xl bg-gradient-to-r from-[var(--internship-form-background)] to-[var(--internship-form-background)]/50 border border-border/50">
+                                    <div className="space-y-4 p-6 rounded-xl bg-slate-800/50 border border-slate-700">
                                         <div className="flex items-center gap-2">
-                                            <DollarSign className="h-5 w-5 text-[var(--internship-modal-gradient-from)]" />
-                                            <Label className="text-base font-semibold">Compensation</Label>
+                                            <DollarSign className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Compensation</Label>
                                         </div>
 
                                         <div className="flex items-center space-x-3">
@@ -244,9 +300,15 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                                 checked={paid}
                                                 onCheckedChange={(val) => setPaid(!!val)}
                                                 disabled={userType === "Student"}
-                                                className="rounded-lg border-2"
+                                                className="rounded-lg border-slate-600"
+                                                style={
+                                                    {
+                                                        "--checkbox-checked-bg": "var(--internship-modal-gradient-from)",
+                                                        "--checkbox-checked-border": "var(--internship-modal-gradient-from)",
+                                                    } as React.CSSProperties
+                                                }
                                             />
-                                            <Label className="text-sm font-medium">This is a paid internship</Label>
+                                            <Label className="text-sm font-medium text-slate-300">This is a paid internship</Label>
                                         </div>
 
                                         <AnimatePresence>
@@ -258,22 +320,31 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                                     transition={{ duration: 0.3 }}
                                                     className="space-y-2"
                                                 >
-                                                    <Label className="text-sm">Salary (per month)</Label>
+                                                    <Label className="text-sm text-slate-300">Salary (per month)</Label>
                                                     <Input
+                                                        ref={salaryRef}
+                                                        defaultValue=""
                                                         type="number"
-                                                        value={salary}
-                                                        onChange={(e) => setSalary(e.target.value)}
                                                         readOnly={userType === "Student"}
-                                                        className="rounded-xl border-2 focus:border-[var(--internship-modal-gradient-from)] transition-colors duration-200 py-3"
+                                                        className="rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-colors duration-200 py-3"
                                                         placeholder="e.g., 3000"
+                                                        style={
+                                                            {
+                                                                "--tw-ring-color":
+                                                                    "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+                                                            } as React.CSSProperties
+                                                        }
+                                                        onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                                        onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                                     />
                                                     {errors.salary && (
                                                         <motion.p
                                                             initial={{ opacity: 0, x: -10 }}
                                                             animate={{ opacity: 1, x: 0 }}
-                                                            className="text-sm text-red-500 flex items-center gap-1"
+                                                            className="text-sm text-red-400 flex items-center gap-2"
                                                         >
-                                                            ��️ {errors.salary[0]}
+                                                            <AlertCircle className="h-3 w-3" />
+                                                            {errors.salary[0]}
                                                         </motion.p>
                                                     )}
                                                 </motion.div>
@@ -288,7 +359,7 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     variant="outline"
                                     onClick={onClose}
                                     disabled={isSaving}
-                                    className="rounded-xl px-6 py-3 font-semibold border-2 hover:bg-muted/50 transition-all duration-200 bg-transparent"
+                                    className="rounded-xl px-6 py-3 font-semibold border border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 transition-all duration-200"
                                 >
                                     Close
                                 </Button>
@@ -296,7 +367,13 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     <Button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="rounded-xl px-8 py-3 font-semibold bg-gradient-to-r from-[var(--internship-modal-gradient-from)] to-[var(--internship-modal-gradient-to)] hover:shadow-lg transition-all duration-300 min-w-[120px]"
+                                        className="rounded-xl px-8 py-3 font-semibold text-white shadow-lg transition-all duration-300 min-w-[120px]"
+                                        style={{
+                                            background:
+                                                "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                                            boxShadow:
+                                                "0 10px 25px -5px color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+                                        }}
                                     >
                                         {isSaving ? (
                                             <div className="flex items-center gap-2">
