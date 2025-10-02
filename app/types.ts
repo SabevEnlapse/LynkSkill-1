@@ -11,6 +11,8 @@ export interface Internship {
     duration?: string
     grade?: string | number
     skills?: string
+    applicationStart?: string | null
+    applicationEnd?: string | null
 }
 
 export interface Application {

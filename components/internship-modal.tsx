@@ -11,7 +11,7 @@ import {Checkbox} from "@/components/ui/checkbox"
 import type {ComponentType, SVGProps} from "react"
 import {motion, AnimatePresence} from "framer-motion"
 import type {Internship} from "@/app/types"
-import {Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle} from "lucide-react"
+import {Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle, Calendar} from "lucide-react"
 
 interface InternshipFormData {
     title: string
@@ -20,7 +20,10 @@ interface InternshipFormData {
     qualifications: string | null
     paid: boolean
     salary: number | null
+    applicationStart: string
+    applicationEnd: string
 }
+
 
 interface InternshipModalProps {
     open: boolean
@@ -35,6 +38,8 @@ interface Errors {
     qualifications?: string[]
     paid?: string[]
     salary?: string[]
+    applicationStart?: string[]
+    applicationEnd?: string[]
 }
 
 interface FormValues {
@@ -43,6 +48,8 @@ interface FormValues {
     location: string
     qualifications: string
     salary: string
+    applicationStart: string
+    applicationEnd: string
 }
 
 export function InternshipModal({open, onClose, onCreate}: InternshipModalProps) {
@@ -60,8 +67,11 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
         description: "",
         location: "",
         qualifications: "",
-        salary: ""
+        salary: "",
+        applicationStart: "",
+        applicationEnd: ""
     })
+
 
     // Update refs when form values change
     useEffect(() => {
@@ -80,7 +90,9 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                 description: "",
                 location: "",
                 qualifications: "",
-                salary: ""
+                salary: "",
+                applicationStart: "",
+                applicationEnd: ""
             })
             setPaid(false)
             setErrors({})
@@ -95,19 +107,15 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
             qualifications: qualificationsRef.current?.value ?? "",
             paid,
             salary: salaryRef.current?.value ?? "",
+            applicationStart: formValues.applicationStart,
+            applicationEnd: formValues.applicationEnd,
         }
 
-        // Save form values
-        setFormValues({
-            title: values.title,
-            description: values.description,
-            location: values.location,
-            qualifications: values.qualifications,
-            salary: values.salary
-        })
+        setFormValues(values)
 
         return values
-    }, [paid])
+    }, [paid, formValues])
+
 
     async function handleSubmit() {
         setIsLoading(true)
@@ -119,6 +127,15 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
         }
         if (!vals.description || vals.description.length < 10) {
             newErrors.description = ["Description must be at least 10 characters"]
+        }
+        if (!vals.applicationStart) {
+            newErrors.applicationStart = ["Start date is required"]
+        }
+        if (!vals.applicationEnd) {
+            newErrors.applicationEnd = ["End date is required"]
+        }
+        if (vals.applicationStart && vals.applicationEnd && new Date(vals.applicationStart) > new Date(vals.applicationEnd)) {
+            newErrors.applicationEnd = ["End date must be after start date"]
         }
         if (!vals.location || vals.location.length < 2) {
             newErrors.location = ["Location must be at least 2 characters"]
@@ -141,6 +158,8 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                 qualifications: vals.qualifications || null,
                 paid: vals.paid,
                 salary: vals.paid && vals.salary ? Number.parseFloat(vals.salary) : null,
+                applicationStart: vals.applicationStart,
+                applicationEnd: vals.applicationEnd,
             }
 
             const res = await fetch("/api/internships", {
@@ -159,7 +178,9 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                     description: "",
                     location: "",
                     qualifications: "",
-                    salary: ""
+                    salary: "",
+                    applicationStart: "",
+                    applicationEnd: ""
                 })
                 setPaid(false)
                 setErrors({})
@@ -272,6 +293,27 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                                 onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                             />
                         </FormField>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField label="Applications Open" icon={Calendar} error={errors.applicationStart}>
+                                <Input
+                                    type="date"
+                                    value={formValues.applicationStart}
+                                    onChange={(e) => setFormValues({...formValues, applicationStart: e.target.value})}
+                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white"
+                                />
+                            </FormField>
+
+                            <FormField label="Applications Close" icon={Calendar} error={errors.applicationEnd}>
+                                <Input
+                                    type="date"
+                                    value={formValues.applicationEnd}
+                                    onChange={(e) => setFormValues({...formValues, applicationEnd: e.target.value})}
+                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white"
+                                />
+                            </FormField>
+                        </div>
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField label="Location" icon={MapPin} error={errors.location}>

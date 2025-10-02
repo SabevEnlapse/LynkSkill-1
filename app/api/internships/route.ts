@@ -50,15 +50,17 @@ export async function POST(req: Request) {
 
     const internship = await prisma.internship.create({
         data: {
-            companyId: company.id,
-            title: parsed.data.title,
-            description: parsed.data.description,
-            location: parsed.data.location,
-            qualifications: parsed.data.qualifications || null,
-            paid: parsed.data.paid,
-            salary: parsed.data.paid ? parsed.data.salary : null,
-        },
-    })
+            title: body.title,
+            description: body.description,
+            location: body.location,
+            qualifications: body.qualifications,
+            paid: body.paid,
+            salary: body.salary,
+            companyId: company.id, // using the first company's id
+            applicationStart: new Date(body.applicationStart),
+            applicationEnd: new Date(body.applicationEnd),
+        }
+    });
 
     return NextResponse.json(internship)
 }
