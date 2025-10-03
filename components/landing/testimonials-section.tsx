@@ -50,7 +50,7 @@ export function TestimonialsSection() {
                         <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Say</span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Don't just take our word for it. Here's what our community has to say about their experience.
+                        Don&apos;t just take our word for it. Here&apos;s what our community has to say about their experience.
                     </p>
                 </motion.div>
 

@@ -54,7 +54,7 @@ export function FAQSection() {
             </span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Got questions? We've got answers. Here are some of the most common questions we receive.
+                        Got questions? We&apos;ve got answers. Here are some of the most common questions we receive.
                     </p>
                 </motion.div>
 

@@ -51,7 +51,7 @@ export function FeaturesOverview() {
                         ?
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        We've built the most comprehensive platform for student-business connections, packed with features designed
+                        We&apos;ve built the most comprehensive platform for student-business connections, packed with features designed
                         to accelerate your career.
                     </p>
                 </motion.div>

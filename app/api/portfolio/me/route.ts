@@ -1,19 +1,17 @@
-// /api/portfolio/[studentId]/route.ts
+// app/api/portfolio/me/route.ts
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
 export async function GET(
-    req: Request,
-    { params }: { params: { studentId: string } }
+    request: Request
 ) {
     try {
         const { userId } = await auth()
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        // allow company or student to fetch
         const portfolio = await prisma.portfolio.findUnique({
-            where: { studentId: params.studentId },
+            where: { studentId: userId },
         })
         if (!portfolio) return NextResponse.json({ error: "Not found" }, { status: 404 })
 

@@ -1,11 +1,9 @@
 "use client"
 
 import {useState} from "react"
-import {ChevronDown, Search, Settings, X,} from "lucide-react"
+import {Settings, X,} from "lucide-react"
 import Image from "next/image"
-import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
-import {Input} from "@/components/ui/input"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {cn} from "@/lib/utils"
 import {sidebarItems} from "@/lib/dashboard-data"
@@ -32,7 +30,7 @@ export function DashboardSidebar({
                                  }: DashboardSidebarProps) {
 
 
-    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+    const [, setExpandedItems] = useState<Record<string, boolean>>({})
 
     const toggleExpanded = (title: string) => {
         setExpandedItems((prev) => ({
@@ -46,7 +44,7 @@ export function DashboardSidebar({
             <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                     <Image
-                        src="/LynkSkill-logo-full.png"
+                        src="/Linky-head-logo.png"
                         alt="Company Logo"
                         width={40}
                         height={40}
@@ -69,11 +67,11 @@ export function DashboardSidebar({
             </div>
 
             <div className="px-3 py-2">
-                <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-foreground"/>
-                    <Input type="search" placeholder="Search..."
-                           className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2"/>
-                </div>
+                {/*<div className="relative">*/}
+                {/*    <Search className="absolute left-3 top-3 h-4 w-4 text-foreground"/>*/}
+                {/*    <Input type="search" placeholder="Search..."*/}
+                {/*           className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2"/>*/}
+                {/*</div>*/}
             </div>
 
             <ScrollArea className="flex-1 px-3 py-2">

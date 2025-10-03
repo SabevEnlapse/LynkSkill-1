@@ -1,22 +1,25 @@
-// /pages/api/check-user.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+// app/api/check-user/route.ts
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { clerkClient } from '@clerk/nextjs/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const userId = req.headers['x-user-id'] as string;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+export async function GET(request: Request) {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     try {
         const dbUser = await prisma.user.findUnique({
             where: { clerkId: userId },
         });
 
-        if (!dbUser) return res.status(403).json({ error: 'User not found in DB' });
+        if (!dbUser) {
+            return NextResponse.json({ error: 'User not found in DB' }, { status: 403 });
+        }
 
-        res.status(200).json({ ok: true, user: dbUser });
+        return NextResponse.json({ ok: true, user: dbUser });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Server error' });
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 }

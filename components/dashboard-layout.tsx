@@ -21,7 +21,6 @@ import {ApplicationsTabContent} from "./apply-tab-content"
 import {AssignmentsTabContent} from "./assignments-tab-content"
 import MyExperienceTabContent from "./my-experience-tab-content"
 import {Internship} from "@/app/types"
-import RequireAuth from "./RequireAuth"
 
 interface DashboardLayoutProps {
     userType: "Student" | "Company"
@@ -101,7 +100,6 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
 
     if (isInitialLoading) {
         return (
-            <RequireAuth>
                 <div className="relative min-h-screen overflow-hidden bg-background">
                     {/* Animated gradient background */}
                     <motion.div
@@ -186,12 +184,10 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                         </main>
                     </div>
                 </div>
-            </RequireAuth>
         )
     }
 
     return (
-        <RequireAuth>
             <div className="relative min-h-screen overflow-hidden bg-background">
                 {/* Background animation */}
                 <motion.div
@@ -316,6 +312,5 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                     </main>
                 </div>
             </div>
-        </RequireAuth>
     )
 }
