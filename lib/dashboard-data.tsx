@@ -30,7 +30,7 @@ export const sidebarItems = [
     ],
   },
   {
-    title: "Projects",
+    title: "Assignments",
     value: "projects",
     icon: <Layers />,
     items: [

@@ -14,11 +14,11 @@ import {DashboardHeader} from "./dashboard-header"
 import {DashboardHero} from "./dashboard-hero"
 import {RecentInternshipsSection} from "./recent-internships-section"
 import {RecentApplicationsSection} from "./recent-applications-section"
-import {ActiveProjectsSection} from "./active-projects-section"
+import {ActiveAssignmentsSection} from "./active-assignments-section"
 import {CommunityHighlights} from "./community-highlights-section"
 import {Portfolio} from "./portfolio"
 import {ApplicationsTabContent} from "./apply-tab-content"
-import {ProjectsTabContent} from "./projects-tab-content"
+import {AssignmentsTabContent} from "./assignments-tab-content"
 import MyExperienceTabContent from "./my-experience-tab-content"
 import {Internship} from "@/app/types"
 import RequireAuth from "./RequireAuth"
@@ -253,7 +253,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         Applied
                                     </TabsTrigger>
                                     <TabsTrigger value="projects" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
-                                        Projects
+                                        Assignments
                                     </TabsTrigger>
                                     <TabsTrigger value="learn" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         My Experience
@@ -290,7 +290,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         <RecentInternshipsSection userType={userType}/>
                                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                             <RecentApplicationsSection userType={userType} setActiveTab={setActiveTab}/>
-                                            <ActiveProjectsSection setActiveTab={setActiveTab}/>
+                                            <ActiveAssignmentsSection setActiveTab={setActiveTab}/>
                                         </div>
                                         <CommunityHighlights setActiveTab={setActiveTab}/>
                                     </TabsContent>
@@ -304,7 +304,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                     </TabsContent>
 
                                     <TabsContent value="projects" className="space-y-8 mt-0">
-                                        <ProjectsTabContent/>
+                                        <AssignmentsTabContent/>
                                     </TabsContent>
 
                                     <TabsContent value="learn" className="space-y-8 mt-0">

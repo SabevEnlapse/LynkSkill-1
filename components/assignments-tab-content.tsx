@@ -24,7 +24,7 @@ type ApiProject = {
 }
 
 
-export function ProjectsTabContent() {
+export function AssignmentsTabContent() {
     const [projects, setProjects] = useState<ApiProject[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
@@ -121,7 +121,7 @@ export function ProjectsTabContent() {
                     onClick={() => setFilter("all")}
                 >
                     <Layers className="mr-2 h-4 w-4"/>
-                    All Projects
+                    All Assignments
                 </Button>
 
                 <Button
@@ -151,7 +151,7 @@ export function ProjectsTabContent() {
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground"/>
                     <Input
                         type="search"
-                        placeholder="Search projects..."
+                        placeholder="Search assignments..."
                         className="w-full rounded-2xl pl-9 md:w-[250px] border-2 focus:border-[var(--projects-accent)] transition-colors"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -216,7 +216,7 @@ export function ProjectsTabContent() {
                         <h2 className="text-2xl font-semibold">
                             {searchQuery
                                 ? `Search Results (${filteredProjects.length})`
-                                : `Active Projects (${filteredProjects.length})`}
+                                : `Active Assignments (${filteredProjects.length})`}
                         </h2>
                     </div>
 
@@ -318,8 +318,7 @@ export function ProjectsTabContent() {
             <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
                 <DialogContent className="rounded-3xl max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-[var(--projects-accent)]">Project
-                            Details</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-[var(--projects-accent)]">Assignments Details</DialogTitle>
                     </DialogHeader>
 
                     {selected && (

@@ -26,7 +26,7 @@ interface ActiveProjectsSectionProps {
     setActiveTab: (tab: string) => void
 }
 
-export function ActiveProjectsSection({ setActiveTab }: ActiveProjectsSectionProps) {
+export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSectionProps) {
     const [projects, setProjects] = useState<ApiProject[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -111,9 +111,9 @@ export function ActiveProjectsSection({ setActiveTab }: ActiveProjectsSectionPro
             {/* Banner stays unchanged */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-xl font-semibold text-foreground">Active Projects</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Active Assignments</h2>
                     <p className="text-sm text-muted-foreground">
-                        {projects.length} projects • {projects.filter((p) => p.status === "ONGOING").length} active
+                        {projects.length} assignments • {projects.filter((p) => p.status === "ONGOING").length} active
                     </p>
                 </div>
                 <Button variant="ghost" size="sm" className="hover:bg-muted group" onClick={() => setActiveTab("projects")}>
