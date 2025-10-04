@@ -6,7 +6,7 @@ import type {Internship} from "@/app/types"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
 import {CardSkeleton} from "@/components/card-skeleton"
-import {InternshipDetailsModal} from "@/components/internship-details-modal"
+import InternshipDetailsModal from "@/components/internship-details-modal"
 import {Input} from "@/components/ui/input"
 import {
     Layers,
@@ -48,6 +48,9 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
     const [internships, setInternships] = useState<Internship[]>([])
     const [applications, setApplications] = useState<Application[]>([])
     const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null)
+
+    const [open, setOpen] = useState(false)
+    const [selected, setSelected] = useState<Internship | null>(null)
 
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
@@ -424,7 +427,10 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                                                             size="lg"
                                                             variant="outline"
                                                             className="flex-1 rounded-2xl  font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl border-2 hover:border-purple-500 group bg-transparent"
-                                                            onClick={() => setSelectedInternship(item)}
+                                                            onClick={() => {
+                                                                setSelectedInternship(item)
+                                                                setOpen(true)
+                                                            }}
                                                         >
                                                             Details
                                                             <ArrowRight
@@ -436,7 +442,10 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                                                 <Button
                                                     size="lg"
                                                     className="w-full rounded-2xl py-6 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
-                                                    onClick={() => setSelectedInternship(item)}
+                                                    onClick={() => {
+                                                        setSelectedInternship(item)
+                                                        setOpen(true)
+                                                    }}
                                                 >
                                                     Manage
                                                     <ArrowRight
@@ -447,18 +456,11 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                                     </Card>
 
                                     <InternshipDetailsModal
-                                        open={!!selectedInternship && selectedInternship.id === item.id}
-                                        onClose={() => setSelectedInternship(null)}
-                                        internship={selectedInternship}
-                                        userType={userType}
-                                        onUpdate={(updated: Internship) =>
-                                            window.dispatchEvent(
-                                                new CustomEvent("internshipUpdated", {
-                                                    detail: updated,
-                                                }),
-                                            )
-                                        }
+                                        open={open}
+                                        onClose={() => setOpen(false)}
+                                        internshipId={selectedInternship?.id || null} // ✅ pass ID, not object
                                     />
+
                                 </motion.div>
                             )
                         })}
