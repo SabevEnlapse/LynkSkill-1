@@ -2,7 +2,6 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-// ✅ GET /api/portfolio
 export async function GET() {
     try {
         const { userId } = await auth()
@@ -22,7 +21,6 @@ export async function GET() {
     }
 }
 
-// ✅ POST /api/portfolio (create or update)
 export async function POST(req: Request) {
     try {
         const { userId } = await auth()
@@ -33,7 +31,68 @@ export async function POST(req: Request) {
 
         const body = await req.json()
 
-        // ✅ If age < 18, require approval
+        // Validate years in education
+        if (body.education && Array.isArray(body.education)) {
+            const currentYear = new Date().getFullYear()
+            for (const edu of body.education) {
+                if (edu.startYear < 1950 || edu.startYear > currentYear + 10) {
+                    return NextResponse.json({ error: "Invalid start year in education" }, { status: 400 })
+                }
+                if (edu.endYear && (edu.endYear < 1950 || edu.endYear > currentYear + 10)) {
+                    return NextResponse.json({ error: "Invalid end year in education" }, { status: 400 })
+                }
+                if (edu.endYear && edu.endYear < edu.startYear) {
+                    return NextResponse.json({ error: "End year must be after start year" }, { status: 400 })
+                }
+            }
+        }
+
+        // Validate certification dates
+        if (body.certifications && Array.isArray(body.certifications)) {
+            for (const cert of body.certifications) {
+                const issuedDate = new Date(cert.issuedAt)
+                if (isNaN(issuedDate.getTime())) {
+                    return NextResponse.json({ error: "Invalid issue date in certification" }, { status: 400 })
+                }
+                if (issuedDate > new Date()) {
+                    return NextResponse.json({ error: "Issue date cannot be in the future" }, { status: 400 })
+                }
+
+                if (cert.expiresAt) {
+                    const expiresDate = new Date(cert.expiresAt)
+                    if (isNaN(expiresDate.getTime())) {
+                        return NextResponse.json({ error: "Invalid expiry date in certification" }, { status: 400 })
+                    }
+                    if (expiresDate < issuedDate) {
+                        return NextResponse.json({ error: "Expiry date must be after issue date" }, { status: 400 })
+                    }
+                }
+            }
+        }
+
+        // Validate custom skills and interests (basic profanity filter)
+        const inappropriateWords = ["badword1", "badword2"] // Expand as needed
+        const validateText = (text: string) => {
+            const lower = text.toLowerCase()
+            return !inappropriateWords.some((word) => lower.includes(word)) && /^[a-zA-Z0-9\s\-.+#/]+$/.test(text)
+        }
+
+        if (body.skills && Array.isArray(body.skills)) {
+            for (const skill of body.skills) {
+                if (skill.length > 50 || !validateText(skill)) {
+                    return NextResponse.json({ error: "Invalid skill name" }, { status: 400 })
+                }
+            }
+        }
+
+        if (body.interests && Array.isArray(body.interests)) {
+            for (const interest of body.interests) {
+                if (interest.length > 50 || !validateText(interest)) {
+                    return NextResponse.json({ error: "Invalid interest name" }, { status: 400 })
+                }
+            }
+        }
+
         const needsApproval = body.age && body.age < 18
 
         const portfolio = await prisma.portfolio.upsert({
@@ -48,9 +107,9 @@ export async function POST(req: Request) {
                 skills: body.skills,
                 interests: body.interests,
                 experience: body.experience,
-                education: body.education, // Now includes attachments array
-                projects: body.projects, // Now includes attachments array
-                certifications: body.certifications, // Now includes attachments array
+                education: body.education,
+                projects: body.projects,
+                certifications: body.certifications,
                 linkedin: body.linkedin,
                 github: body.github,
                 portfolioUrl: body.portfolioUrl,
@@ -70,9 +129,9 @@ export async function POST(req: Request) {
                 skills: body.skills,
                 interests: body.interests,
                 experience: body.experience,
-                education: body.education, // Now includes attachments array
-                projects: body.projects, // Now includes attachments array
-                certifications: body.certifications, // Now includes attachments array
+                education: body.education,
+                projects: body.projects,
+                certifications: body.certifications,
                 linkedin: body.linkedin,
                 github: body.github,
                 portfolioUrl: body.portfolioUrl,

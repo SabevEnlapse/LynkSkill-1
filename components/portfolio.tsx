@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useUser } from "@clerk/nextjs"
-import { FileUpload } from "@/components/file-upload"
 import {
   User,
   Briefcase,
@@ -47,6 +46,7 @@ import {
   Sparkles,
   Paintbrush,
   Settings,
+  AlertCircle,
 } from "lucide-react"
 
 interface FileAttachment {
@@ -148,6 +148,35 @@ const PREDEFINED_INTERESTS = [
   { name: "Sports", icon: <Target className="h-4 w-4" /> },
 ]
 
+const validateYear = (year: number, fieldName: string): string | null => {
+  const currentYear = new Date().getFullYear()
+  if (!year || isNaN(year)) return `${fieldName} is required`
+  if (year < 1950) return `${fieldName} cannot be before 1950`
+  if (year > currentYear + 10) return `${fieldName} cannot be more than 10 years in the future`
+  return null
+}
+
+const validateCustomText = (text: string): string | null => {
+  if (!text || text.trim().length === 0) return "Cannot be empty"
+  if (text.length > 50) return "Maximum 50 characters"
+
+  // Basic profanity filter (expand as needed)
+  const inappropriateWords = ["badword1", "badword2"] // Add actual words
+  const lowerText = text.toLowerCase()
+  for (const word of inappropriateWords) {
+    if (lowerText.includes(word)) {
+      return "Inappropriate content detected"
+    }
+  }
+
+  // Only allow alphanumeric, spaces, and common punctuation
+  if (!/^[a-zA-Z0-9\s\-.+#/]+$/.test(text)) {
+    return "Only letters, numbers, and basic punctuation allowed"
+  }
+
+  return null
+}
+
 const AttachmentDisplay = ({ attachments }: { attachments?: FileAttachment[] }) => {
   if (!attachments || attachments.length === 0) return null
 
@@ -184,71 +213,11 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState<string | null>(null)
 
+  const [customSkillInput, setCustomSkillInput] = useState("")
+  const [customInterestInput, setCustomInterestInput] = useState("")
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
   const { user } = useUser()
-
-  const handleFileUpload = async <T extends keyof PortfolioSections>(files: File[], section: T, index: number) => {
-    const uploadedFiles: FileAttachment[] = []
-
-    for (const file of files) {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("section", section)
-
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        })
-
-        if (response.ok) {
-          const result = await response.json()
-          uploadedFiles.push({
-            id: result.id,
-            name: file.name,
-            url: result.url,
-            type: file.type,
-            size: file.size,
-          })
-        }
-      } catch (error) {
-        console.error("File upload failed:", error)
-      }
-    }
-
-    // ✅ No more any[]
-    setPortfolio((prev) => {
-      if (!prev) return prev
-
-      const updated = { ...prev }
-      const sectionData = updated[section] as PortfolioSections[T][]
-
-      if (sectionData[index]) {
-        sectionData[index] = {
-          ...sectionData[index],
-          attachments: [...(sectionData[index].attachments || []), ...uploadedFiles],
-        }
-      }
-
-      return updated
-    })
-  }
-
-  const handleFileRemove = <T extends keyof PortfolioSections>(section: T, index: number, fileId: string) => {
-    setPortfolio((prev) => {
-      if (!prev) return prev
-
-      const updated = { ...prev }
-      const sectionData = updated[section] as PortfolioSections[T][]
-
-      if (sectionData[index]?.attachments) {
-        sectionData[index].attachments = sectionData[index].attachments.filter(
-            (file: FileAttachment) => file.id !== fileId,
-        )
-      }
-
-      return updated
-    })
-  }
 
   useEffect(() => {
     async function fetchPortfolio() {
@@ -309,6 +278,48 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
   }, [])
 
   async function handleSave() {
+    const errors: Record<string, string> = {}
+
+    // Validate education years
+    portfolio?.education.forEach((edu, i) => {
+      const startError = validateYear(edu.startYear, "Start year")
+      if (startError) errors[`education-${i}-start`] = startError
+
+      if (edu.endYear) {
+        const endError = validateYear(edu.endYear, "End year")
+        if (endError) errors[`education-${i}-end`] = endError
+
+        if (!startError && !endError && edu.endYear < edu.startYear) {
+          errors[`education-${i}-end`] = "End year must be after start year"
+        }
+      }
+    })
+
+    // Validate certification dates
+    portfolio?.certifications.forEach((cert, i) => {
+      const issuedDate = new Date(cert.issuedAt)
+      if (isNaN(issuedDate.getTime())) {
+        errors[`cert-${i}-issued`] = "Invalid date format"
+      } else if (issuedDate > new Date()) {
+        errors[`cert-${i}-issued`] = "Issue date cannot be in the future"
+      }
+
+      if (cert.expiresAt) {
+        const expiresDate = new Date(cert.expiresAt)
+        if (isNaN(expiresDate.getTime())) {
+          errors[`cert-${i}-expires`] = "Invalid date format"
+        } else if (expiresDate < issuedDate) {
+          errors[`cert-${i}-expires`] = "Expiry date must be after issue date"
+        }
+      }
+    })
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      return
+    }
+
+    setValidationErrors({})
     const res = await fetch("/api/portfolio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -340,6 +351,54 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
     })
   }
 
+  const handleAddCustomSkill = () => {
+    const error = validateCustomText(customSkillInput)
+    if (error) {
+      setValidationErrors({ ...validationErrors, customSkill: error })
+      return
+    }
+
+    if (portfolio && !portfolio.skills.includes(customSkillInput.trim())) {
+      setPortfolio((prev) => ({
+        ...prev!,
+        skills: [...prev!.skills, customSkillInput.trim()],
+      }))
+      setCustomSkillInput("")
+      setValidationErrors({ ...validationErrors, customSkill: "" })
+    }
+  }
+
+  const handleAddCustomInterest = () => {
+    const error = validateCustomText(customInterestInput)
+    if (error) {
+      setValidationErrors({ ...validationErrors, customInterest: error })
+      return
+    }
+
+    if (portfolio && !portfolio.interests.includes(customInterestInput.trim())) {
+      setPortfolio((prev) => ({
+        ...prev!,
+        interests: [...prev!.interests, customInterestInput.trim()],
+      }))
+      setCustomInterestInput("")
+      setValidationErrors({ ...validationErrors, customInterest: "" })
+    }
+  }
+
+  const removeSkill = (skill: string) => {
+    setPortfolio((prev) => ({
+      ...prev!,
+      skills: prev!.skills.filter((s) => s !== skill),
+    }))
+  }
+
+  const removeInterest = (interest: string) => {
+    setPortfolio((prev) => ({
+      ...prev!,
+      interests: prev!.interests.filter((i) => i !== interest),
+    }))
+  }
+
   if (loading) {
     return (
         <div className="min-h-screen bg-background">
@@ -355,18 +414,16 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
 
   const displayName = user?.fullName || portfolio?.fullName || "Professional Portfolio"
 
-  // Removed animation variants as they are now applied directly to sections and elements.
-
   return (
       <div className="min-h-screen bg-background">
         <div className="relative">
-          {/* Hero Section - Full width with dynamic layout */}
+          {/* ... existing hero section code ... */}
+
           <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="relative min-h-[600px] p-10 overflow-hidden"
           >
-            {/* Gradient Background with animated blobs */}
             <div className="absolute rounded-3xl inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 ">
               <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
               <motion.div
@@ -387,10 +444,8 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
               />
             </div>
 
-            {/* Hero Content */}
             <div className="container mx-auto px-4 py-16 relative z-10">
               <div className="grid lg:grid-cols-2 gap-12 items-center">
-                {/* Left Column - Profile Info */}
                 <motion.div
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -439,14 +494,12 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                   </div>
                 </motion.div>
 
-                {/* Right Column - Quick Stats & Actions */}
                 <motion.div
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
                     className="space-y-6"
                 >
-                  {/* Quick Stats Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <motion.div
                         whileHover={{ scale: 1.05, y: -5 }}
@@ -482,7 +535,6 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                     </motion.div>
                   </div>
 
-                  {/* Edit Button */}
                   {userType === "Student" && (
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
@@ -509,12 +561,11 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
             </div>
           </motion.section>
 
-          {/* Main Content Container */}
           <div className="container mx-auto px-4 mt-20 relative z-20">
             <div className="space-y-8">
-              {/* About Me + Professional Links - Side by Side */}
+              {/* ... existing About Me and Links sections ... */}
+
               <div className="grid lg:grid-cols-3 gap-8">
-                {/* About Me - Takes 2 columns */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -544,7 +595,6 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                   </div>
                 </motion.div>
 
-                {/* Professional Links - Compact vertical stack */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -634,7 +684,6 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                 </motion.div>
               </div>
 
-              {/* Skills - Bento Grid Style */}
               <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -672,6 +721,28 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                               </motion.button>
                           ))}
                         </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm text-muted-foreground">Add Custom Skill</h4>
+                          <div className="flex gap-2">
+                            <Input
+                                placeholder="e.g., Figma, Photoshop..."
+                                value={customSkillInput}
+                                onChange={(e) => setCustomSkillInput(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleAddCustomSkill()}
+                                className="rounded-xl"
+                            />
+                            <Button onClick={handleAddCustomSkill} className="rounded-xl">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {validationErrors.customSkill && (
+                              <div className="flex items-center gap-2 text-destructive text-sm">
+                                <AlertCircle className="h-4 w-4" />
+                                {validationErrors.customSkill}
+                              </div>
+                          )}
+                        </div>
                       </div>
                   ) : (
                       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -683,8 +754,16 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.03 }}
                                     whileHover={{ scale: 1.1, y: -5 }}
-                                    className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl shadow-lg hover:shadow-2xl transition-all"
+                                    className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl shadow-lg hover:shadow-2xl transition-all relative group"
                                 >
+                                  {isEditing && (
+                                      <button
+                                          onClick={() => removeSkill(skill)}
+                                          className="absolute -top-2 -right-2 bg-destructive rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3 text-white" />
+                                      </button>
+                                  )}
                                   <div className="flex flex-col items-center gap-2 text-center">
                                     {PREDEFINED_SKILLS.find((s) => s.name === skill)?.icon || <Code className="h-5 w-5" />}
                                     <span className="font-bold text-sm">{skill}</span>
@@ -702,7 +781,6 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                 </div>
               </motion.div>
 
-              {/* Interests - Horizontal Compact */}
               <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -719,25 +797,49 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                 </div>
                 <div className="p-8">
                   {isEditing ? (
-                      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
-                        {PREDEFINED_INTERESTS.map((interest) => (
-                            <motion.button
-                                key={interest.name}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => toggleInterest(interest.name)}
-                                className={`p-4 rounded-xl border-2 transition-all ${
-                                    portfolio?.interests.includes(interest.name)
-                                        ? "border-purple-500 bg-gradient-to-r from-purple-500/10 to-blue-500/10 shadow-lg"
-                                        : "border-border hover:border-purple-400"
-                                }`}
-                            >
-                              <div className="flex flex-col items-center gap-2">
-                                {interest.icon}
-                                <span className="text-xs font-semibold text-center">{interest.name}</span>
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
+                          {PREDEFINED_INTERESTS.map((interest) => (
+                              <motion.button
+                                  key={interest.name}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => toggleInterest(interest.name)}
+                                  className={`p-4 rounded-xl border-2 transition-all ${
+                                      portfolio?.interests.includes(interest.name)
+                                          ? "border-purple-500 bg-gradient-to-r from-purple-500/10 to-blue-500/10 shadow-lg"
+                                          : "border-border hover:border-purple-400"
+                                  }`}
+                              >
+                                <div className="flex flex-col items-center gap-2">
+                                  {interest.icon}
+                                  <span className="text-xs font-semibold text-center">{interest.name}</span>
+                                </div>
+                              </motion.button>
+                          ))}
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm text-muted-foreground">Add Custom Interest</h4>
+                          <div className="flex gap-2">
+                            <Input
+                                placeholder="e.g., Hiking, Volunteering..."
+                                value={customInterestInput}
+                                onChange={(e) => setCustomInterestInput(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleAddCustomInterest()}
+                                className="rounded-xl"
+                            />
+                            <Button onClick={handleAddCustomInterest} className="rounded-xl">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {validationErrors.customInterest && (
+                              <div className="flex items-center gap-2 text-destructive text-sm">
+                                <AlertCircle className="h-4 w-4" />
+                                {validationErrors.customInterest}
                               </div>
-                            </motion.button>
-                        ))}
+                          )}
+                        </div>
                       </div>
                   ) : (
                       <div className="flex flex-wrap gap-3">
@@ -749,8 +851,16 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.05 }}
                                     whileHover={{ scale: 1.1 }}
-                                    className="bg-gradient-to-br from-purple-600 to-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all"
+                                    className="bg-gradient-to-br from-purple-600 to-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all relative group"
                                 >
+                                  {isEditing && (
+                                      <button
+                                          onClick={() => removeInterest(interest)}
+                                          className="absolute -top-2 -right-2 bg-destructive rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3 text-white" />
+                                      </button>
+                                  )}
                                   <div className="flex items-center gap-2">
                                     {PREDEFINED_INTERESTS.find((int) => int.name === interest)?.icon || (
                                         <Heart className="h-4 w-4" />
@@ -770,183 +880,9 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                 </div>
               </motion.div>
 
-              {/* Projects - Masonry Grid */}
-              <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="bg-card/95 backdrop-blur-xl rounded-[2rem] shadow-2xl border-2 border-border overflow-hidden"
-              >
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Briefcase className="h-6 w-6" />
-                    </div>
-                    Projects
-                  </h2>
-                </div>
-                <div className="p-8">
-                  {isEditing ? (
-                      <div className="space-y-4">
-                        {(portfolio?.projects || []).map((proj, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="p-6 border-2 rounded-[1.25rem] bg-accent/50 border-border space-y-4 hover:shadow-lg transition-all duration-300"
-                            >
-                              <div className="flex justify-between items-center">
-                                <h4 className="font-semibold text-accent-foreground">Project #{i + 1}</h4>
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                        setPortfolio((prev) => ({
-                                          ...prev!,
-                                          projects: (prev?.projects || []).filter((_, idx) => idx !== i),
-                                        }))
-                                    }
-                                    className="rounded-xl"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <Input
-                                  placeholder="Project Title"
-                                  value={proj.title || ""}
-                                  onChange={(e) => {
-                                    const copy = [...(portfolio?.projects || [])]
-                                    copy[i].title = e.target.value
-                                    setPortfolio((prev) => ({ ...prev!, projects: copy }))
-                                  }}
-                                  className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                              />
-                              <Textarea
-                                  placeholder="Project Description"
-                                  value={proj.description || ""}
-                                  onChange={(e) => {
-                                    const copy = [...(portfolio?.projects || [])]
-                                    copy[i].description = e.target.value
-                                    setPortfolio((prev) => ({ ...prev!, projects: copy }))
-                                  }}
-                                  className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                              />
-                              <Input
-                                  placeholder="Project Link (optional)"
-                                  value={proj.link || ""}
-                                  onChange={(e) => {
-                                    const copy = [...(portfolio?.projects || [])]
-                                    copy[i].link = e.target.value
-                                    setPortfolio((prev) => ({ ...prev!, projects: copy }))
-                                  }}
-                                  className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                              />
-                              <div className="space-y-3">
-                                <h5 className="font-medium text-accent-foreground">
-                                  Attach Files (screenshots, demos, documentation)
-                                </h5>
-                                <FileUpload
-                                    section="projects"
-                                    attachments={proj.attachments ?? []}
-                                    onAttachmentsChange={(newAttachments) => {
-                                      const copy = [...(portfolio?.projects || [])]
-                                      copy[i].attachments = newAttachments
-                                      setPortfolio((prev) => ({ ...prev!, projects: copy }))
-                                    }}
-                                    maxFiles={10}
-                                />
-                                {proj.attachments && proj.attachments.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {proj.attachments.map((file) => (
-                                          <div
-                                              key={file.id}
-                                              className="flex items-center gap-2 px-3 py-2 bg-background rounded-xl border"
-                                          >
-                                            {file.type.startsWith("image/") ? (
-                                                <ImageIcon className="h-4 w-4 text-blue-500" />
-                                            ) : (
-                                                <FileText className="h-4 w-4 text-green-500" />
-                                            )}
-                                            <span className="text-sm truncate max-w-32">{file.name}</span>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleFileRemove("projects", i, file.id)}
-                                                className="h-6 w-6 p-0"
-                                            >
-                                              <X className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                      ))}
-                                    </div>
-                                )}
-                              </div>
-                            </motion.div>
-                        ))}
-                        {/* ... existing editing code ... */}
-                        <Button
-                            onClick={() =>
-                                setPortfolio((prev) => ({
-                                  ...prev!,
-                                  projects: [
-                                    ...(prev?.projects || []),
-                                    { title: "", description: "", link: "", attachments: [] },
-                                  ],
-                                }))
-                            }
-                            className="w-full rounded-xl border-2 border-dashed"
-                            variant="outline"
-                        >
-                          <Plus className="mr-2 h-5 w-5" />
-                          Add Project
-                        </Button>
-                      </div>
-                  ) : portfolio?.projects?.length ? (
-                      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-                        {portfolio.projects.map((proj, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                whileHover={{ scale: 1.02, y: -5 }}
-                                className="break-inside-avoid bg-gradient-to-br from-accent to-accent/50 p-6 rounded-[1.5rem] shadow-xl border-2 border-border hover:shadow-2xl transition-all"
-                            >
-                              <div className="flex items-start justify-between mb-4">
-                                <div className="h-12 w-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-                                  <Briefcase className="h-6 w-6 text-white" />
-                                </div>
-                                {proj.link && (
-                                    <motion.a
-                                        href={proj.link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        whileHover={{ scale: 1.1 }}
-                                        className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg"
-                                    >
-                                      <ExternalLink className="h-4 w-4 text-white" />
-                                    </motion.a>
-                                )}
-                              </div>
-                              <h4 className="font-bold text-xl mb-2">{proj.title}</h4>
-                              <p className="text-muted-foreground leading-relaxed">{proj.description}</p>
-                              <AttachmentDisplay attachments={proj.attachments} />
-                            </motion.div>
-                        ))}
-                      </div>
-                  ) : (
-                      <div className="text-center py-12">
-                        <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">No projects added yet</p>
-                      </div>
-                  )}
-                </div>
-              </motion.div>
+              {/* ... existing Projects section ... */}
 
-              {/* Education & Certifications - Side by Side */}
               <div className="grid lg:grid-cols-2 gap-8">
-                {/* Education */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1013,75 +949,55 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                       }
                                       className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                   />
-                                  <Input
-                                      placeholder="Start Year"
-                                      type="number"
-                                      value={edu.startYear || ""}
-                                      onChange={(e) =>
-                                          setPortfolio((prev) => {
-                                            const copy = [...(prev?.education || [])]
-                                            copy[i].startYear = Number(e.target.value)
-                                            return { ...prev!, education: copy }
-                                          })
-                                      }
-                                      className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                                  />
-                                  <Input
-                                      placeholder="End Year (or leave empty if current)"
-                                      type="number"
-                                      value={edu.endYear || ""}
-                                      onChange={(e) =>
-                                          setPortfolio((prev) => {
-                                            const copy = [...(prev?.education || [])]
-                                            copy[i].endYear = Number(e.target.value)
-                                            return { ...prev!, education: copy }
-                                          })
-                                      }
-                                      className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <h5 className="font-medium text-accent-foreground">
-                                    Attach Files (transcripts, certificates, etc.)
-                                  </h5>
-                                  <FileUpload
-                                      section="education"
-                                      attachments={edu.attachments ?? []}
-                                      onAttachmentsChange={(newAttachments) => {
-                                        const copy = [...(portfolio?.education || [])]
-                                        copy[i].attachments = newAttachments
-                                        setPortfolio((prev) => ({ ...prev!, education: copy }))
-                                      }}
-                                  />
-                                  {edu.attachments && edu.attachments.length > 0 && (
-                                      <div className="flex flex-wrap gap-2">
-                                        {edu.attachments.map((file) => (
-                                            <div
-                                                key={file.id}
-                                                className="flex items-center gap-2 px-3 py-2 bg-background rounded-xl border"
-                                            >
-                                              {file.type.startsWith("image/") ? (
-                                                  <ImageIcon className="h-4 w-4 text-blue-500" />
-                                              ) : (
-                                                  <FileText className="h-4 w-4 text-green-500" />
-                                              )}
-                                              <span className="text-sm truncate max-w-32">{file.name}</span>
-                                              <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={() => handleFileRemove("education", i, file.id)}
-                                                  className="h-6 w-6 p-0"
-                                              >
-                                                <X className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                        ))}
-                                      </div>
-                                  )}
+                                  <div className="space-y-1">
+                                    <Input
+                                        placeholder="Start Year"
+                                        type="number"
+                                        value={edu.startYear || ""}
+                                        onChange={(e) =>
+                                            setPortfolio((prev) => {
+                                              const copy = [...(prev?.education || [])]
+                                              copy[i].startYear = Number(e.target.value)
+                                              return { ...prev!, education: copy }
+                                            })
+                                        }
+                                        className={`rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500 ${
+                                            validationErrors[`education-${i}-start`] ? "border-destructive" : ""
+                                        }`}
+                                    />
+                                    {validationErrors[`education-${i}-start`] && (
+                                        <div className="flex items-center gap-1 text-destructive text-xs">
+                                          <AlertCircle className="h-3 w-3" />
+                                          {validationErrors[`education-${i}-start`]}
+                                        </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                        placeholder="End Year (or leave empty if current)"
+                                        type="number"
+                                        value={edu.endYear || ""}
+                                        onChange={(e) =>
+                                            setPortfolio((prev) => {
+                                              const copy = [...(prev?.education || [])]
+                                              copy[i].endYear = Number(e.target.value)
+                                              return { ...prev!, education: copy }
+                                            })
+                                        }
+                                        className={`rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500 ${
+                                            validationErrors[`education-${i}-end`] ? "border-destructive" : ""
+                                        }`}
+                                    />
+                                    {validationErrors[`education-${i}-end`] && (
+                                        <div className="flex items-center gap-1 text-destructive text-xs">
+                                          <AlertCircle className="h-3 w-3" />
+                                          {validationErrors[`education-${i}-end`]}
+                                        </div>
+                                    )}
+                                  </div>
                                 </div>
                               </motion.div>
                           ))}
-                          {/* ... existing editing code ... */}
                           <Button
                               onClick={() =>
                                   setPortfolio((prev) => ({
@@ -1131,7 +1047,6 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                   </div>
                 </motion.div>
 
-                {/* Certifications */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1194,70 +1109,49 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                       }}
                                       className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                   />
-                                  <Input
-                                      placeholder="Issue Date (YYYY-MM-DD)"
-                                      value={cert.issuedAt || ""}
-                                      onChange={(e) => {
-                                        const copy = [...(portfolio?.certifications || [])]
-                                        copy[i].issuedAt = e.target.value
-                                        setPortfolio((prev) => ({ ...prev!, certifications: copy }))
-                                      }}
-                                      className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                                  />
-                                  <Input
-                                      placeholder="Expiry Date (optional)"
-                                      value={cert.expiresAt || ""}
-                                      onChange={(e) => {
-                                        const copy = [...(portfolio?.certifications || [])]
-                                        copy[i].expiresAt = e.target.value
-                                        setPortfolio((prev) => ({ ...prev!, certifications: copy }))
-                                      }}
-                                      className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <h5 className="font-medium text-accent-foreground">
-                                    Attach Files (certificates, badges, etc.)
-                                  </h5>
-                                  <FileUpload
-                                      section="certifications"
-                                      attachments={cert.attachments ?? []}
-                                      onAttachmentsChange={(newAttachments) => {
-                                        const copy = [...(portfolio?.certifications || [])]
-                                        copy[i].attachments = newAttachments
-                                        setPortfolio((prev) => ({ ...prev!, certifications: copy }))
-                                      }}
-                                      maxFiles={5}
-                                  />
-                                  {cert.attachments && cert.attachments.length > 0 && (
-                                      <div className="flex flex-wrap gap-2">
-                                        {cert.attachments.map((file) => (
-                                            <div
-                                                key={file.id}
-                                                className="flex items-center gap-2 px-3 py-2 bg-background rounded-xl border"
-                                            >
-                                              {file.type.startsWith("image/") ? (
-                                                  <ImageIcon className="h-4 w-4 text-blue-500" />
-                                              ) : (
-                                                  <FileText className="h-4 w-4 text-green-500" />
-                                              )}
-                                              <span className="text-sm truncate max-w-32">{file.name}</span>
-                                              <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={() => handleFileRemove("certifications", i, file.id)}
-                                                  className="h-6 w-6 p-0"
-                                              >
-                                                <X className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                        ))}
-                                      </div>
-                                  )}
+                                  <div className="space-y-1">
+                                    <Input
+                                        placeholder="Issue Date (YYYY-MM-DD)"
+                                        value={cert.issuedAt || ""}
+                                        onChange={(e) => {
+                                          const copy = [...(portfolio?.certifications || [])]
+                                          copy[i].issuedAt = e.target.value
+                                          setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                                        }}
+                                        className={`rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500 ${
+                                            validationErrors[`cert-${i}-issued`] ? "border-destructive" : ""
+                                        }`}
+                                    />
+                                    {validationErrors[`cert-${i}-issued`] && (
+                                        <div className="flex items-center gap-1 text-destructive text-xs">
+                                          <AlertCircle className="h-3 w-3" />
+                                          {validationErrors[`cert-${i}-issued`]}
+                                        </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                        placeholder="Expiry Date (optional)"
+                                        value={cert.expiresAt || ""}
+                                        onChange={(e) => {
+                                          const copy = [...(portfolio?.certifications || [])]
+                                          copy[i].expiresAt = e.target.value
+                                          setPortfolio((prev) => ({ ...prev!, certifications: copy }))
+                                        }}
+                                        className={`rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500 ${
+                                            validationErrors[`cert-${i}-expires`] ? "border-destructive" : ""
+                                        }`}
+                                    />
+                                    {validationErrors[`cert-${i}-expires`] && (
+                                        <div className="flex items-center gap-1 text-destructive text-xs">
+                                          <AlertCircle className="h-3 w-3" />
+                                          {validationErrors[`cert-${i}-expires`]}
+                                        </div>
+                                    )}
+                                  </div>
                                 </div>
                               </motion.div>
                           ))}
-                          {/* ... existing editing code ... */}
                           <Button
                               onClick={() =>
                                   setPortfolio((prev) => ({

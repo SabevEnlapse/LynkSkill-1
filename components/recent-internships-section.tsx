@@ -1,13 +1,13 @@
 "use client"
 
-import {motion} from "framer-motion"
-import {useEffect, useState, useCallback} from "react"
-import type {Internship} from "@/app/types"
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
-import {CardSkeleton} from "@/components/card-skeleton"
+import { motion } from "framer-motion"
+import { useEffect, useState, useCallback } from "react"
+import type { Internship } from "@/app/types"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardSkeleton } from "@/components/card-skeleton"
 import InternshipDetailsModal from "@/components/internship-details-modal"
-import {Input} from "@/components/ui/input"
+import { Input } from "@/components/ui/input"
 import {
     Layers,
     Clock,
@@ -26,7 +26,8 @@ import {
     XCircle,
     Clock3,
     ArrowRight,
-    Sparkles, Calendar,
+    Sparkles,
+    Calendar,
 } from "lucide-react"
 import ApplyButton from "@/components/ApplyBtn"
 
@@ -39,9 +40,10 @@ interface Application {
 
 interface RecentAppsSectionProps {
     userType: "Student" | "Company"
+    setActiveTab?: (tab: string) => void
 }
 
-export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
+export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsSectionProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
 
@@ -55,7 +57,7 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
 
-    const sectionTitle = userType === "Company" ? "My Recent Internships" : "Recent Internships"
+    const [displayCount, setDisplayCount] = useState(4)
 
     const loadData = useCallback(async () => {
         try {
@@ -109,26 +111,28 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
             })
             : filteredInternships
 
+    const displayedInternships = finalInternships.slice(0, displayCount)
+    const hasMore = displayCount < finalInternships.length
+
     return (
         <section className="space-y-8">
-            <div
-                className="relative overflow-hidden rounded-3xl p-10 backdrop-blur-sm shadow-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-blue-600/5 border border-border/50">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/5 to-blue-600/10"/>
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"/>
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"/>
+            <div className="relative overflow-hidden rounded-3xl p-10 backdrop-blur-sm shadow-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-blue-600/5 border border-border/50">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/5 to-blue-600/10" />
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
 
-                <div
-                    className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                     <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                            <div
-                                className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm shadow-lg">
-                                <Briefcase className="h-7 w-7 text-purple-600 dark:text-purple-400"/>
+                            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm shadow-lg">
+                                <Briefcase className="h-7 w-7 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h2 className="text-4xl font-bold text-foreground">{sectionTitle}</h2>
+                            <h2 className="text-4xl font-bold text-foreground">
+                                {userType === "Company" ? "My Recent Internships" : "Recent Internships"}
+                            </h2>
                         </div>
                         <p className="text-muted-foreground text-lg font-medium flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400"/>
+                            <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             {finalInternships.length} {finalInternships.length === 1 ? "opportunity" : "opportunities"} available
                         </p>
                     </div>
@@ -137,7 +141,7 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                         className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
                     >
                         View All
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform"/>
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                 </div>
             </div>
@@ -150,7 +154,7 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                         className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                         onClick={() => setFilter("all")}
                     >
-                        <Layers className="mr-2 h-5 w-5"/>
+                        <Layers className="mr-2 h-5 w-5" />
                         All Internships
                     </Button>
 
@@ -160,15 +164,15 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                         className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                         onClick={() => setFilter("recent")}
                     >
-                        <Clock className="mr-2 h-5 w-5"/>
+                        <Clock className="mr-2 h-5 w-5" />
                         Recent
                     </Button>
                 </div>
 
-                <div className="flex-1"/>
+                <div className="flex-1" />
 
                 <div className="relative w-full md:w-[320px]">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Search internships..."
@@ -185,7 +189,7 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
                     disabled={refreshing || isLoading}
                     className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg bg-transparent"
                 >
-                    <RefreshCw className={`mr-2 h-5 w-5 ${refreshing ? "animate-spin" : ""}`}/>
+                    <RefreshCw className={`mr-2 h-5 w-5 ${refreshing ? "animate-spin" : ""}`} />
                     {refreshing ? "Refreshing..." : "Refresh"}
                 </Button>
             </div>
@@ -193,278 +197,284 @@ export function RecentInternshipsSection({userType}: RecentAppsSectionProps) {
             {finalInternships.length === 0 && !isLoading ? (
                 <div className="text-center py-20">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 mb-6">
-                        <Search className="h-10 w-10 text-muted-foreground"/>
+                        <Search className="h-10 w-10 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground text-xl font-medium">No internships found.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {isLoading
-                        ? Array.from({length: 8}).map((_, i) => <CardSkeleton key={i}/>)
-                        : finalInternships.map((item) => {
-                            const app = applications.find((a) => a.internshipId === item.id)
+                <>
+                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {isLoading
+                            ? Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)
+                            : displayedInternships.map((item) => {
+                                const app = applications.find((a) => a.internshipId === item.id)
 
-                            return (
-                                <motion.div
-                                    key={item.id}
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{duration: 0.4}}
-                                    whileHover={{
-                                        scale: 1.03,
-                                        y: -8,
-                                        transition: {duration: 0.3, ease: "easeOut"},
-                                    }}
-                                    whileTap={{scale: 0.98}}
-                                    className="group"
-                                >
-                                    <Card
-                                        className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-border hover:border-purple-500/50 transition-all duration-500 h-full bg-gradient-to-br from-card via-card to-card/95 shadow-lg hover:shadow-2xl backdrop-blur-sm">
-                                        <div
-                                            className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"/>
-                                        <div
-                                            className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"/>
+                                return (
+                                    <motion.div
+                                        key={item.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.4 }}
+                                        whileHover={{
+                                            scale: 1.03,
+                                            y: -8,
+                                            transition: { duration: 0.3, ease: "easeOut" },
+                                        }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="group"
+                                    >
+                                        <Card className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-border hover:border-purple-500/50 transition-all duration-500 h-full bg-gradient-to-br from-card via-card to-card/95 shadow-lg hover:shadow-2xl backdrop-blur-sm">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                        <CardHeader className="pb-4 pt-6 px-6 relative z-10">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div
-                                                    className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                                                    {userType === "Company" ? (
-                                                        <Building2 className="h-7 w-7 text-white"/>
-                                                    ) : (
-                                                        <Briefcase className="h-7 w-7 text-white"/>
+                                            <CardHeader className="pb-4 pt-6 px-6 relative z-10">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                        {userType === "Company" ? (
+                                                            <Building2 className="h-7 w-7 text-white" />
+                                                        ) : (
+                                                            <Briefcase className="h-7 w-7 text-white" />
+                                                        )}
+                                                    </div>
+                                                    {userType === "Company" && (
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.15 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={async () => {
+                                                                const confirm = window.confirm("Are you sure you want to delete this internship?")
+                                                                if (!confirm) return
+
+                                                                try {
+                                                                    const res = await fetch("/api/internships", {
+                                                                        method: "DELETE",
+                                                                        headers: {
+                                                                            "Content-Type": "application/json",
+                                                                        },
+                                                                        body: JSON.stringify({ id: item.id }),
+                                                                    })
+                                                                    const data = await res.json()
+                                                                    if (data.error) throw new Error(data.error)
+
+                                                                    window.dispatchEvent(
+                                                                        new CustomEvent("internshipDeleted", {
+                                                                            detail: item.id,
+                                                                        }),
+                                                                    )
+                                                                } catch (err) {
+                                                                    console.error(err)
+                                                                }
+                                                            }}
+                                                            className="p-2.5 rounded-xl cursor-pointer bg-destructive/10 hover:bg-destructive/20 transition-all duration-200 shadow-md hover:shadow-lg"
+                                                        >
+                                                            <Trash2 className="w-5 h-5 text-destructive" />
+                                                        </motion.button>
                                                     )}
                                                 </div>
-                                                {userType === "Company" && (
-                                                    <motion.button
-                                                        whileHover={{scale: 1.15}}
-                                                        whileTap={{scale: 0.9}}
-                                                        onClick={async () => {
-                                                            const confirm = window.confirm("Are you sure you want to delete this internship?")
-                                                            if (!confirm) return
+                                            </CardHeader>
 
-                                                            try {
-                                                                const res = await fetch("/api/internships", {
-                                                                    method: "DELETE",
-                                                                    headers: {
-                                                                        "Content-Type": "application/json",
-                                                                    },
-                                                                    body: JSON.stringify({id: item.id}),
-                                                                })
-                                                                const data = await res.json()
-                                                                if (data.error) throw new Error(data.error)
+                                            <CardContent className="flex-1 flex flex-col w-full gap-4 break-words relative z-10 px-6">
+                                                <CardTitle className="text-xl font-bold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 leading-tight">
+                                                    {item.title}
+                                                </CardTitle>
+                                                <CardDescription className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                                                    {item.description}
+                                                </CardDescription>
 
-                                                                window.dispatchEvent(
-                                                                    new CustomEvent("internshipDeleted", {
-                                                                        detail: item.id,
-                                                                    }),
-                                                                )
-                                                            } catch (err) {
-                                                                console.error(err)
-                                                            }
-                                                        }}
-                                                        className="p-2.5 rounded-xl cursor-pointer bg-destructive/10 hover:bg-destructive/20 transition-all duration-200 shadow-md hover:shadow-lg"
-                                                    >
-                                                        <Trash2 className="w-5 h-5 text-destructive"/>
-                                                    </motion.button>
-                                                )}
-                                            </div>
-                                        </CardHeader>
-
-                                        <CardContent
-                                            className="flex-1 flex flex-col w-full gap-4 break-words relative z-10 px-6">
-                                            <CardTitle
-                                                className="text-xl font-bold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 leading-tight">
-                                                {item.title}
-                                            </CardTitle>
-                                            <CardDescription
-                                                className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                                                {item.description}
-                                            </CardDescription>
-
-                                            <div className="mt-2 space-y-2.5 text-sm">
-                                                <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                    <div className="p-1.5 rounded-lg bg-purple-500/10">
-                                                        <MapPin
-                                                            className="h-4 w-4 text-purple-600 dark:text-purple-400"/>
-                                                    </div>
-                                                    <span className="font-semibold">{item.location}</span>
-                                                </div>
-                                                {item.qualifications && (
-                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                        <div className="p-1.5 rounded-lg bg-blue-500/10">
-                                                            <GraduationCap
-                                                                className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
-                                                        </div>
-                                                        <span className="line-clamp-1">{item.qualifications}</span>
-                                                    </div>
-                                                )}
-                                                {item.paid && (
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="p-1.5 rounded-lg bg-green-500/10">
-                                                            <DollarSign
-                                                                className="h-4 w-4 text-green-600 dark:text-green-400"/>
-                                                        </div>
-                                                        <span className="font-bold text-green-600 dark:text-green-400">
-                                                            ${item.salary ?? "Negotiable"}
-                                                          </span>
-                                                    </div>
-                                                )}
-                                                {item.duration && (
+                                                <div className="mt-2 space-y-2.5 text-sm">
                                                     <div className="flex items-center gap-2.5 text-muted-foreground">
                                                         <div className="p-1.5 rounded-lg bg-purple-500/10">
-                                                            <Timer
-                                                                className="h-4 w-4 text-purple-600 dark:text-purple-400"/>
+                                                            <MapPin className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                                                         </div>
-                                                        <span>{item.duration}</span>
+                                                        <span className="font-semibold">{item.location}</span>
                                                     </div>
-                                                )}
-                                                {item.grade && (
-                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                        <div className="p-1.5 rounded-lg bg-blue-500/10">
-                                                            <BookOpen
-                                                                className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
-                                                        </div>
-                                                        <span>Grade: {item.grade}</span>
-                                                    </div>
-                                                )}
-                                                {item.skills && (
-                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                        <div className="p-1.5 rounded-lg bg-purple-500/10">
-                                                            <Wrench
-                                                                className="h-4 w-4 text-purple-600 dark:text-purple-400"/>
-                                                        </div>
-                                                        <span className="line-clamp-1">{item.skills}</span>
-                                                    </div>
-                                                )}
-                                                {item.applicationStart && item.applicationEnd && (
-                                                    <div className="space-y-2 mt-4">
-                                                        {/* Dates row */}
-                                                        <div
-                                                            className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    {item.qualifications && (
+                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
                                                             <div className="p-1.5 rounded-lg bg-blue-500/10">
-                                                                <Calendar
-                                                                    className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
+                                                                <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                             </div>
-                                                            <span className="font-medium">
-                                                            {new Date(item.applicationStart).toLocaleDateString()} –{" "}
-                                                                {new Date(item.applicationEnd).toLocaleDateString()}
-                                                          </span>
+                                                            <span className="line-clamp-1">{item.qualifications}</span>
                                                         </div>
-
-                                                        {/* Progress bar */}
-                                                        {(() => {
-                                                            const start = new Date(item.applicationStart).getTime()
-                                                            const end = new Date(item.applicationEnd).getTime()
-                                                            const now = Date.now()
-                                                            const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-
-                                                            return (
-                                                                <div
-                                                                    className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                                                    <div
-                                                                        className={`h-full ${progress < 70 ? "bg-blue-500" : progress < 100 ? "bg-yellow-500" : "bg-red-500"}`}
-                                                                        style={{width: `${progress}%`}}
-                                                                    />
-                                                                </div>
-                                                            )
-                                                        })()}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-
-                                        <CardFooter
-                                            className="w-full flex justify-between items-center gap-3 p-6 relative z-10 border-t border-border/50">
-                                            {userType === "Student" ? (
-                                                <div className="flex gap-3 w-full">
-                                                    {app ? (
-                                                        <Button
-                                                            disabled
-                                                            size="lg"
-                                                            className="flex-1 rounded-2xl py-6 font-bold shadow-lg cursor-not-allowed"
-                                                            variant={
-                                                                app.status === "APPROVED"
-                                                                    ? "default"
-                                                                    : app.status === "REJECTED"
-                                                                        ? "destructive"
-                                                                        : "outline"
-                                                            }
-                                                        >
-                                                            {app.status === "PENDING" && (
-                                                                <>
-                                                                    <Clock3 className="mr-2 h-5 w-5"/>
-                                                                    Applied
-                                                                </>
-                                                            )}
-                                                            {app.status === "APPROVED" && (
-                                                                <>
-                                                                    <CheckCircle2 className="mr-2 h-5 w-5"/>
-                                                                    Approved
-                                                                </>
-                                                            )}
-                                                            {app.status === "REJECTED" && (
-                                                                <>
-                                                                    <XCircle className="mr-2 h-5 w-5"/>
-                                                                    Rejected
-                                                                </>
-                                                            )}
-                                                        </Button>
-                                                    ) : (
-                                                        <ApplyButton
-                                                            internshipId={item.id}
-                                                            onApplied={() => {
-                                                                fetch("/api/applications/me")
-                                                                    .then((res) => res.json())
-                                                                    .then((data) => setApplications(data))
-                                                                    .catch((err) => console.error(err))
-                                                            }}
-                                                        />
                                                     )}
+                                                    {item.paid && (
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="p-1.5 rounded-lg bg-green-500/10">
+                                                                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                                            </div>
+                                                            <span className="font-bold text-green-600 dark:text-green-400">
+                                  ${item.salary ?? "Negotiable"}
+                                </span>
+                                                        </div>
+                                                    )}
+                                                    {item.duration && (
+                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                            <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                                <Timer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                            </div>
+                                                            <span>{item.duration}</span>
+                                                        </div>
+                                                    )}
+                                                    {item.grade && (
+                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                            <div className="p-1.5 rounded-lg bg-blue-500/10">
+                                                                <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                            </div>
+                                                            <span>Grade: {item.grade}</span>
+                                                        </div>
+                                                    )}
+                                                    {item.skills && (
+                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                            <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                                <Wrench className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                            </div>
+                                                            <span className="line-clamp-1">{item.skills}</span>
+                                                        </div>
+                                                    )}
+                                                    {item.applicationStart && item.applicationEnd && (
+                                                        <div className="space-y-2 mt-4">
+                                                            {/* Dates row */}
+                                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                <div className="p-1.5 rounded-lg bg-blue-500/10">
+                                                                    <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                                </div>
+                                                                <span className="font-medium">
+                                    {new Date(item.applicationStart).toLocaleDateString()} –{" "}
+                                                                    {new Date(item.applicationEnd).toLocaleDateString()}
+                                  </span>
+                                                            </div>
 
-                                                    {!app && (
-                                                        <Button
-                                                            size="lg"
-                                                            variant="outline"
-                                                            className="flex-1 rounded-2xl  font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl border-2 hover:border-purple-500 group bg-transparent"
-                                                            onClick={() => {
-                                                                setSelectedInternship(item)
-                                                                setOpen(true)
-                                                            }}
-                                                        >
-                                                            Details
-                                                            <ArrowRight
-                                                                className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform"/>
-                                                        </Button>
+                                                            {/* Progress bar */}
+                                                            {(() => {
+                                                                const start = new Date(item.applicationStart).getTime()
+                                                                const end = new Date(item.applicationEnd).getTime()
+                                                                const now = Date.now()
+                                                                const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+
+                                                                return (
+                                                                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className={`h-full ${progress < 70 ? "bg-blue-500" : progress < 100 ? "bg-yellow-500" : "bg-red-500"}`}
+                                                                            style={{ width: `${progress}%` }}
+                                                                        />
+                                                                    </div>
+                                                                )
+                                                            })()}
+                                                        </div>
                                                     )}
                                                 </div>
-                                            ) : (
-                                                <Button
-                                                    size="lg"
-                                                    className="w-full rounded-2xl py-6 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
-                                                    onClick={() => {
-                                                        setSelectedInternship(item)
-                                                        setOpen(true)
-                                                    }}
-                                                >
-                                                    Manage
-                                                    <ArrowRight
-                                                        className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform"/>
-                                                </Button>
-                                            )}
-                                        </CardFooter>
-                                    </Card>
+                                            </CardContent>
 
-                                    <InternshipDetailsModal
-                                        open={open}
-                                        onClose={() => setOpen(false)}
-                                        internshipId={selectedInternship?.id || null} // ✅ pass ID, not object
-                                    />
+                                            <CardFooter className="w-full flex justify-between items-center gap-3 p-6 relative z-10 border-t border-border/50">
+                                                {userType === "Student" ? (
+                                                    <div className="flex gap-3 w-full">
+                                                        {app ? (
+                                                            <Button
+                                                                disabled
+                                                                size="lg"
+                                                                className="flex-1 rounded-2xl py-6 font-bold shadow-lg cursor-not-allowed"
+                                                                variant={
+                                                                    app.status === "APPROVED"
+                                                                        ? "default"
+                                                                        : app.status === "REJECTED"
+                                                                            ? "destructive"
+                                                                            : "outline"
+                                                                }
+                                                            >
+                                                                {app.status === "PENDING" && (
+                                                                    <>
+                                                                        <Clock3 className="mr-2 h-5 w-5" />
+                                                                        Applied
+                                                                    </>
+                                                                )}
+                                                                {app.status === "APPROVED" && (
+                                                                    <>
+                                                                        <CheckCircle2 className="mr-2 h-5 w-5" />
+                                                                        Approved
+                                                                    </>
+                                                                )}
+                                                                {app.status === "REJECTED" && (
+                                                                    <>
+                                                                        <XCircle className="mr-2 h-5 w-5" />
+                                                                        Rejected
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        ) : (
+                                                            <ApplyButton
+                                                                internshipId={item.id}
+                                                                goToPortfolioTab={() => setActiveTab?.("apps")} // 👈 Switches to Portfolio tab
+                                                                onApplied={() => {
+                                                                    fetch("/api/applications/me")
+                                                                        .then((res) => res.json())
+                                                                        .then((data) => setApplications(data))
+                                                                        .catch((err) => console.error(err))
+                                                                }}
+                                                            />
+                                                        )}
 
-                                </motion.div>
-                            )
-                        })}
-                </div>
+                                                        {!app && (
+                                                            <Button
+                                                                size="lg"
+                                                                variant="outline"
+                                                                className="flex-1 rounded-2xl  font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl border-2 hover:border-purple-500 group bg-transparent"
+                                                                onClick={() => {
+                                                                    setSelectedInternship(item)
+                                                                    setOpen(true)
+                                                                }}
+                                                            >
+                                                                Details
+                                                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        size="lg"
+                                                        className="w-full rounded-2xl py-6 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
+                                                        onClick={() => {
+                                                            setSelectedInternship(item)
+                                                            setOpen(true)
+                                                        }}
+                                                    >
+                                                        Manage
+                                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                                    </Button>
+                                                )}
+                                            </CardFooter>
+                                        </Card>
+
+                                        <InternshipDetailsModal
+                                            open={open}
+                                            onClose={() => setOpen(false)}
+                                            internshipId={selectedInternship?.id || null} // ✅ pass ID, not object
+                                        />
+                                    </motion.div>
+                                )
+                            })}
+                    </div>
+
+                    {hasMore && !isLoading && (
+                        <div className="flex justify-center gap-4 pt-6">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                onClick={() => setDisplayCount((prev) => prev + 4)}
+                                className="rounded-2xl px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-500 bg-transparent group"
+                            >
+                                See More
+                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+
+                            <Button
+                                size="lg"
+                                onClick={() => setDisplayCount(finalInternships.length)}
+                                className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
+                            >
+                                See All ({finalInternships.length})
+                                <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
         </section>
     )
