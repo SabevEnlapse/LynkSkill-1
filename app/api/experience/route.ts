@@ -4,10 +4,7 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import type { Experience } from "@prisma/client"
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function POST(req: Request) {
     try {
@@ -17,14 +14,44 @@ export async function POST(req: Request) {
         const student = await prisma.user.findUnique({
             where: { clerkId: userId },
         })
-        if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 })
+        if (!student || student.role !== "STUDENT") {
+            return NextResponse.json({ error: "Only students can upload experiences" }, { status: 403 })
+        }
 
         const formData = await req.formData()
         const companyId = formData.get("companyId") as string | null
+        const projectId = formData.get("projectId") as string | null
         const files = formData.getAll("files").filter((f): f is File => f instanceof File)
 
-        if (!companyId || files.length === 0) {
-            return NextResponse.json({ error: "Missing companyId or files" }, { status: 400 })
+        if (!companyId || !projectId || files.length === 0) {
+            return NextResponse.json({ error: "Missing companyId, projectId, or files" }, { status: 400 })
+        }
+
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            include: {
+                application: true,
+                internship: true,
+            },
+        })
+
+        if (!project) {
+            return NextResponse.json({ error: "Project not found" }, { status: 404 })
+        }
+
+        // Verify the project belongs to this student
+        if (project.studentId !== student.id) {
+            return NextResponse.json({ error: "You don't have access to this project" }, { status: 403 })
+        }
+
+        // Verify the project's company matches the selected company
+        if (project.companyId !== companyId) {
+            return NextResponse.json({ error: "Project doesn't belong to the selected company" }, { status: 400 })
+        }
+
+        // Verify the application is APPROVED
+        if (!project.application || project.application.status !== "APPROVED") {
+            return NextResponse.json({ error: "You can only upload experiences for approved applications" }, { status: 403 })
         }
 
         const uploadedUrls: string[] = []
@@ -53,7 +80,7 @@ export async function POST(req: Request) {
             uploadedUrls.push(fileUrl)
         }
 
-        // ✅ cache uploader info directly
+        // Cache uploader info directly
         const clerk = await currentUser()
         const uploaderName =
             clerk?.fullName || clerk?.username || clerk?.firstName || clerk?.emailAddresses[0]?.emailAddress || "Unknown"
@@ -63,6 +90,7 @@ export async function POST(req: Request) {
             data: {
                 studentId: student.id,
                 companyId,
+                projectId: projectId, // Store the project reference
                 mediaUrls: uploadedUrls,
                 status: "pending",
                 uploaderName,

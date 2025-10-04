@@ -21,8 +21,8 @@ model User {
   companies          Company[]     // companies owned by user
   applications       Application[] @relation("StudentApplications") // applications made by student
   portfolio          Portfolio?    // ✅ relation back to Portfolio
-  projects           Project[]     @relation("StudentProjects")     // ✅ student’s projects
-  experiences        Experience[]  // ✅ student’s experiences
+  projects           Project[]     @relation("StudentProjects")     // ✅ student's projects
+  experiences        Experience[]  // ✅ student's experiences
 }
 
 // ---------------------
@@ -41,7 +41,7 @@ model Company {
   projects    Project[]    // ✅ projects owned by this company
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  experiences        Experience[]  // ✅ student’s experiences
+  experiences        Experience[]  // ✅ student's experiences
 }
 
 // ---------------------
@@ -153,6 +153,8 @@ model Project {
 
   companyId     String
   company       Company      @relation(fields: [companyId], references: [id])
+
+  experiences   Experience[] // Added relation to Experience
 }
 
 // ---------------------
@@ -163,6 +165,7 @@ model Experience {
   id        String   @id @default(cuid())
   studentId String
   companyId String
+  projectId String? // Added projectId field to link to approved project
   mediaUrls String[] // Supabase storage file links
   status    String   @default("pending") // "pending" | "approved" | "rejected"
   grade     Int?     // 1–6 (given when approved)
@@ -173,6 +176,7 @@ model Experience {
 
   student User    @relation(fields: [studentId], references: [id])
   company Company @relation(fields: [companyId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id]) // Added relation to Project
 }
 
 
@@ -196,5 +200,3 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
 }
-
-

@@ -63,7 +63,12 @@ type Summary = {
   allRound: number
 }
 
-type Project = { id: string; name: string; companyId: string }
+type Project = {
+  id: string
+  title: string
+  description?: string
+  companyId: string
+}
 
 export default function ExperienceTabContent() {
   const { user } = useUser()
@@ -95,10 +100,23 @@ export default function ExperienceTabContent() {
   const [bulkScanProgress, setBulkScanProgress] = useState(0)
   const [bulkScanStatus, setBulkScanStatus] = useState<"idle" | "scanning" | "safe" | "danger">("idle")
 
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null)
+
   const handleDownloadClick = (url: string) => {
     setSelectedFile(url)
     setScanProgress(0)
     setScanStatus("idle")
+  }
+
+  const MAX_TOTAL_SIZE = 50 * 1024 * 1024
+
+  const validateFiles = (fileList: FileList) => {
+    const totalSize = Array.from(fileList).reduce((sum, file) => sum + file.size, 0)
+    if (totalSize > MAX_TOTAL_SIZE) {
+      setFileSizeError("Total file size cannot exceed 50 MB. Please remove some files.")
+      return false
+    }
+    return true
   }
 
   const startScan = () => {
@@ -109,7 +127,6 @@ export default function ExperienceTabContent() {
       setScanProgress(progress)
       if (progress >= 100) {
         clearInterval(interval)
-        // simulate safe/danger
         const safe = Math.random() > 0.1
         setScanStatus(safe ? "safe" : "danger")
       }
@@ -131,7 +148,6 @@ export default function ExperienceTabContent() {
       setBulkScanProgress(progress)
       if (progress >= 100) {
         clearInterval(interval)
-        // simulate safe/danger - bulk downloads are more likely to be safe
         const safe = Math.random() > 0.05
         setBulkScanStatus(safe ? "safe" : "danger")
       }
@@ -140,7 +156,6 @@ export default function ExperienceTabContent() {
 
   const confirmBulkDownload = () => {
     if (bulkDownloadExp && bulkScanStatus === "safe") {
-      // Download each file with a small delay to avoid browser blocking
       bulkDownloadExp.mediaUrls.forEach((url, index) => {
         setTimeout(() => {
           window.open(url, "_blank")
@@ -188,54 +203,54 @@ export default function ExperienceTabContent() {
 
   useEffect(() => {
     if (role !== "STUDENT") return
-    const fetchCompanies = async () => {
+    const fetchApprovedCompanies = async () => {
       try {
-        const res = await fetch("/api/companies")
-        if (!res.ok) throw new Error("Failed to load companies")
+        const res = await fetch("/api/companies/approved")
+        if (!res.ok) throw new Error("Failed to load approved companies")
         const data = await res.json()
         setCompanies(data)
       } catch (err) {
         console.error(err)
+        setCompanies([])
       }
     }
-    fetchCompanies()
+    fetchApprovedCompanies()
   }, [role])
 
   useEffect(() => {
     if (!companyId) {
       setProjects([])
-      setProjectsError(null)
+      setProjectId("")
       return
     }
 
-    const fetchProjects = async () => {
+    const fetchApprovedProjects = async () => {
       setProjectsLoading(true)
       setProjectsError(null)
-
       try {
-        const res = await fetch(`/api/projects?companyId=${companyId}`)
-
+        const res = await fetch(`/api/projects/approved?companyId=${companyId}`)
         if (!res.ok) {
-          throw new Error(`Failed to load projects (${res.status}): ${res.statusText}`)
+          const errorData = await res.json()
+          throw new Error(errorData.error || `Failed to load projects (${res.status})`)
         }
-
         const data = await res.json()
 
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid response format from API")
-        }
-
+        if (!Array.isArray(data)) throw new Error("Invalid response format")
         setProjects(data)
+
+        // Reset project selection when company changes
+        setProjectId("")
       } catch (err) {
-        console.error("Error fetching projects:", err)
+        console.error("Error fetching approved projects:", err)
         setProjectsError(err instanceof Error ? err.message : "Failed to load projects")
         setProjects([])
+        setProjectId("")
       } finally {
         setProjectsLoading(false)
       }
     }
 
-    fetchProjects()
+    fetchApprovedProjects()
   }, [companyId])
 
   const handleDrag = (e: React.DragEvent) => {
@@ -252,14 +267,20 @@ export default function ExperienceTabContent() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    if (e.dataTransfer.files?.[0]) {
-      setFiles(e.dataTransfer.files)
+    if (e.dataTransfer.files?.length) {
+      if (validateFiles(e.dataTransfer.files)) {
+        setFiles(e.dataTransfer.files)
+      }
     }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(e.target.files)
+      if (validateFiles(e.target.files)) {
+        setFiles(e.target.files)
+      } else {
+        e.target.value = ""
+      }
     }
   }
 
@@ -274,7 +295,10 @@ export default function ExperienceTabContent() {
   }
 
   const handleUpload = async () => {
-    if (!files || !companyId || !projectId) return alert("Please select company, project and files")
+    if (!files || !companyId || !projectId) {
+      alert("Please select company, project and files")
+      return
+    }
 
     setLoading(true)
     setUploadProgress(0)
@@ -293,7 +317,11 @@ export default function ExperienceTabContent() {
       clearInterval(progressInterval)
       setUploadProgress(100)
 
-      if (!res.ok) throw new Error("Upload failed")
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Upload failed")
+      }
+
       const newExp = await res.json()
       setExperiences((prev) => [newExp, ...prev])
       setFiles(null)
@@ -302,7 +330,7 @@ export default function ExperienceTabContent() {
       setUploadProgress(0)
     } catch (err) {
       console.error(err)
-      alert("Upload failed")
+      alert(err instanceof Error ? err.message : "Upload failed")
       setUploadProgress(0)
     } finally {
       setLoading(false)
@@ -471,78 +499,94 @@ export default function ExperienceTabContent() {
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5 text-[var(--experience-accent)]" />
-                    Select Company & Upload Files
+                    Select Company & Project
                   </CardTitle>
                   <CardDescription>
-                    Choose the company and upload images, videos, or documents related to your experience.
+                    Choose a company where you have an approved application, then select the project to upload your
+                    experience.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-3">
                     <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-[var(--experience-accent)]" />
-                      Company
+                      Company (Approved Applications Only)
                     </label>
-                    <Select
-                        value={companyId}
-                        onValueChange={(value) => {
-                          setCompanyId(value)
-                          setProjectId("")
-                        }}
-                    >
-                      <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
-                        <div className="flex items-center gap-3 w-full">
-                          <SelectValue placeholder="Select a company..." className="text-left flex-1" />
+                    {companies.length === 0 ? (
+                        <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
+                          <p className="text-sm text-muted-foreground">
+                            No approved companies yet. Apply to internships and wait for approval to upload experiences.
+                          </p>
                         </div>
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
-                        {companies.map((c) => (
-                            <SelectItem
-                                key={c.id}
-                                value={c.id}
-                                className="rounded-xl my-1 mx-1 px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 focus:bg-gradient-to-r focus:from-purple-500/10 focus:to-blue-500/10 transition-all"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20">
-                                  <Building2 className="h-3.5 w-3.5 text-purple-500" />
-                                </div>
-                                <span className="font-medium">{c.name}</span>
-                              </div>
-                            </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    ) : (
+                        <Select
+                            value={companyId}
+                            onValueChange={(value) => {
+                              setCompanyId(value)
+                              setProjectId("")
+                            }}
+                        >
+                          <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
+                            <div className="flex items-center gap-3 w-full">
+                              <SelectValue placeholder="Select an approved company..." className="text-left flex-1" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
+                            {companies.map((c) => (
+                                <SelectItem
+                                    key={c.id}
+                                    value={c.id}
+                                    className="rounded-xl my-1 mx-1 px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 focus:bg-gradient-to-r focus:from-purple-500/10 focus:to-blue-500/10 transition-all"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+                                      <Building2 className="h-3.5 w-3.5 text-purple-500" />
+                                    </div>
+                                    <span className="font-medium">{c.name}</span>
+                                  </div>
+                                </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                    )}
                   </div>
 
                   {companyId && (
                       <div className="space-y-3">
                         <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                           <Layers className="h-4 w-4 text-[var(--experience-accent)]" />
-                          Project
+                          Project (From Approved Applications)
                         </label>
-                        <Select value={projectId} onValueChange={(value) => setProjectId(value)} disabled={projectsLoading}>
-                          <SelectTrigger
-                              className={`w-full h-auto rounded-2xl border-2 bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group disabled:opacity-50 disabled:cursor-not-allowed ${
-                                  projectsError ? "border-red-500 hover:border-red-500" : "border-[var(--experience-step-border)]"
-                              }`}
-                          >
-                            <div className="flex items-center gap-3 w-full">
-                              <SelectValue
-                                  placeholder={
-                                    projectsLoading
-                                        ? "Loading projects..."
-                                        : projectsError
-                                            ? "Error loading projects"
-                                            : "Select a project..."
-                                  }
-                                  className="text-left flex-1"
-                              />
+                        {projectsLoading ? (
+                            <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
+                              <div className="flex items-center gap-2">
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--experience-accent)]/30 border-t-[var(--experience-accent)]" />
+                                <p className="text-sm text-muted-foreground">Loading approved projects...</p>
+                              </div>
                             </div>
-                          </SelectTrigger>
-                          <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
-                            {!projectsLoading &&
-                                !projectsError &&
-                                projects.map((p) => (
+                        ) : projectsError ? (
+                            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                              <div className="flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                                <p className="text-sm text-red-500 font-medium">{projectsError}</p>
+                              </div>
+                            </div>
+                        ) : projects.length === 0 ? (
+                            <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
+                              <p className="text-sm text-muted-foreground">
+                                No approved projects found for this company. Projects are created when your application is
+                                approved.
+                              </p>
+                            </div>
+                        ) : (
+                            <Select value={projectId} onValueChange={(value) => setProjectId(value)}>
+                              <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
+                                <div className="flex items-center gap-3 w-full">
+                                  <SelectValue placeholder="Select a project..." className="text-left flex-1" />
+                                </div>
+                              </SelectTrigger>
+                              <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
+                                {projects.map((p) => (
                                     <SelectItem
                                         key={p.id}
                                         value={p.id}
@@ -552,21 +596,17 @@ export default function ExperienceTabContent() {
                                         <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20">
                                           <Layers className="h-3.5 w-3.5 text-purple-500" />
                                         </div>
-                                        <span className="font-medium">{p.name}</span>
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">{p.title}</span>
+                                          {p.description && (
+                                              <span className="text-xs text-muted-foreground line-clamp-1">{p.description}</span>
+                                          )}
+                                        </div>
                                       </div>
                                     </SelectItem>
                                 ))}
-                          </SelectContent>
-                        </Select>
-                        {projectsError && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
-                            >
-                              <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                              <p className="text-sm text-red-500 font-medium">{projectsError}</p>
-                            </motion.div>
+                              </SelectContent>
+                            </Select>
                         )}
                       </div>
                   )}
@@ -651,7 +691,7 @@ export default function ExperienceTabContent() {
                   {/* Upload Button */}
                   <Button
                       onClick={handleUpload}
-                      disabled={loading || !companyId || !files}
+                      disabled={loading || !companyId || !projectId || !files}
                       className="w-full rounded-2xl bg-[var(--experience-button-primary)] hover:bg-[var(--experience-button-primary-hover)] text-white py-3 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
@@ -1227,6 +1267,17 @@ export default function ExperienceTabContent() {
                     Download All
                   </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={!!fileSizeError} onOpenChange={() => setFileSizeError(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>File Size Limit Exceeded</DialogTitle>
+              <DialogDescription>{fileSizeError}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setFileSizeError(null)}>OK</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
