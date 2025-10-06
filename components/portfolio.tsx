@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useUser } from "@clerk/nextjs"
 import { FileUpload } from "@/components/file-upload"
+import { toast } from "sonner"
 import {
   User,
   Briefcase,
@@ -307,18 +308,30 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
+      toast.error("Please fix validation errors before saving")
       return
     }
 
     setValidationErrors({})
-    const res = await fetch("/api/portfolio", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(portfolio),
-    })
-    if (res.ok) {
-      setIsEditing(false)
-      setActiveSection(null)
+
+    try {
+      const res = await fetch("/api/portfolio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(portfolio),
+      })
+
+      if (res.ok) {
+        setIsEditing(false)
+        setActiveSection(null)
+        toast.success("Portfolio saved successfully!")
+      } else {
+        const data = await res.json()
+        toast.error(data.error || "Failed to save portfolio")
+      }
+    } catch (error) {
+      console.error("Save error:", error)
+      toast.error("Failed to save portfolio")
     }
   }
 
