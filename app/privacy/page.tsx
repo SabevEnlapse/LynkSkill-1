@@ -213,7 +213,7 @@ export default function PrivacyPage() {
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
                             We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new
-                            Privacy Policy on this page and updating the "Last updated" date.
+                            Privacy Policy on this page and updating the &quot;Last updated&quot; date.
                         </p>
                     </CardContent>
                 </Card>

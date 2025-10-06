@@ -106,9 +106,9 @@ export async function completeOnboarding(formData: FormData) {
             return { message: "Company created", createdCompanyId: createdCompany.id }
         }
         return { message: "Onboarding complete", dashboard: "/dashboard/student" }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("❌ completeOnboarding error:", err)
-        return { error: err.message || "Error completing onboarding" }
+        return { error: err instanceof Error ? err.message : "Error completing onboarding" }
     }
 }
 
