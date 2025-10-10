@@ -101,7 +101,11 @@ export default function OnboardingPage() {
             // Read body once, as text
             const raw = await res.text()
 
-            let data: any = null
+            interface EikValidationResponse {
+                valid: boolean | "true" | "false"
+                error?: string
+            }
+            let data: EikValidationResponse | null = null
             try {
                 data = JSON.parse(raw)
             } catch {
@@ -113,7 +117,7 @@ export default function OnboardingPage() {
 
             console.log("EIK API Response:", { ok: res.ok, data })
 
-            if (res.ok && (data.valid === true || data.valid === "true")) {
+            if (res.ok && data && (data.valid === true || data.valid === "true")) {
                 setCompanyValid(true)
                 setError("")
             } else {
