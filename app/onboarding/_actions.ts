@@ -21,10 +21,7 @@ export async function completeOnboarding(formData: FormData) {
 
         // Get Clerk user info
         const clerkUser = await clerkClient.users.getUser(userId)
-        const email =
-            clerkUser.emailAddresses.find(
-                (e) => e.id === clerkUser.primaryEmailAddressId
-            )?.emailAddress || ""
+        const email = clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress || ""
 
         // Ensure user exists and update onboarding state
         const user = await prisma.user.upsert({
@@ -42,13 +39,25 @@ export async function completeOnboarding(formData: FormData) {
         console.log("✅ User created/updated with role:", user.role)
 
         // --- STUDENT FLOW ---
+        // --- STUDENT FLOW ---
         if (role === "STUDENT") {
-            const dob = formData.get("dob") as string
-            const age = dob ? calculateAge(new Date(dob)) : null
-            const needsApproval = age !== null && age < 18
+            const dob = formData.get("dob") as string;
+            const age = dob ? calculateAge(new Date(dob)) : null;
 
-            await prisma.portfolio.create({
-                data: {
+            if (age !== null && age < 16) {
+                return { error: "You must be at least 16 years old to use this platform" };
+            }
+
+            const needsApproval = age !== null && age < 18;
+
+            const portfolio = await prisma.portfolio.upsert({
+                where: { studentId: user.id },
+                update: {
+                    age,
+                    approvalStatus: needsApproval ? "PENDING" : "APPROVED",
+                    needsApproval,
+                },
+                create: {
                     studentId: user.id,
                     age,
                     approvalStatus: needsApproval ? "PENDING" : "APPROVED",
@@ -61,10 +70,15 @@ export async function completeOnboarding(formData: FormData) {
                     projects: [],
                     certifications: [],
                 },
-            })
+            });
 
-            console.log("✅ Portfolio created for student")
-            return { message: "Student onboarding complete", dashboard: "/dashboard/student" }
+            console.log("✅ Portfolio created/updated for student:", portfolio.id);
+
+            return {
+                message: "Student portfolio created or updated",
+                createdPortfolioId: portfolio.id,
+                dashboard: "/dashboard/student",
+            };
         }
 
         // --- COMPANY FLOW ---

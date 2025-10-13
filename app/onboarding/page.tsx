@@ -19,12 +19,14 @@ import {
     MapPin,
     Globe,
     FileText,
+    Calendar,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { z } from "zod"
+import { StudentPolicyModal } from "@/components/student-policy-modal"
 import { CompanyPolicyModal } from "@/components/company-policy-modal"
+import { z } from "zod"
 
 const companySchema = z.object({
     companyEik: z
@@ -44,6 +46,12 @@ export default function OnboardingPage() {
     const [error, setError] = React.useState("")
     const [selectedRole, setSelectedRole] = React.useState<"student" | "company" | null>(null)
     const [createdCompanyId, setCreatedCompanyId] = React.useState<string | null>(null)
+    const [createdPortfolioId, setCreatedPortfolioId] = React.useState<string | null>(null)
+
+    const [showStudentPolicyModal, setShowStudentPolicyModal] = React.useState(false)
+    const [studentTosChecked, setStudentTosChecked] = React.useState(false)
+    const [studentPrivacyChecked, setStudentPrivacyChecked] = React.useState(false)
+    const [studentPolicyAccepted, setStudentPolicyAccepted] = React.useState(false)
 
     const [showPolicyModal, setShowPolicyModal] = React.useState(false)
     const [tosChecked, setTosChecked] = React.useState(false)
@@ -55,6 +63,10 @@ export default function OnboardingPage() {
     const [companyName, setCompanyName] = React.useState("")
     const [logoPreview, setLogoPreview] = React.useState<string | null>(null)
     const [isUploadingLogo, setIsUploadingLogo] = React.useState(false)
+
+    const [dob, setDob] = React.useState("")
+    const [ageValid, setAgeValid] = React.useState<boolean | null>(null)
+    const [calculatedAge, setCalculatedAge] = React.useState<number | null>(null)
 
     React.useEffect(() => {
         if (!isLoaded || !user) return
@@ -77,15 +89,61 @@ export default function OnboardingPage() {
         })()
     }, [isLoaded, user, router])
 
-    if (!isLoaded) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    <p className="text-muted-foreground font-medium">Loading your experience...</p>
-                </div>
-            </div>
-        )
+    const calculateAge = (birthDate: Date): number => {
+        const diff = Date.now() - birthDate.getTime()
+        const ageDt = new Date(diff)
+        return Math.abs(ageDt.getUTCFullYear() - 1970)
+    }
+
+    const handleDobChange = (value: string) => {
+        setDob(value)
+        setAgeValid(null)
+        setCalculatedAge(null)
+        setError("")
+
+        if (!value) return
+
+        const selectedDate = new Date(value)
+        const today = new Date()
+
+        // Check if date is in the future
+        if (selectedDate > today) {
+            setAgeValid(false)
+            setError("Date of birth cannot be in the future")
+            return
+        }
+
+        // Check if date is valid
+        if (isNaN(selectedDate.getTime())) {
+            setAgeValid(false)
+            setError("Please enter a valid date")
+            return
+        }
+
+        // Check if date is too far in the past (e.g., more than 100 years ago)
+        const hundredYearsAgo = new Date()
+        hundredYearsAgo.setFullYear(today.getFullYear() - 100)
+        if (selectedDate < hundredYearsAgo) {
+            setAgeValid(false)
+            setError("Please enter a valid date of birth")
+            return
+        }
+
+        try {
+            const age = calculateAge(selectedDate)
+            setCalculatedAge(age)
+
+            if (age < 16) {
+                setAgeValid(false)
+                setError("According to Bulgarian law, you must be at least 16 years old to use this platform")
+            } else {
+                setAgeValid(true)
+                setError("")
+            }
+        } catch (err) {
+            setAgeValid(false)
+            setError("Invalid date format")
+        }
     }
 
     const handleEikChange = async (value: string) => {
@@ -176,6 +234,68 @@ export default function OnboardingPage() {
         }
     }
 
+    const handleStudentProceedClick = async () => {
+        setError("")
+
+        if (!dob) {
+            setError("Please enter your date of birth")
+            return
+        }
+
+        if (!ageValid) {
+            setError("According to Bulgarian law, you must be at least 16 years old to use this platform")
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append("role", "student")
+            formData.append("dob", dob)
+
+            const res = await completeOnboarding(formData)
+
+            if (res?.createdPortfolioId) {
+                setCreatedPortfolioId(res.createdPortfolioId)
+                setShowStudentPolicyModal(true)
+            } else {
+                setError(res?.error || "Unknown error creating portfolio")
+            }
+        } catch (err) {
+            console.error(err)
+            setError("Error creating portfolio")
+        }
+    }
+
+    const handleAcceptStudentPolicies = async () => {
+        if (!createdPortfolioId) {
+            setError("Portfolio not created yet")
+            return
+        }
+
+        try {
+            const res = await fetch("/api/student/accept-policies", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    portfolioId: createdPortfolioId,
+                    tosAccepted: studentTosChecked,
+                    privacyAccepted: studentPrivacyChecked,
+                }),
+            })
+
+            if (!res.ok) {
+                const data = await res.json()
+                throw new Error(data.error || "Failed to accept policies")
+            }
+
+            setStudentPolicyAccepted(true)
+            setShowStudentPolicyModal(false)
+        } catch (err) {
+            console.error(err)
+            setError("Failed to accept policies")
+        }
+    }
+
     const handleProceedClick = async () => {
         setError("")
 
@@ -211,7 +331,6 @@ export default function OnboardingPage() {
                 "companyLocation",
                 document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value || "",
             )
-
 
             const res = await completeOnboarding(formData)
 
@@ -264,6 +383,11 @@ export default function OnboardingPage() {
         const formData = new FormData(e.currentTarget)
         const role = formData.get("role")
 
+        if (role === "student" && !studentPolicyAccepted) {
+            setError("You must accept the policy before continuing")
+            return
+        }
+
         if (role === "company" && !policyAccepted) {
             setError("You must accept the policy before continuing")
             return
@@ -293,14 +417,17 @@ export default function OnboardingPage() {
 
     const getProgressStep = () => {
         if (!selectedRole) return 0
-        if (selectedRole === "student") return 1
+        if (selectedRole === "student") {
+            if (!studentPolicyAccepted) return 1
+            return 2
+        }
         if (selectedRole === "company" && !policyAccepted) return 1
         if (policyAccepted) return 2
         return 1
     }
 
     const progressStep = getProgressStep()
-    const totalSteps = selectedRole === "company" ? 3 : 2
+    const totalSteps = selectedRole === "student" ? 3 : selectedRole === "company" ? 3 : 2
 
     const roles = [
         {
@@ -365,6 +492,8 @@ export default function OnboardingPage() {
 
                 <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-10">
                     <input type="hidden" name="role" value={selectedRole ?? ""} />
+                    <input type="hidden" name="dob" value={dob} />
+
                     <div className="space-y-4">
                         <div className="text-center space-y-2 mb-8">
                             <h2 className="text-2xl font-bold text-foreground">Select Your Role</h2>
@@ -416,6 +545,112 @@ export default function OnboardingPage() {
                         </div>
                     </div>
 
+                    {selectedRole === "student" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                            <div className="text-center space-y-2 mb-8">
+                                <h2 className="text-2xl font-bold text-foreground">Student Information</h2>
+                                <p className="text-muted-foreground">Provide your details to create your portfolio</p>
+                            </div>
+
+                            <Card className="shadow-2xl border-2 border-[var(--experience-step-border)] overflow-hidden">
+                                <CardHeader className="space-y-2 border-b border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-step-background)] to-transparent py-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-gradient-to-br from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] rounded-xl shadow-lg">
+                                            <GraduationCap className="w-6 h-6 text-[var(--experience-accent-foreground)]" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-2xl">Personal Details</CardTitle>
+                                            <CardDescription className="text-base">
+                                                All fields marked with <span className="text-purple-500"> * </span> are required
+                                            </CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+
+                                <CardContent className="space-y-8 pt-8 pb-8">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-5 h-5 text-[var(--experience-accent)]" />
+                                            <Label htmlFor="dob" className="text-lg font-bold flex items-center gap-2">
+                                                Date of Birth <span className="text-[var(--experience-error)]">*</span>
+                                            </Label>
+                                        </div>
+                                        <Input
+                                            id="dob"
+                                            type="date"
+                                            value={dob}
+                                            onChange={(e) => handleDobChange(e.target.value)}
+                                            required
+                                            min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split("T")[0]}
+                                            max={new Date().toISOString().split("T")[0]}
+                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                        />
+                                        {ageValid === true && calculatedAge !== null && (
+                                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--experience-success)]/10 to-green-50 dark:to-green-950/20 border-2 border-[var(--experience-success)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
+                                                <div className="p-2 bg-[var(--experience-success)]/20 rounded-full">
+                                                    <CheckCircle className="w-6 h-6 text-[var(--experience-success)] flex-shrink-0" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-[var(--experience-success)]">
+                                                        Age Verified: {calculatedAge} years old
+                                                    </p>
+                                                    <p className="text-xs text-[var(--experience-success)]/80">
+                                                        You meet the minimum age requirement
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {ageValid === false && (
+                                            <div className="flex items-center gap-3 p-4 bg-[var(--experience-error)]/10 border-2 border-[var(--experience-error)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
+                                                <div className="p-2 bg-[var(--experience-error)]/20 rounded-full">
+                                                    <XCircle className="w-6 h-6 text-[var(--experience-error)] flex-shrink-0" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-[var(--experience-error)]">Age Requirement Not Met</p>
+                                                    <p className="text-xs text-[var(--experience-error)]/80">
+                                                        According to Bulgarian law, you must be at least 16 years old to use this platform
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            According to Bulgarian law, you must be at least 16 years old to create an account
+                                        </p>
+                                    </div>
+
+                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+
+                                    {!studentPolicyAccepted && (
+                                        <Button
+                                            type="button"
+                                            onClick={handleStudentProceedClick}
+                                            disabled={!ageValid}
+                                            className="w-full h-14 text-base font-semibold bg-gradient-to-r from-[var(--experience-button-secondary)] to-[var(--experience-button-secondary-hover)] hover:from-[var(--experience-button-secondary-hover)] hover:to-[var(--experience-button-secondary)] shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            variant="secondary"
+                                        >
+                                            <Shield className="mr-2 w-5 h-5" />
+                                            Proceed to Policy Agreement
+                                        </Button>
+                                    )}
+
+                                    {studentPolicyAccepted && (
+                                        <div className="flex items-center gap-4 p-5 bg-gradient-to-br from-[var(--experience-success)]/10 via-green-50 to-emerald-50 dark:from-[var(--experience-success)]/20 dark:via-green-950/20 dark:to-emerald-950/20 border-2 border-[var(--experience-success)]/30 rounded-2xl shadow-lg animate-in fade-in zoom-in duration-500">
+                                            <div className="p-3 bg-gradient-to-br from-[var(--experience-success)] to-green-600 rounded-xl shadow-lg">
+                                                <CheckCircle className="w-7 h-7 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-base text-[var(--experience-success)] font-bold">Policy Accepted</p>
+                                                <p className="text-sm text-[var(--experience-success)]/80">
+                                                    You&apos;re ready to complete your registration
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
                     {selectedRole === "company" && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
                             <div className="text-center space-y-2 mb-8">
@@ -431,7 +666,9 @@ export default function OnboardingPage() {
                                         </div>
                                         <div>
                                             <CardTitle className="text-2xl">Company Details</CardTitle>
-                                            <CardDescription className="text-base">All fields marked with <span className={"text-purple-500"}> * </span> are required</CardDescription>
+                                            <CardDescription className="text-base">
+                                                All fields marked with <span className={"text-purple-500"}> * </span> are required
+                                            </CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -474,8 +711,8 @@ export default function OnboardingPage() {
                                                     <div className="flex items-center gap-3 mt-4 p-3 bg-[var(--experience-accent)]/10 rounded-lg animate-pulse">
                                                         <div className="w-5 h-5 border-3 border-[var(--experience-accent)]/30 border-t-[var(--experience-accent)] rounded-full animate-spin mr-3" />
                                                         <span className="text-sm font-medium text-[var(--experience-accent)]">
-                                                          Uploading your logo...
-                                                        </span>
+                              Uploading your logo...
+                            </span>
                                                     </div>
                                                 )}
                                                 <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
@@ -505,7 +742,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <Shield className="w-5 h-5 text-[var(--experience-accent)]" />
                                             <Label htmlFor="companyEik" className="text-lg font-bold flex items-center gap-2">
-                                                EИК (BULSTAT) <span className="text-[var(--experience-error)]">*</span>
+                                                EIK (BULSTAT) <span className="text-[var(--experience-error)]">*</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -594,9 +831,9 @@ export default function OnboardingPage() {
 
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="companyLocation" className="text-lg font-bold flex items-center gap-2">
-                                                Location <span className="text-[var(--experience-error)]">*</span>
+                                            <MapPin className="w-5 h-5 text-muted-foreground" />
+                                            <Label htmlFor="companyLocation" className="text-lg font-bold">
+                                                Location <span className="text-muted-foreground font-normal text-sm">(optional)</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -664,6 +901,17 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
+                    <StudentPolicyModal
+                        open={showStudentPolicyModal}
+                        onOpenChange={setShowStudentPolicyModal}
+                        portfolioId={createdPortfolioId}
+                        onAccept={handleAcceptStudentPolicies}
+                        tosChecked={studentTosChecked}
+                        privacyChecked={studentPrivacyChecked}
+                        onTosChange={setStudentTosChecked}
+                        onPrivacyChange={setStudentPrivacyChecked}
+                    />
+
                     <CompanyPolicyModal
                         open={showPolicyModal}
                         onOpenChange={setShowPolicyModal}
@@ -692,7 +940,12 @@ export default function OnboardingPage() {
                     <div className="flex justify-center pt-8">
                         <Button
                             type="submit"
-                            disabled={!selectedRole || isPending || (selectedRole === "company" && !policyAccepted)}
+                            disabled={
+                                !selectedRole ||
+                                isPending ||
+                                (selectedRole === "company" && !policyAccepted) ||
+                                (selectedRole === "student" && !studentPolicyAccepted)
+                            }
                             size="lg"
                             className="min-w-72 h-16 text-foreground text-lg font-bold bg-gradient-to-r from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] hover:from-[var(--experience-button-primary-hover)] hover:to-[var(--experience-accent)] shadow-2xl hover:shadow-[var(--experience-accent)]/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

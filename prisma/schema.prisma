@@ -23,6 +23,9 @@
     portfolio          Portfolio?
     projects           Project[]     @relation("StudentProjects")
     experiences        Experience[]
+
+    tosAccepted        Boolean       @default(false)
+    privacyAccepted    Boolean       @default(false)
   }
 
   // ---------------------
