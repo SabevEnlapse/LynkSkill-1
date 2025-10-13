@@ -35,7 +35,7 @@ const BookOpenTextIcon = forwardRef<
 		(e?: React.MouseEvent<HTMLDivElement>) => {
 			if (reduced) return;
 			if (!isControlled.current) controls.start("animate");
-			else onMouseEnter?.(e as any);
+			else onMouseEnter?.(e as React.MouseEvent<HTMLDivElement>);
 		},
 		[controls, reduced, onMouseEnter],
 	);
@@ -43,7 +43,7 @@ const BookOpenTextIcon = forwardRef<
 	const handleLeave = useCallback(
 		(e?: React.MouseEvent<HTMLDivElement>) => {
 			if (!isControlled.current) controls.start("normal");
-			else onMouseLeave?.(e as any);
+			else onMouseLeave?.(e as React.MouseEvent<HTMLDivElement>);
 		},
 		[controls, onMouseLeave],
 	);
