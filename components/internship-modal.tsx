@@ -1,19 +1,17 @@
 "use client"
 
-import type React from "react"
-import { useEffect } from "react"
-import { useRef, useState, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import type { ComponentType, SVGProps } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { Internship } from "@/app/types"
+import React, {useState, useCallback, useMemo} from "react"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog"
+import {Input} from "@/components/ui/input"
+import {Textarea} from "@/components/ui/textarea"
+import {Button} from "@/components/ui/button"
+import {Label} from "@/components/ui/label"
+import {Checkbox} from "@/components/ui/checkbox"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
+import {Calendar} from "@/components/ui/calendar"
+import type {ComponentType, SVGProps} from "react"
+import {motion, AnimatePresence} from "framer-motion"
+import type {Internship} from "@/app/types"
 import {
     Briefcase,
     MapPin,
@@ -24,18 +22,7 @@ import {
     AlertCircle,
     CalendarIcon,
 } from "lucide-react"
-import { format } from "date-fns"
-
-interface InternshipFormData {
-    title: string
-    description: string
-    location: string
-    qualifications: string | null
-    paid: boolean
-    salary: number | null
-    applicationStart: string
-    applicationEnd: string
-}
+import {format} from "date-fns"
 
 interface InternshipModalProps {
     open: boolean
@@ -52,6 +39,9 @@ interface Errors {
     salary?: string[]
     applicationStart?: string[]
     applicationEnd?: string[]
+    testAssignmentTitle?: string[]
+    testAssignmentDescription?: string[]
+    testAssignmentDueDate?: string[]
 }
 
 interface FormValues {
@@ -60,102 +50,123 @@ interface FormValues {
     location: string
     qualifications: string
     salary: string
+    paid: boolean
+    testAssignmentTitle: string
+    testAssignmentDescription: string
+    testAssignmentDueDate?: Date
+    applicationStart?: Date
+    applicationEnd?: Date
 }
 
-export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {
-    const titleRef = useRef<HTMLInputElement | null>(null)
-    const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
-    const locationRef = useRef<HTMLInputElement | null>(null)
-    const qualificationsRef = useRef<HTMLInputElement | null>(null)
-    const salaryRef = useRef<HTMLInputElement | null>(null)
+const INITIAL_FORM_STATE: FormValues = {
+    title: "",
+    description: "",
+    location: "",
+    qualifications: "",
+    salary: "",
+    paid: false,
+    testAssignmentTitle: "",
+    testAssignmentDescription: "",
+    testAssignmentDueDate: undefined,
+    applicationStart: undefined,
+    applicationEnd: undefined,
+}
 
-    const [paid, setPaid] = useState(false)
+/* Stable style constants to avoid new object each render */
+const ringStyle = {
+    "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
+} as React.CSSProperties
+
+const dialogBorderStyle = {
+    borderColor: "color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
+    boxShadow: "0 25px 50px -12px color-mix(in oklch, var(--internship-modal-gradient-from) 10%, transparent)",
+} as React.CSSProperties
+
+const dialogHeaderBg = {
+    background: "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+} as React.CSSProperties
+
+type FormFieldProps = {
+    label: string
+    icon: ComponentType<SVGProps<SVGSVGElement>>
+    error?: string[]
+    children: React.ReactNode
+}
+
+/* Moved out and memoized so it doesn't get recreated on every render */
+const FormField = React.memo(function FormField({label, icon: Icon, error, children}: FormFieldProps) {
+    return (
+        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-2">
+            <Label className="flex items-center gap-2 text-sm font-medium text-slate-200">
+                <Icon className="h-4 w-4" style={{color: "var(--internship-modal-gradient-from)"}}/>
+                {label}
+            </Label>
+            {children}
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        initial={{opacity: 0, height: 0}}
+                        animate={{opacity: 1, height: "auto"}}
+                        exit={{opacity: 0, height: 0}}
+                        className="flex items-center gap-2 text-sm text-red-400"
+                    >
+                        <AlertCircle className="h-3 w-3"/>
+                        {error[0]}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    )
+})
+
+export function InternshipModal({open, onClose, onCreate}: InternshipModalProps) {
+    const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_STATE)
     const [errors, setErrors] = useState<Errors>({})
     const [isLoading, setIsLoading] = useState(false)
-    const [formValues, setFormValues] = useState<FormValues>({
-        title: "",
-        description: "",
-        location: "",
-        qualifications: "",
-        salary: "",
-    })
 
-    const [applicationStart, setApplicationStart] = useState<Date | undefined>(undefined)
-    const [applicationEnd, setApplicationEnd] = useState<Date | undefined>(undefined)
+    /* stable updater - uses functional updates to avoid reading stale state */
+    const updateField = useCallback(<K extends keyof FormValues>(key: K, value: FormValues[K]) => {
+        setFormValues((prev) => ({...prev, [key]: value}))
+        setErrors((prev) => (prev[key as keyof Errors] ? {...prev, [key]: undefined} : prev))
+    }, [])
 
-    // Update refs when form values change
-    useEffect(() => {
-        if (titleRef.current) titleRef.current.value = formValues.title
-        if (descriptionRef.current) descriptionRef.current.value = formValues.description
-        if (locationRef.current) locationRef.current.value = formValues.location
-        if (qualificationsRef.current) qualificationsRef.current.value = formValues.qualifications
-        if (salaryRef.current) salaryRef.current.value = formValues.salary
-    }, [formValues])
+    const resetForm = useCallback(() => {
+        setFormValues(INITIAL_FORM_STATE)
+        setErrors({})
+    }, [])
 
-    // Reset form when modal closes
-    // Reset form when modal closes
-    useEffect(() => {
-        if (!open) {
-            setFormValues({
-                title: "",
-                description: "",
-                location: "",
-                qualifications: "",
-                salary: "",
-            })
-            setPaid(false)
-            setErrors({})
-            setApplicationStart(undefined)
-            setApplicationEnd(undefined)
-        }
-    }, [open])
+    const handleClose = useCallback(() => {
+        resetForm()
+        onClose()
+    }, [onClose, resetForm])
 
-
-    const readValues = useCallback(() => {
-        const values = {
-            title: titleRef.current?.value ?? "",
-            description: descriptionRef.current?.value ?? "",
-            location: locationRef.current?.value ?? "",
-            qualifications: qualificationsRef.current?.value ?? "",
-            paid,
-            salary: salaryRef.current?.value ?? "",
-            applicationStart: applicationStart?.toISOString().split("T")[0] ?? "",
-            applicationEnd: applicationEnd?.toISOString().split("T")[0] ?? "",
-        }
-
-        setFormValues(values)
-
-        return values
-    }, [paid, applicationStart, applicationEnd])
-
-    async function handleSubmit() {
+    const handleSubmit = useCallback(async () => {
         setIsLoading(true)
-        const vals = readValues()
         const newErrors: Errors = {}
 
-        if (!vals.title || vals.title.length < 3) {
+        if (!formValues.title || formValues.title.length < 3) {
             newErrors.title = ["Title must be at least 3 characters"]
         }
-        if (!vals.description || vals.description.length < 10) {
+        if (!formValues.description || formValues.description.length < 10) {
             newErrors.description = ["Description must be at least 10 characters"]
         }
-        if (!vals.applicationStart) {
+        if (!formValues.applicationStart) {
             newErrors.applicationStart = ["Start date is required"]
         }
-        if (!vals.applicationEnd) {
+        if (!formValues.applicationEnd) {
             newErrors.applicationEnd = ["End date is required"]
         }
         if (
-            vals.applicationStart &&
-            vals.applicationEnd &&
-            new Date(vals.applicationStart) > new Date(vals.applicationEnd)
+            formValues.applicationStart &&
+            formValues.applicationEnd &&
+            formValues.applicationStart > formValues.applicationEnd
         ) {
             newErrors.applicationEnd = ["End date must be after start date"]
         }
-        if (!vals.location || vals.location.length < 2) {
+        if (!formValues.location || formValues.location.length < 2) {
             newErrors.location = ["Location must be at least 2 characters"]
         }
-        if (vals.paid && (!vals.salary || Number.parseFloat(vals.salary) <= 0)) {
+        if (formValues.paid && (!formValues.salary || Number.parseFloat(formValues.salary) <= 0)) {
             newErrors.salary = ["Salary is required and must be positive for paid internships"]
         }
 
@@ -167,38 +178,30 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
         try {
             const body = {
-                title: vals.title,
-                description: vals.description,
-                location: vals.location,
-                qualifications: vals.qualifications || null,
-                paid: vals.paid,
-                salary: vals.paid && vals.salary ? Number.parseFloat(vals.salary) : null,
-                applicationStart: vals.applicationStart,
-                applicationEnd: vals.applicationEnd,
+                title: formValues.title,
+                description: formValues.description,
+                location: formValues.location,
+                qualifications: formValues.qualifications || null,
+                paid: formValues.paid,
+                salary: formValues.paid && formValues.salary ? Number.parseFloat(formValues.salary) : null,
+                applicationStart: formValues.applicationStart?.toISOString().split("T")[0] ?? "",
+                applicationEnd: formValues.applicationEnd?.toISOString().split("T")[0] ?? "",
+                testAssignmentTitle: formValues.testAssignmentTitle || null,
+                testAssignmentDescription: formValues.testAssignmentDescription || null,
+                testAssignmentDueDate: formValues.testAssignmentDueDate?.toISOString().split("T")[0] ?? null,
             }
 
             const res = await fetch("/api/internships", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body),
             })
 
             if (res.ok) {
                 const data: Internship = await res.json()
                 onCreate(data)
+                resetForm()
                 onClose()
-                // Reset form
-                setFormValues({
-                    title: "",
-                    description: "",
-                    location: "",
-                    qualifications: "",
-                    salary: "",
-                })
-                setPaid(false)
-                setErrors({})
-                setApplicationStart(undefined)
-                setApplicationEnd(undefined)
             } else {
                 const errData = await res.json().catch(() => ({}))
                 alert(errData.message || "Failed to create internship")
@@ -209,84 +212,42 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [formValues, onCreate, onClose, resetForm])
 
-    // Form field wrapper
-    const FormField = ({
-                           label,
-                           icon: Icon,
-                           error,
-                           children,
-                       }: {
-        label: string
-        icon: ComponentType<SVGProps<SVGSVGElement>>
-        error?: string[]
-        children: React.ReactNode
-    }) => (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <Label className="flex items-center gap-2 text-sm font-medium text-slate-200">
-                <Icon className="h-4 w-4" style={{ color: "var(--internship-modal-gradient-from)" }} />
-                {label}
-            </Label>
-            {children}
-            <AnimatePresence>
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-2 text-sm text-red-400"
-                    >
-                        <AlertCircle className="h-3 w-3" />
-                        {error[0]}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
+    const calendarDisabled = useCallback(
+        (date: Date) => (formValues.applicationStart ? date < formValues.applicationStart : false),
+        [formValues.applicationStart]
     )
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
+        <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent
                 forceMount
-                className="max-w-2xl rounded-2xl border bg-slate-900 p-0 shadow-2xl"
-                style={{
-                    borderColor: "color-mix(in oklch, var(--internship-modal-gradient-from) 20%, transparent)",
-                    boxShadow: "0 25px 50px -12px color-mix(in oklch, var(--internship-modal-gradient-from) 10%, transparent)",
-                }}
+                className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border bg-slate-900 p-0 shadow-2xl"
+                style={dialogBorderStyle}
             >
-                <div
-                    className="relative overflow-hidden rounded-t-2xl px-8 py-6"
-                    style={{
-                        background:
-                            "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
-                    }}
-                >
+                <div className="sticky top-0 z-10 overflow-hidden rounded-t-2xl px-8 py-6" style={dialogHeaderBg}>
                     <DialogHeader className="relative">
                         <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-white">
                             <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
-                                <Briefcase className="h-6 w-6" />
+                                <Briefcase className="h-6 w-6"/>
                             </div>
                             Create New Internship
                         </DialogTitle>
                         <p className="text-white/80 text-sm">Fill in the details to create an internship opportunity</p>
                     </DialogHeader>
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl"/>
                 </div>
 
                 <div className="bg-slate-900 p-8 rounded-b-2xl">
                     <div className="space-y-6">
                         <FormField label="Internship Title" icon={Briefcase} error={errors.title}>
                             <Input
-                                ref={titleRef}
-                                defaultValue={formValues.title}
+                                value={formValues.title}
+                                onChange={(e) => updateField("title", e.target.value)}
                                 placeholder="e.g., Software Development Intern"
                                 className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
-                                style={
-                                    {
-                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
-                                    } as React.CSSProperties
-                                }
+                                style={ringStyle}
                                 onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
                                 onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                             />
@@ -294,15 +255,11 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
                         <FormField label="Description" icon={FileText} error={errors.description}>
                             <Textarea
-                                ref={descriptionRef}
-                                defaultValue={formValues.description}
+                                value={formValues.description}
+                                onChange={(e) => updateField("description", e.target.value)}
                                 placeholder="Describe the internship role, responsibilities, and what the intern will learn..."
                                 className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200 resize-none"
-                                style={
-                                    {
-                                        "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
-                                    } as React.CSSProperties
-                                }
+                                style={ringStyle}
                                 onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
                                 onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                             />
@@ -316,9 +273,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                             variant="outline"
                                             className="w-full justify-start text-left font-normal h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
                                         >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {applicationStart ? (
-                                                format(applicationStart, "PPP")
+                                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                                            {formValues.applicationStart ? (
+                                                format(formValues.applicationStart, "PPP")
                                             ) : (
                                                 <span className="text-slate-500">Pick a date</span>
                                             )}
@@ -327,8 +284,8 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                     <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
                                         <Calendar
                                             mode="single"
-                                            selected={applicationStart}
-                                            onSelect={setApplicationStart}
+                                            selected={formValues.applicationStart}
+                                            onSelect={(date) => updateField("applicationStart", date)}
                                             initialFocus
                                             className="rounded-xl"
                                         />
@@ -343,9 +300,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                             variant="outline"
                                             className="w-full justify-start text-left font-normal h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
                                         >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {applicationEnd ? (
-                                                format(applicationEnd, "PPP")
+                                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                                            {formValues.applicationEnd ? (
+                                                format(formValues.applicationEnd, "PPP")
                                             ) : (
                                                 <span className="text-slate-500">Pick a date</span>
                                             )}
@@ -354,10 +311,10 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                     <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
                                         <Calendar
                                             mode="single"
-                                            selected={applicationEnd}
-                                            onSelect={setApplicationEnd}
+                                            selected={formValues.applicationEnd}
+                                            onSelect={(date) => updateField("applicationEnd", date)}
                                             initialFocus
-                                            disabled={(date) => (applicationStart ? date < applicationStart : false)}
+                                            disabled={calendarDisabled}
                                             className="rounded-xl"
                                         />
                                     </PopoverContent>
@@ -368,42 +325,36 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField label="Location" icon={MapPin} error={errors.location}>
                                 <Input
-                                    ref={locationRef}
-                                    defaultValue={formValues.location}
+                                    value={formValues.location}
+                                    onChange={(e) => updateField("location", e.target.value)}
                                     placeholder="e.g., San Francisco, CA"
                                     className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
-                                    style={
-                                        {
-                                            "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
-                                        } as React.CSSProperties
-                                    }
+                                    style={ringStyle}
                                     onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
                                     onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                 />
                             </FormField>
 
-                            <FormField label="Qualifications (Optional)" icon={GraduationCap} error={errors.qualifications}>
+                            <FormField label="Qualifications (Optional)" icon={GraduationCap}
+                                       error={errors.qualifications}>
                                 <Input
-                                    ref={qualificationsRef}
-                                    defaultValue={formValues.qualifications}
+                                    value={formValues.qualifications}
+                                    onChange={(e) => updateField("qualifications", e.target.value)}
                                     placeholder="e.g., Computer Science student"
                                     className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
-                                    style={
-                                        {
-                                            "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
-                                        } as React.CSSProperties
-                                    }
+                                    style={ringStyle}
                                     onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
                                     onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
                                 />
                             </FormField>
                         </div>
 
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                            <div className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
+                        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-4">
+                            <div
+                                className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
                                 <Checkbox
-                                    checked={paid}
-                                    onCheckedChange={(val) => setPaid(!!val)}
+                                    checked={formValues.paid}
+                                    onCheckedChange={(val) => updateField("paid", !!val)}
                                     className="h-5 w-5 rounded-md border-slate-600"
                                     style={
                                         {
@@ -412,42 +363,103 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                         } as React.CSSProperties
                                     }
                                 />
-                                <Label className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
-                                    <DollarSign className="h-4 w-4 text-emerald-400" />
+                                <Label
+                                    className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
+                                    <DollarSign className="h-4 w-4 text-emerald-400"/>
                                     This is a paid internship
                                 </Label>
                             </div>
 
-                            <div
-                                className={`transition-all duration-200 overflow-hidden ${
-                                    paid ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                                }`}
-                                aria-hidden={!paid}
-                            >
-                                <FormField label="Monthly Salary" icon={DollarSign} error={errors.salary}>
-                                    <Input
-                                        ref={salaryRef}
-                                        defaultValue={formValues.salary}
-                                        type="number"
-                                        placeholder="e.g., 2000"
-                                        className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
-                                        style={
-                                            {
-                                                "--tw-ring-color": "color-mix(in oklch, var(--internship-field-focus) 20%, transparent)",
-                                            } as React.CSSProperties
-                                        }
-                                        onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
-                                        onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
-                                    />
-                                </FormField>
-                            </div>
+                            <AnimatePresence>
+                                {formValues.paid && (
+                                    <motion.div
+                                        initial={{opacity: 0, height: 0}}
+                                        animate={{opacity: 1, height: "auto"}}
+                                        exit={{opacity: 0, height: 0}}
+                                        transition={{duration: 0.2}}
+                                    >
+                                        <FormField label="Monthly Salary" icon={DollarSign} error={errors.salary}>
+                                            <Input
+                                                value={formValues.salary}
+                                                onChange={(e) => updateField("salary", e.target.value)}
+                                                type="number"
+                                                placeholder="e.g., 2000"
+                                                className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                                style={ringStyle}
+                                                onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                                onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
+                                            />
+                                        </FormField>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </motion.div>
+
+                        <div className="space-y-4 pt-6 border-t border-slate-700">
+                            <div className="flex items-center gap-2 mb-4">
+                                <FileText className="h-5 w-5 text-slate-400"/>
+                                <h3 className="text-lg font-semibold text-slate-200">Test Assignment (Optional)</h3>
+                            </div>
+
+                            <FormField label="Assignment Title" icon={FileText} error={errors.testAssignmentTitle}>
+                                <Input
+                                    value={formValues.testAssignmentTitle}
+                                    onChange={(e) => updateField("testAssignmentTitle", e.target.value)}
+                                    placeholder="e.g., Coding Challenge"
+                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
+                                    style={ringStyle}
+                                    onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                    onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
+                                />
+                            </FormField>
+
+                            <FormField label="Assignment Description" icon={FileText}
+                                       error={errors.testAssignmentDescription}>
+                                <Textarea
+                                    value={formValues.testAssignmentDescription}
+                                    onChange={(e) => updateField("testAssignmentDescription", e.target.value)}
+                                    placeholder="Describe the assignment for applicants..."
+                                    className="min-h-[100px] rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200 resize-none"
+                                    style={ringStyle}
+                                    onFocus={(e) => (e.target.style.borderColor = "var(--internship-field-focus)")}
+                                    onBlur={(e) => (e.target.style.borderColor = "rgb(51 65 85)")}
+                                />
+                            </FormField>
+
+                            <FormField label="Assignment Due Date" icon={CalendarIcon}
+                                       error={errors.testAssignmentDueDate}>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                                            {formValues.testAssignmentDueDate ? (
+                                                format(formValues.testAssignmentDueDate, "PPP")
+                                            ) : (
+                                                <span className="text-slate-500">Pick a date</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={formValues.testAssignmentDueDate}
+                                            onSelect={(date) => updateField("testAssignmentDueDate", date)}
+                                            initialFocus
+                                            className="rounded-xl"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </FormField>
+                        </div>
                     </div>
 
                     <DialogFooter className="mt-8 flex gap-3">
                         <Button
                             variant="outline"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="h-11 px-6 rounded-xl border border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 transition-all duration-200"
                             disabled={isLoading}
                         >
@@ -466,12 +478,13 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    <div
+                                        className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"/>
                                     Creating...
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-4 w-4" />
+                                    <CheckCircle className="h-4 w-4"/>
                                     Create Internship
                                 </div>
                             )}

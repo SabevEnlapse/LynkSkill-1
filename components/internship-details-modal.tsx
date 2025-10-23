@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import {useEffect, useState} from "react"
+import {motion, AnimatePresence} from "framer-motion"
+import {Dialog, DialogContent, DialogTitle} from "@/components/ui/dialog"
+import {Button} from "@/components/ui/button"
 import {
     Briefcase,
     MapPin,
@@ -15,7 +15,7 @@ import {
     ExternalLink,
     AlertCircle,
 } from "lucide-react"
-import { format } from "date-fns"
+import {format} from "date-fns"
 
 interface Internship {
     id: string
@@ -27,6 +27,9 @@ interface Internship {
     salary?: number
     applicationStart: string
     applicationEnd: string
+    testAssignmentTitle?: string
+    testAssignmentDescription?: string
+    testAssignmentDueDate?: string
     company: {
         id: string
         name: string
@@ -43,63 +46,91 @@ interface InternshipDetailsModalProps {
     onClose: () => void
 }
 
-function SkeletonLoader() {
+/* Small reusable skeleton line with faster pulse and optional stagger */
+function SkeletonLine({width = "w-full", height = "h-4", rounded = "rounded", delay = 0}: {
+    width?: string
+    height?: string
+    rounded?: string
+    delay?: number
+}) {
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div
+            role="status"
+            aria-hidden="true"
+            className={`${width} ${height} ${rounded} bg-slate-800/60`}
+            style={{animation: "pulse 800ms ease-in-out infinite", animationDelay: `${delay}ms`}}
+        />
+    )
+}
+
+function SkeletonLoader() {
+    // faster, staggered placeholders, approximates content structure
+    return (
+        <div className="space-y-6" aria-busy="true" aria-label="Loading internship details">
             {/* Header Skeleton */}
             <div className="space-y-3">
-                <div className="h-8 w-3/4 bg-slate-700/50 rounded-lg animate-pulse" />
-                <div className="flex gap-4">
-                    <div className="h-5 w-32 bg-slate-700/50 rounded-lg animate-pulse" />
-                    <div className="h-5 w-24 bg-slate-700/50 rounded-lg animate-pulse" />
+                <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-xl bg-slate-800/60 animate-[pulse_800ms_ease-in-out_infinite]"/>
+                    <div className="flex-1 space-y-2">
+                        <SkeletonLine width="w-3/4" height="h-6" rounded="rounded-md" delay={0}/>
+                        <div className="flex gap-3">
+                            <SkeletonLine width="w-24" height="h-4" rounded="rounded" delay={80}/>
+                            <SkeletonLine width="w-20" height="h-4" rounded="rounded" delay={160}/>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Quick Info Cards Skeleton */}
             <div className="grid grid-cols-2 gap-4">
                 {[1, 2].map((i) => (
-                    <div key={i} className="p-5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-3">
-                        <div className="h-5 w-32 bg-slate-700/50 rounded-lg animate-pulse" />
-                        <div className="h-6 w-24 bg-slate-700/50 rounded-lg animate-pulse" />
+                    <div key={i} className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80 space-y-2">
+                        <SkeletonLine width="w-28" height="h-4" rounded="rounded" delay={i * 60}/>
+                        <SkeletonLine width="w-20" height="h-5" rounded="rounded-md" delay={i * 100}/>
                     </div>
                 ))}
             </div>
 
-            {/* Content Skeleton */}
-            <div className="space-y-4">
-                <div className="h-6 w-40 bg-slate-700/50 rounded-lg animate-pulse" />
+            {/* Content Skeleton with more lines and subtle variation */}
+            <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 bg-slate-800/60 rounded animate-[pulse_800ms_ease-in-out_infinite]"/>
+                    <SkeletonLine width="w-32" height="h-5" rounded="rounded-md" delay={200}/>
+                </div>
+
                 <div className="space-y-2">
-                    <div className="h-4 w-full bg-slate-700/50 rounded-lg animate-pulse" />
-                    <div className="h-4 w-full bg-slate-700/50 rounded-lg animate-pulse" />
-                    <div className="h-4 w-3/4 bg-slate-700/50 rounded-lg animate-pulse" />
+                    <SkeletonLine width="w-full" height="h-3" rounded="rounded" delay={240}/>
+                    <SkeletonLine width="w-full" height="h-3" rounded="rounded" delay={320}/>
+                    <SkeletonLine width="w-3/4" height="h-3" rounded="rounded" delay={400}/>
+                    <SkeletonLine width="w-11/12" height="h-3" rounded="rounded" delay={480}/>
+                    <div className="mt-3 grid grid-cols-2 gap-4">
+                        <SkeletonLine width="w-full" height="h-20" rounded="rounded-md" delay={560}/>
+                        <SkeletonLine width="w-full" height="h-20" rounded="rounded-md" delay={640}/>
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
+function ErrorState({onRetry}: { onRetry: () => void }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center py-12 space-y-4"
-        >
-            <div className="p-4 rounded-full bg-red-500/10">
-                <AlertCircle className="h-12 w-12 text-red-500" />
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="p-3 rounded-full bg-red-500/10">
+                <AlertCircle className="h-10 w-10 text-red-400"/>
             </div>
-            <div className="text-center space-y-2">
-                <h3 className="text-lg font-semibold text-slate-200">Failed to Load Internship</h3>
+            <div className="text-center space-y-1">
+                <h3 className="text-base font-semibold text-slate-200">Failed to Load Internship</h3>
                 <p className="text-sm text-slate-400">There was an error loading the internship details.</p>
             </div>
-            <Button onClick={onRetry} className="rounded-xl px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white">
+            <Button onClick={onRetry} variant="outline" className="mt-2 bg-transparent">
                 Try Again
             </Button>
-        </motion.div>
+        </div>
     )
 }
 
-export default function InternshipDetailsModal({ internshipId, open, onClose }: InternshipDetailsModalProps) {
+export default function InternshipDetailsModal({internshipId, open, onClose}: InternshipDetailsModalProps) {
     const [internship, setInternship] = useState<Internship | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
@@ -107,6 +138,8 @@ export default function InternshipDetailsModal({ internshipId, open, onClose }: 
     const fetchInternship = async () => {
         if (!internshipId) return
 
+        // Clear previous data immediately so skeleton renders right away
+        setInternship(null)
         setLoading(true)
         setError(false)
 
@@ -133,191 +166,204 @@ export default function InternshipDetailsModal({ internshipId, open, onClose }: 
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="rounded-2xl max-w-3xl max-h-[90vh] overflow-hidden p-0 border border-slate-800 bg-slate-900 shadow-2xl">
+            <DialogContent
+                className="rounded-xl max-w-3xl max-h-[90vh] overflow-hidden p-0 border border-slate-800/80 bg-slate-950 shadow-2xl">
                 <AnimatePresence mode="wait">
                     {loading ? (
                         <motion.div
                             key="loading"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
+                            transition={{duration: 0.12}}
                             className="p-8"
                         >
-                            <SkeletonLoader />
+                            <SkeletonLoader/>
                         </motion.div>
                     ) : error ? (
                         <motion.div
                             key="error"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
+                            transition={{duration: 0.12}}
                             className="p-8"
                         >
-                            <ErrorState onRetry={fetchInternship} />
+                            <ErrorState onRetry={fetchInternship}/>
                         </motion.div>
                     ) : internship ? (
                         <motion.div
                             key="content"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="bg-slate-900 rounded-2xl"
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
+                            transition={{duration: 0.18}}
+                            className="bg-slate-950"
                         >
-                            {/* Header with gradient background */}
-                            <div className="relative overflow-hidden rounded-t-2xl p-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+                            <div
+                                className="relative overflow-hidden border-b border-slate-800/80 p-8 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-900">
+                                <div
+                                    className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-blue-600/5 to-transparent"/>
+
                                 <div className="relative z-10">
-                                    <div className="flex items-start gap-4 mb-4">
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ delay: 0.1, type: "spring" }}
-                                            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm"
-                                        >
-                                            <Briefcase className="h-8 w-8 text-white" />
-                                        </motion.div>
-                                        <div className="flex-1">
-                                            <DialogTitle className="text-3xl font-bold text-white mb-2 text-balance">
+                                    <div className="flex items-start gap-4">
+                                        <div
+                                            className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
+                                            <Briefcase className="h-7 w-7 text-purple-400"/>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <DialogTitle
+                                                className="text-2xl font-semibold text-slate-100 mb-3 text-balance leading-tight">
                                                 {internship.title}
                                             </DialogTitle>
-                                            <div className="flex flex-wrap items-center gap-4 text-white/90">
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="h-4 w-4" />
-                                                    <span className="text-sm font-medium">{internship.location}</span>
+                                            <div className="flex flex-wrap items-center gap-4 text-slate-400">
+                                                <div className="flex items-center gap-1.5">
+                                                    <MapPin className="h-4 w-4 text-slate-500"/>
+                                                    <span className="text-sm">{internship.location}</span>
                                                 </div>
                                                 {internship.paid && internship.salary && (
-                                                    <div className="flex items-center gap-2">
-                                                        <DollarSign className="h-4 w-4" />
-                                                        <span className="text-sm font-medium">${internship.salary}/month</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <DollarSign className="h-4 w-4 text-slate-500"/>
+                                                        <span
+                                                            className="text-sm font-medium text-slate-300">${internship.salary}/month</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                             </div>
 
-                            {/* Content */}
                             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
-                                {/* Company Info Card */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="p-5 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-800/40 border border-slate-700/50"
-                                >
+                                <div className="p-5 rounded-lg bg-slate-900/50 border border-slate-800/80">
                                     <div className="flex items-start gap-4">
-                                        <div className="p-3 rounded-lg bg-blue-500/10">
-                                            <Building2 className="h-6 w-6 text-blue-400" />
+                                        <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                            <Building2 className="h-5 w-5 text-blue-400"/>
                                         </div>
-                                        <div className="flex-1 space-y-2">
-                                            <h3 className="text-lg font-semibold text-slate-200">{internship.company.name}</h3>
+                                        <div className="flex-1 min-w-0 space-y-2">
+                                            <h3 className="text-base font-semibold text-slate-200">{internship.company.name}</h3>
                                             <p className="text-sm text-slate-400 leading-relaxed">{internship.company.description}</p>
-                                            <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {internship.company.location}
+                                            <div className="flex flex-wrap gap-4 text-sm text-slate-500 pt-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <MapPin className="h-3.5 w-3.5"/>
+                                                    <span>{internship.company.location}</span>
                                                 </div>
                                                 {internship.company.website && (
                                                     <a
                                                         href={internship.company.website}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                                                        className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"
                                                     >
-                                                        <ExternalLink className="h-3 w-3" />
-                                                        Visit Website
+                                                        <ExternalLink className="h-3.5 w-3.5"/>
+                                                        <span>Visit Website</span>
                                                     </a>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
 
-                                {/* Quick Info Cards */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.15 }}
-                                        className="p-5 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-800/40 border border-slate-700/50"
-                                    >
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="p-2 rounded-lg bg-purple-500/10">
-                                                <Clock className="h-5 w-5 text-purple-400" />
+                                    <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                                        <div className="flex items-center gap-2.5 mb-3">
+                                            <div
+                                                className="p-1.5 rounded-md bg-purple-500/10 border border-purple-500/20">
+                                                <Clock className="h-4 w-4 text-purple-400"/>
                                             </div>
-                                            <h3 className="text-sm font-semibold text-slate-300">Application Period</h3>
+                                            <h3 className="text-sm font-medium text-slate-300">Application Period</h3>
                                         </div>
-                                        <div className="space-y-1 ml-11">
-                                            <p className="text-white font-medium">
+                                        <div className="space-y-0.5 ml-8">
+                                            <p className="text-slate-200 font-medium text-sm">
                                                 {format(new Date(internship.applicationStart), "MMM d, yyyy")}
                                             </p>
-                                            <p className="text-slate-400 text-sm">
+                                            <p className="text-slate-500 text-xs">
                                                 to {format(new Date(internship.applicationEnd), "MMM d, yyyy")}
                                             </p>
                                         </div>
-                                    </motion.div>
+                                    </div>
 
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="p-5 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-800/40 border border-slate-700/50"
-                                    >
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="p-2 rounded-lg bg-green-500/10">
-                                                <DollarSign className="h-5 w-5 text-green-400" />
+                                    <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                                        <div className="flex items-center gap-2.5 mb-3">
+                                            <div className="p-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
+                                                <DollarSign className="h-4 w-4 text-blue-400"/>
                                             </div>
-                                            <h3 className="text-sm font-semibold text-slate-300">Compensation</h3>
+                                            <h3 className="text-sm font-medium text-slate-300">Compensation</h3>
                                         </div>
-                                        <div className="ml-11">
+                                        <div className="ml-8">
                                             {internship.paid && internship.salary ? (
                                                 <>
-                                                    <p className="text-white font-medium text-lg">${internship.salary}</p>
-                                                    <p className="text-slate-400 text-sm">per month</p>
+                                                    <p className="text-slate-200 font-semibold text-base">${internship.salary}</p>
+                                                    <p className="text-slate-500 text-xs">per month</p>
                                                 </>
                                             ) : (
-                                                <p className="text-slate-400 font-medium">Unpaid</p>
+                                                <p className="text-slate-400 font-medium text-sm">Unpaid</p>
                                             )}
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 </div>
 
-                                {/* Description */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.25 }}
-                                    className="space-y-3"
-                                >
+                                <div className="space-y-3">
                                     <div className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-blue-400" />
-                                        <h3 className="text-lg font-semibold text-slate-200">About This Role</h3>
+                                        <FileText className="h-4 w-4 text-blue-400"/>
+                                        <h3 className="text-base font-semibold text-slate-200">About This Role</h3>
                                     </div>
-                                    <div className="p-5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                                        <p className="text-slate-300 leading-relaxed text-pretty">{internship.description}</p>
+                                    <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                                        <p className="text-slate-300 leading-relaxed text-sm text-pretty">{internship.description}</p>
                                     </div>
-                                </motion.div>
+                                </div>
 
-                                {/* Qualifications */}
                                 {internship.qualifications && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="space-y-3"
-                                    >
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <GraduationCap className="h-5 w-5 text-purple-400" />
-                                            <h3 className="text-lg font-semibold text-slate-200">Qualifications</h3>
+                                            <GraduationCap className="h-4 w-4 text-purple-400"/>
+                                            <h3 className="text-base font-semibold text-slate-200">Qualifications</h3>
                                         </div>
-                                        <div className="p-5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                                            <p className="text-slate-300 leading-relaxed text-pretty">{internship.qualifications}</p>
+                                        <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                                            <p className="text-slate-300 leading-relaxed text-sm text-pretty">{internship.qualifications}</p>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 )}
+                                {internship.testAssignmentTitle && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <FileText className="h-4 w-4 text-emerald-400"/>
+                                                <h3 className="text-base font-semibold text-slate-200">Test
+                                                    Assignment</h3>
+                                            </div>
+                                            <Button
+                                                onClick={() => window.location.href = `/assignments/${internship.id}`}
+                                                className="rounded-xl text-foreground px-4 py-2 text-sm"
+                                                style={{
+                                                    background: "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
+                                                }}
+                                            >
+                                                <FileText className="h-4 w-4 mr-2"/>
+                                                View Assignment Page
+                                            </Button>
+                                        </div>
+
+                                        <div
+                                            className="p-4 rounded-lg bg-slate-900/50 border border-slate-800/80 space-y-4">
+                                            <div>
+                                                <h4 className="text-sm font-medium text-slate-300 mb-2">{internship.testAssignmentTitle}</h4>
+                                                <p className="text-slate-300 leading-relaxed text-sm text-pretty">
+                                                    {internship.testAssignmentDescription}
+                                                </p>
+                                            </div>
+                                            {internship.testAssignmentDueDate && (
+                                                <div className="flex items-center gap-2 pt-3 border-t border-slate-800">
+                                                    <Clock className="h-4 w-4 text-slate-500"/>
+                                                    <span className="text-sm text-slate-400">
+                                                        Due by {format(new Date(internship.testAssignmentDueDate), "MMM d, yyyy")}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                             </div>
                         </motion.div>
                     ) : null}

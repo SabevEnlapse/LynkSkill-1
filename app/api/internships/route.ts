@@ -1,9 +1,10 @@
 // app/api/internships/route.ts
-import { auth } from "@clerk/nextjs/server"
-import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
-import { z } from "zod"
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
+// ------------------- ZOD SCHEMA -------------------
 const internshipSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
@@ -11,155 +12,160 @@ const internshipSchema = z.object({
     qualifications: z.string().optional().nullable(),
     paid: z.boolean(),
     salary: z.union([z.number().positive(), z.null()]),
+    testAssignmentTitle: z.string().optional().nullable(),
+    testAssignmentDescription: z.string().optional().nullable(),
+    testAssignmentDueDate: z
+        .string()
+        .optional()
+        .nullable()
+        .transform((val) => (val ? new Date(val) : null)),
 }).superRefine((data, ctx) => {
     if (data.paid && data.salary == null) {
         ctx.addIssue({
             code: "custom",
             path: ["salary"],
             message: "Salary is required if internship is paid",
-        })
+        });
     }
-})
+});
 
 // ------------------- CREATE internship -------------------
 export async function POST(req: Request) {
-    const { userId } = await auth()
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
+    const { userId } = await auth();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     const user = await prisma.user.findUnique({
         where: { clerkId: userId },
         include: { companies: true },
-    })
-    if (!user || user.role !== "COMPANY") {
-        return new NextResponse("Forbidden", { status: 403 })
-    }
+    });
+    if (!user || user.role !== "COMPANY") return new NextResponse("Forbidden", { status: 403 });
 
-    const company = user.companies[0] // ✅ assuming 1 company per user for now
-    if (!company) {
-        return new NextResponse("Company not found", { status: 404 })
-    }
+    const company = user.companies[0];
+    if (!company) return new NextResponse("Company not found", { status: 404 });
 
-    const body = await req.json()
-    const parsed = internshipSchema.safeParse(body)
+    const body = await req.json();
+    const parsed = internshipSchema.safeParse(body);
     if (!parsed.success) {
-        return NextResponse.json(
-            { errors: parsed.error.flatten().fieldErrors },
-            { status: 400 }
-        )
+        return NextResponse.json({ errors: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const data = parsed.data;
 
     const internship = await prisma.internship.create({
         data: {
-            title: body.title,
-            description: body.description,
-            location: body.location,
-            qualifications: body.qualifications,
-            paid: body.paid,
-            salary: body.salary,
+            title: data.title,
+            description: data.description,
+            location: data.location,
+            qualifications: data.qualifications,
+            paid: data.paid,
+            salary: data.paid ? data.salary : null,
             companyId: company.id,
             applicationStart: new Date(body.applicationStart),
             applicationEnd: new Date(body.applicationEnd),
-            startDate: body.startDate ? new Date(body.startDate) : null, // ✅
-            endDate: body.endDate ? new Date(body.endDate) : null,       // ✅
+            startDate: body.startDate ? new Date(body.startDate) : null,
+            endDate: body.endDate ? new Date(body.endDate) : null,
+            testAssignmentTitle: data.testAssignmentTitle ?? null,
+            testAssignmentDescription: data.testAssignmentDescription ?? null,
+            testAssignmentDueDate: data.testAssignmentDueDate,
         },
     });
 
-    return NextResponse.json(internship)
+    return NextResponse.json(internship);
 }
 
 // ------------------- READ internships -------------------
 export async function GET() {
-    const { userId } = await auth()
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
+    const { userId } = await auth();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     const user = await prisma.user.findUnique({
         where: { clerkId: userId },
         include: { companies: true },
-    })
-    if (!user) return new NextResponse("Unauthorized", { status: 401 })
+    });
+    if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
     const internships =
         user.role === "COMPANY"
             ? await prisma.internship.findMany({
-                where: { companyId: user.companies[0]?.id }, // internships for this company
+                where: { companyId: user.companies[0]?.id },
                 orderBy: { createdAt: "desc" },
             })
             : await prisma.internship.findMany({
                 orderBy: { createdAt: "desc" },
                 include: { company: true },
-            })
+            });
 
-    return NextResponse.json(internships)
+    return NextResponse.json(internships);
 }
 
 // ------------------- UPDATE internship -------------------
 export async function PUT(req: Request) {
-    const { userId } = await auth()
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
+    const { userId } = await auth();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     const user = await prisma.user.findUnique({
         where: { clerkId: userId },
         include: { companies: true },
-    })
-    if (!user || user.role !== "COMPANY") {
-        return new NextResponse("Forbidden", { status: 403 })
+    });
+    if (!user || user.role !== "COMPANY") return new NextResponse("Forbidden", { status: 403 });
+
+    const company = user.companies[0];
+    if (!company) return new NextResponse("Company not found", { status: 404 });
+
+    const body = await req.json();
+    const parsed = internshipSchema.safeParse(body);
+    if (!parsed.success) {
+        return NextResponse.json({ errors: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const company = user.companies[0]
-    if (!company) return new NextResponse("Company not found", { status: 404 })
+    const data = parsed.data;
 
-    const body = await req.json()
-    const { id, title, description, location, qualifications, paid, salary } = body
+    if (!body.id) return new NextResponse("Internship ID required", { status: 400 });
 
-    if (!id) return new NextResponse("Internship ID required", { status: 400 })
-
-    const existing = await prisma.internship.findUnique({ where: { id } })
-    if (!existing || existing.companyId !== company.id) {
-        return new NextResponse("Not found or unauthorized", { status: 404 })
-    }
+    const existing = await prisma.internship.findUnique({ where: { id: body.id } });
+    if (!existing || existing.companyId !== company.id) return new NextResponse("Not found or unauthorized", { status: 404 });
 
     const updated = await prisma.internship.update({
-        where: { id },
+        where: { id: body.id },
         data: {
-            title,
-            description,
-            location,
-            qualifications: qualifications ?? null,
-            paid,
-            salary: paid ? salary : null,
-            startDate: body.startDate ? new Date(body.startDate) : null, // ✅
-            endDate: body.endDate ? new Date(body.endDate) : null,       // ✅
+            title: data.title,
+            description: data.description,
+            location: data.location,
+            qualifications: data.qualifications ?? null,
+            paid: data.paid,
+            salary: data.paid ? data.salary : null,
+            startDate: body.startDate ? new Date(body.startDate) : null,
+            endDate: body.endDate ? new Date(body.endDate) : null,
+            testAssignmentTitle: data.testAssignmentTitle ?? null,
+            testAssignmentDescription: data.testAssignmentDescription ?? null,
+            testAssignmentDueDate: data.testAssignmentDueDate,
         },
     });
 
-    return NextResponse.json(updated)
+    return NextResponse.json(updated);
 }
 
 // ------------------- DELETE internship -------------------
 export async function DELETE(req: Request) {
-    const { userId } = await auth()
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
+    const { userId } = await auth();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     const user = await prisma.user.findUnique({
         where: { clerkId: userId },
         include: { companies: true },
-    })
-    if (!user || user.role !== "COMPANY") {
-        return new NextResponse("Forbidden", { status: 403 })
-    }
+    });
+    if (!user || user.role !== "COMPANY") return new NextResponse("Forbidden", { status: 403 });
 
-    const company = user.companies[0]
-    if (!company) return new NextResponse("Company not found", { status: 404 })
+    const company = user.companies[0];
+    if (!company) return new NextResponse("Company not found", { status: 404 });
 
-    const { id } = await req.json()
-    if (!id) return new NextResponse("Internship ID required", { status: 400 })
+    const { id } = await req.json();
+    if (!id) return new NextResponse("Internship ID required", { status: 400 });
 
-    const existing = await prisma.internship.findUnique({ where: { id } })
-    if (!existing || existing.companyId !== company.id) {
-        return new NextResponse("Not found or unauthorized", { status: 404 })
-    }
+    const existing = await prisma.internship.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== company.id) return new NextResponse("Not found or unauthorized", { status: 404 });
 
-    await prisma.internship.delete({ where: { id } })
+    await prisma.internship.delete({ where: { id } });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
 }
