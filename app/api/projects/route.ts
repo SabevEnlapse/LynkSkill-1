@@ -20,7 +20,6 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // ✅ Define type for projects array with includes
         type ProjectWithRelations = Project & {
             internship: (Internship & { company: Company | null }) | null;
             student: (User & { profile: Profile | null }) | null;
@@ -44,7 +43,7 @@ export async function GET(req: Request) {
             projects = await prisma.project.findMany({
                 where: {
                     company: {
-                        ownerId: user.id, // only projects owned by this company
+                        ownerId: user.id,
                     },
                 },
                 include: {
@@ -56,11 +55,12 @@ export async function GET(req: Request) {
             });
         }
 
-        // Format output safely
+        // ✅ Add internship.id to formatted output
         const formatted = projects.map((p) => ({
             id: p.id,
             title: p.title,
             internship: {
+                id: p.internship?.id ?? "", // ✅ now included
                 title: p.internship?.title ?? "(no title)",
                 company: {
                     name: p.internship?.company?.name ?? "(no company)",

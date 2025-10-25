@@ -1,18 +1,31 @@
 "use client"
 
 import type React from "react"
-
+import { useRouter } from "next/navigation"
 import { useEffect, useState, useCallback } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Search, Users, FileText, Clock, Layers, Building2, Calendar, TrendingUp } from "lucide-react"
+import {
+    RefreshCw,
+    Search,
+    Users,
+    FileText,
+    Clock,
+    Layers,
+    Building2,
+    Calendar,
+    TrendingUp,
+    Eye,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 
 type ApiProject = {
     id: string
     internship: {
+        id: string
         title: string
         company: { name: string }
         startDate: string
@@ -31,6 +44,9 @@ export function AssignmentsTabContent() {
     const [refreshing, setRefreshing] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
+    const [navigating, setNavigating] = useState<string | null>(null)
+
+    const router = useRouter()
 
     const load = useCallback(async () => {
         setLoading(true)
@@ -40,7 +56,6 @@ export function AssignmentsTabContent() {
             const text = await res.text()
             try {
                 const parsed = JSON.parse(text)
-                console.log("Projects API raw payload:", parsed)
                 if (!Array.isArray(parsed)) {
                     setError("Unexpected API response shape")
                     setProjects([])
@@ -48,7 +63,7 @@ export function AssignmentsTabContent() {
                     setProjects(parsed)
                 }
             } catch (parseErr) {
-                console.error("Failed to parse /api/projects response as JSON array:", parseErr, "raw:", text)
+                console.error("Failed to parse /api/projects", parseErr)
                 setError("Invalid API response")
                 setProjects([])
             }
@@ -90,6 +105,7 @@ export function AssignmentsTabContent() {
 
     return (
         <div className="space-y-8">
+            {/* Top Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
                 <Button
                     variant={filter === "all" ? "default" : "outline"}
@@ -108,7 +124,9 @@ export function AssignmentsTabContent() {
                     <Clock className="mr-2 h-4 w-4" />
                     Recent
                 </Button>
-                <div className="flex-1"></div>
+
+                <div className="flex-1" />
+
                 <div className="relative w-full md:w-auto mt-3 md:mt-0">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -119,6 +137,7 @@ export function AssignmentsTabContent() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
+
                 <Button
                     size="sm"
                     variant="ghost"
@@ -131,6 +150,7 @@ export function AssignmentsTabContent() {
                 </Button>
             </div>
 
+            {/* Loading state */}
             {loading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {Array.from({ length: 6 }).map((_, i) => (
@@ -157,22 +177,23 @@ export function AssignmentsTabContent() {
             ) : filteredProjects.length === 0 ? (
                 <div className="text-center py-12">
                     {searchQuery ? (
-                        <div>
+                        <>
                             <div className="text-muted-foreground text-lg">No projects match your search.</div>
                             <Button onClick={() => setSearchQuery("")} variant="outline" className="mt-4 rounded-2xl">
                                 Clear Search
                             </Button>
-                        </div>
+                        </>
                     ) : (
-                        <div>
+                        <>
                             <div className="text-muted-foreground text-lg">No projects yet.</div>
                             <p className="text-sm text-muted-foreground mt-2">
                                 Projects will appear here once applications are approved.
                             </p>
-                        </div>
+                        </>
                     )}
                 </div>
             ) : (
+                /* Active Projects Grid */
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-semibold">
@@ -183,89 +204,128 @@ export function AssignmentsTabContent() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {finalProjects.map((proj) => (
-                            <Card
-                                key={proj.id}
-                                className="group rounded-3xl cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 overflow-hidden relative"
-                                onClick={() => setSelected(proj)}
-                                style={
-                                    {
-                                        background: `linear-gradient(135deg, var(--internship-card-gradient-from), var(--internship-card-gradient-to))`,
-                                        borderColor: `var(--internship-card-border)`,
-                                        boxShadow: `0 4px 12px var(--internship-card-shadow)`,
-                                    } as React.CSSProperties
-                                }
-                            >
-                                <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{
-                                        background: `linear-gradient(135deg, var(--internship-card-hover-from), var(--internship-card-hover-to))`,
-                                    }}
-                                />
+                        {finalProjects.map((proj) => {
+                            const start = new Date(proj.internship.startDate).getTime()
+                            const end = new Date(proj.internship.endDate).getTime()
+                            const progress = Math.min(100, Math.max(0, ((Date.now() - start) / (end - start)) * 100))
 
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
-                                <CardHeader className="relative z-10">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <CardTitle className="line-clamp-2 text-lg group-hover:text-white transition-colors duration-300">
-                                            {proj.internship.title}
-                                        </CardTitle>
-                                        <Badge
-                                            variant={proj.status === "ONGOING" ? "secondary" : "default"}
-                                            className="rounded-xl shrink-0 group-hover:scale-105 transition-transform group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30"
+                            return (
+                                <motion.div
+                                    key={proj.id}
+                                    whileHover={{ scale: 1.02, y: -4 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                >
+                                    <Card
+                                        className="group rounded-3xl cursor-pointer border-2 transition-all overflow-hidden relative"
+                                        onClick={() => {
+                                            setNavigating(proj.id)
+                                            setTimeout(() => router.push(`/assignments/${proj.internship.id}`), 400)
+                                        }}
+                                        style={{
+                                            background: `linear-gradient(135deg, var(--internship-card-gradient-from), var(--internship-card-gradient-to))`,
+                                            borderColor: `var(--internship-card-border)`,
+                                            boxShadow: `0 4px 12px var(--internship-card-shadow)`,
+                                        }}
+                                    >
+                                        {/* Hover overlay */}
+                                        <div
+                                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                            style={{
+                                                background: `linear-gradient(135deg, var(--internship-card-hover-from), var(--internship-card-hover-to))`,
+                                            }}
+                                        />
+
+                                        {/* Quick View button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setSelected(proj)
+                                            }}
+                                            title="Quick View"
+                                            aria-label="Quick View"
+                                            className="absolute top-3 right-3 z-20 bg-background/70 backdrop-blur-md hover:bg-background/90 p-2 rounded-xl border border-border transition-all duration-200 hover:scale-105"
                                         >
-                                            {proj.status}
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
+                                            <Eye className="w-4 h-4 text-muted-foreground" />
+                                        </button>
 
-                                <CardContent className="space-y-3 relative z-10">
-                                    <div className="space-y-2">
-                                        <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                        {/* Card Header */}
+                                        <CardHeader className="relative z-10">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <CardTitle className="line-clamp-2 text-lg group-hover:text-white transition-colors duration-300">
+                                                    {proj.internship.title}
+                                                </CardTitle>
+                                                <Badge
+                                                    variant={proj.status === "ONGOING" ? "secondary" : "default"}
+                                                    className="rounded-xl shrink-0 group-hover:scale-105 transition-transform group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30"
+                                                >
+                                                    {proj.status}
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+
+                                        {/* Card Content */}
+                                        <CardContent className="space-y-3 relative z-10">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                                    <div
+                                                        className="w-2 h-2 rounded-full mr-2 group-hover:bg-white/80 transition-colors duration-300"
+                                                        style={{ backgroundColor: `var(--internship-card-hover-from)` }}
+                                                    ></div>
+                                                    <span className="font-medium">Company:</span>
+                                                    <span className="ml-1">{proj.internship.company?.name ?? "Unknown"}</span>
+                                                </div>
+                                                <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                                    <Users className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
+                                                    <span className="font-medium">Student:</span>
+                                                    <span className="ml-1 truncate">
+                            {proj.student?.name ?? proj.student?.email ?? "Unknown"}
+                          </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-2 border-t group-hover:border-white/20 transition-colors duration-300">
+                                                <div className="flex items-center justify-between text-xs group-hover:text-white/80 transition-colors duration-300">
+                                                    <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                                        <Clock className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
+                                                        <span className="font-medium">Period:</span>
+                                                        <span className="ml-1">
+                              {new Date(proj.internship.startDate).toLocaleDateString()} -{" "}
+                                                            {new Date(proj.internship.endDate).toLocaleDateString()}
+                            </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+
+                                        {/* Progress bar */}
+                                        <div className="absolute bottom-0 left-0 w-full h-1 bg-background/30">
                                             <div
-                                                className="w-2 h-2 rounded-full mr-2 group-hover:bg-white/80 transition-colors duration-300"
-                                                style={{ backgroundColor: `var(--internship-card-hover-from)` }}
-                                            ></div>
-                                            <span className="font-medium">Company:</span>
-                                            <span className="ml-1">{proj.internship.company?.name ?? "Unknown"}</span>
+                                                className="h-full transition-all duration-500"
+                                                style={{
+                                                    width: `${progress}%`,
+                                                    background: `linear-gradient(90deg, var(--internship-card-hover-from), var(--internship-card-hover-to))`,
+                                                }}
+                                            />
                                         </div>
-                                        <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
-                                            <Users className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
-                                            <span className="font-medium">Student:</span>
-                                            <span className="ml-1 truncate">{proj.student?.name ?? proj.student?.email ?? "Unknown"}</span>
-                                        </div>
-                                    </div>
 
-                                    <div className="pt-2 border-t group-hover:border-white/20 transition-colors duration-300">
-                                        <div className="flex items-center justify-between text-xs group-hover:text-white/80 transition-colors duration-300">
-                                            <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
-                                                <Clock className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
-                                                <span className="font-medium">Period:</span>
-                                                <span className="ml-1">
-                          {new Date(proj.internship.startDate).toLocaleDateString()} -{" "}
-                                                    {new Date(proj.internship.endDate).toLocaleDateString()}
-                        </span>
+                                        {/* Navigation shimmer */}
+                                        {navigating === proj.id && (
+                                            <div className="absolute inset-0 bg-background/70 backdrop-blur-md flex items-center justify-center rounded-3xl z-50">
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                                    Redirecting...
+                                                </div>
                                             </div>
-
-                                            <div className="flex items-center">
-                                                <FileText className="w-3 h-3 mr-1" />
-                                                View Details
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-
-                                <div
-                                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                                    style={{
-                                        boxShadow: `0 20px 40px var(--internship-card-shadow-hover)`,
-                                    }}
-                                />
-                            </Card>
-                        ))}
+                                        )}
+                                    </Card>
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 </section>
             )}
 
+            {/* Details Modal */}
             <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
                 <DialogContent className="rounded-3xl max-w-2xl border-2 bg-background">
                     <div
@@ -308,10 +368,14 @@ export function AssignmentsTabContent() {
                                             <div className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
                                                 Internship Position
                                             </div>
-                                            <h3 className="text-xl font-bold text-balance mb-2">{selected.internship.title}</h3>
+                                            <h3 className="text-xl font-bold text-balance mb-2">
+                                                {selected.internship.title}
+                                            </h3>
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Building2 className="h-4 w-4 text-muted-foreground" />
-                                                <span className="font-medium">{selected.internship.company?.name ?? "Unknown"}</span>
+                                                <span className="font-medium">
+                          {selected.internship.company?.name ?? "Unknown"}
+                        </span>
                                             </div>
                                         </div>
                                         <Badge
@@ -324,11 +388,14 @@ export function AssignmentsTabContent() {
                                 </div>
                             </div>
 
+                            {/* Student and Dates */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Users className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
-                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Student</div>
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Student
+                                        </div>
                                     </div>
                                     <div className="font-semibold text-lg">
                                         {selected.student?.name ?? selected.student?.email ?? "Unknown"}
@@ -339,7 +406,9 @@ export function AssignmentsTabContent() {
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Calendar className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
-                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Duration</div>
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Duration
+                                        </div>
                                     </div>
                                     <div className="font-semibold text-sm">
                                         {new Date(selected.internship.startDate).toLocaleDateString("en-US", {
@@ -361,7 +430,9 @@ export function AssignmentsTabContent() {
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Clock className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
-                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Started On</div>
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Started On
+                                        </div>
                                     </div>
                                     <div className="font-semibold">
                                         {new Date(selected.createdAt).toLocaleDateString("en-US", {
@@ -381,30 +452,25 @@ export function AssignmentsTabContent() {
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                                     <div className="flex items-center gap-2 mb-2">
                                         <TrendingUp className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
-                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Progress</div>
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Progress
+                                        </div>
                                     </div>
                                     <div className="font-semibold text-2xl">
-                                        {(() => {
-                                            const start = new Date(selected.internship.startDate).getTime()
-                                            const end = new Date(selected.internship.endDate).getTime()
-                                            const now = Date.now()
-                                            const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-                                            return Math.round(progress)
-                                        })()}%
-                                    </div>
-                                    <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full transition-all duration-500"
-                                            style={{
-                                                width: `${(() => {
-                                                    const start = new Date(selected.internship.startDate).getTime()
-                                                    const end = new Date(selected.internship.endDate).getTime()
-                                                    const now = Date.now()
-                                                    return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-                                                })()}%`,
-                                                background: `linear-gradient(90deg, var(--projects-card-hover-from), var(--projects-card-hover-to))`,
-                                            }}
-                                        />
+                                        {Math.round(
+                                            Math.min(
+                                                100,
+                                                Math.max(
+                                                    0,
+                                                    ((Date.now() -
+                                                            new Date(selected.internship.startDate).getTime()) /
+                                                        (new Date(selected.internship.endDate).getTime() -
+                                                            new Date(selected.internship.startDate).getTime())) *
+                                                    100,
+                                                ),
+                                            ),
+                                        )}
+                                        %
                                     </div>
                                 </div>
                             </div>
