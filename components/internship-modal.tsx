@@ -449,7 +449,22 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                                             onSelect={(date) => updateField("testAssignmentDueDate", date)}
                                             initialFocus
                                             className="rounded-xl"
+                                            disabled={(date) => {
+                                                const { applicationStart, applicationEnd } = formValues
+
+                                                // Disable if before start or after end
+                                                if (applicationStart && date < applicationStart) return true
+                                                if (applicationEnd && date > applicationEnd) return true
+
+                                                // Optional: disallow selecting before today
+                                                // return date < new Date()
+
+                                                return false
+                                            }}
                                         />
+                                        {/*<p className="text-xstext-slate-500">*/}
+                                        {/*    The assignment due date must be within the application period.*/}
+                                        {/*</p>*/}
                                     </PopoverContent>
                                 </Popover>
                             </FormField>
