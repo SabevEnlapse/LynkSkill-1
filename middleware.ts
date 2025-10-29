@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
     "/api/validate-eik(.*)",
     "/api/company/accept-policies(.*)",
     "/api/upload-logo(.*)",
+    "/api/cleanup(.*)"
 ]);
 
 const isOnboardingRoute = createRouteMatcher([
