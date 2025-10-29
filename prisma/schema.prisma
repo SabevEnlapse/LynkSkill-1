@@ -18,6 +18,7 @@ model User {
   email              String
   role               Role
   onboardingComplete Boolean       @default(false)
+  introShown         Boolean       @default(false)
   profile            Profile?
   companies          Company[]     @relation("UserCompanies")
   applications       Application[] @relation("StudentApplications")
@@ -219,7 +220,7 @@ model Project {
   internship    Internship  @relation(fields: [internshipId], references: [id])
 
   applicationId String       @unique
-  application   Application  @relation(fields: [applicationId], references: [id])
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   studentId     String
   student       User         @relation("StudentProjects", fields: [studentId], references: [id])
@@ -229,6 +230,7 @@ model Project {
 
   experiences   Experience[]
 }
+
 
 //
 // ---------------------
@@ -249,8 +251,9 @@ model Experience {
 
   student User    @relation(fields: [studentId], references: [id])
   company Company @relation(fields: [companyId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
+
 
 model eikCheck {
   id        Int      @id @default(autoincrement())
