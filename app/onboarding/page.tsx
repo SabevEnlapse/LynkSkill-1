@@ -937,7 +937,7 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
-                    <div className="flex justify-center pt-8">
+                    <div className="flex justify-center">
                         <Button
                             type="submit"
                             disabled={

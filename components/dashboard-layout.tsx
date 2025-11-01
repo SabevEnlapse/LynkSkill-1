@@ -404,6 +404,8 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                         setShowMascot(false)
                         await fetch("/api/user/intro-shown", { method: "POST" })
                     }}
+                    setActiveTab={setActiveTab}
+                    userType={userType}
                 />
             )}
 
