@@ -35,7 +35,7 @@ export function DashboardHero({ userType }: DashboardHeroProps) {
       >
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
-            <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Premium</Badge>
+            <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Link Early</Badge>
             <h2 className="text-3xl font-bold">Welcome to LynkSkill</h2>
             <p className="max-w-[600px] text-white/80">
               The best place to unleash your creativity, improve your skills and find your talents.

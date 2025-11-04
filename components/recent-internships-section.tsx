@@ -136,13 +136,13 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                             {finalInternships.length} {finalInternships.length === 1 ? "opportunity" : "opportunities"} available
                         </p>
                     </div>
-                    <Button
-                        size="lg"
-                        className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
-                    >
-                        View All
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                    {/*<Button*/}
+                    {/*    size="lg"*/}
+                    {/*    className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"*/}
+                    {/*>*/}
+                    {/*    View All*/}
+                    {/*    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />*/}
+                    {/*</Button>*/}
                 </div>
             </div>
 

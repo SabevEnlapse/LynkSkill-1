@@ -304,10 +304,10 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                              className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                     My Experience
                                 </TabsTrigger>
-                                <TabsTrigger value="analytics"
-                                             className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
-                                    Analytics
-                                </TabsTrigger>
+                                {/*<TabsTrigger value="analytics"*/}
+                                {/*             className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">*/}
+                                {/*    Analytics*/}
+                                {/*</TabsTrigger>*/}
                             </TabsList>
                             <div className="hidden md:flex gap-2">
                                 {/*<Button variant="outline" className="rounded-2xl bg-transparent">*/}
