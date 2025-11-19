@@ -5,14 +5,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Application, Portfolio } from "@/app/types"
-import { Building2, User, Calendar, CheckCircle, XCircle, Clock, Eye, ExternalLink, Github, Linkedin, GraduationCap, Briefcase, Award, Star, Sparkles, TrendingUp, RefreshCw, Search, Layers, FileText, AlertCircle } from 'lucide-react'
+import { Building2, User, Calendar, CheckCircle, XCircle, Clock, Eye, ExternalLink, Github, Linkedin, GraduationCap, Briefcase, Award, Star, Sparkles, TrendingUp, RefreshCw, Search, Layers, FileText } from 'lucide-react'
 
 interface ApplicationsTabContentProps {
   userType: "Student" | "Company"
 }
 
 export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps) {
-
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
@@ -213,7 +212,6 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
 
   return (
       <div className="space-y-8">
-
         <div className="relative overflow-hidden">
           <div className="bg-gradient-to-r from-[var(--application-header-gradient-from)] to-[var(--application-header-gradient-to)] rounded-2xl p-8 shadow-[0_20px_50px_var(--application-shadow-medium)]">
             <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 rounded-3xl"></div>
@@ -399,73 +397,67 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                         </span>
                             </div>
 
-                            <div className="space-y-3">
+                            {/* CHANGE: moved warning message above buttons for better visibility when there's no file uploaded */}
+                            {userType === "Company" && app.status === "PENDING" && !app.hasUploadedFiles && (
+                                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                                  <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                                    <span className="text-base">⚠️</span>
+                                    <span className="font-medium">Student must upload an assignment before you can review.</span>
+                                  </p>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3">
                               {userType === "Company" && (
                                   <>
                                     {app.status === "PENDING" && (
-                                        <div className="space-y-3">
-                                          {/* Warning message moved above buttons */}
-                                          {!app.hasUploadedFiles && (
-                                              <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                                                <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                                <p className="text-xs text-amber-700 font-medium leading-relaxed">
-                                                  Student must upload an assignment before you can review this application.
-                                                </p>
-                                              </div>
-                                          )}
+                                        <>
+                                          <Button
+                                              size="sm"
+                                              disabled={!app.hasUploadedFiles}
+                                              onClick={() => updateApplication(app.id, "APPROVED")}
+                                              className={`flex-1 font-semibold transition-all duration-200 ${
+                                                  app.hasUploadedFiles
+                                                      ? "bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl"
+                                                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                                              }`}
+                                          >
+                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                            Approve
+                                          </Button>
 
-                                          {/* Action buttons in a single row */}
-                                          <div className="grid grid-cols-2 gap-2">
-                                            <Button
-                                                size="sm"
-                                                disabled={!app.hasUploadedFiles}
-                                                onClick={() => updateApplication(app.id, "APPROVED")}
-                                                className={`font-semibold transition-all duration-200 ${
-                                                    app.hasUploadedFiles
-                                                        ? "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
-                                                        : "bg-muted text-muted-foreground cursor-not-allowed"
-                                                }`}
-                                            >
-                                              <CheckCircle className="w-4 h-4 mr-1.5" />
-                                              Approve
-                                            </Button>
-
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={!app.hasUploadedFiles}
-                                                onClick={() => updateApplication(app.id, "REJECTED")}
-                                                className={`font-semibold transition-all duration-200 ${
-                                                    app.hasUploadedFiles
-                                                        ? "border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                                                        : "border-muted text-muted-foreground cursor-not-allowed"
-                                                }`}
-                                            >
-                                              <XCircle className="w-4 h-4 mr-1.5" />
-                                              Reject
-                                            </Button>
-                                          </div>
-                                        </div>
+                                          <Button
+                                              size="sm"
+                                              variant="outline"
+                                              disabled={!app.hasUploadedFiles}
+                                              onClick={() => updateApplication(app.id, "REJECTED")}
+                                              className={`flex-1 font-semibold transition-all duration-200 ${
+                                                  app.hasUploadedFiles
+                                                      ? "border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)]"
+                                                      : "border-muted text-muted-foreground cursor-not-allowed"
+                                              }`}
+                                          >
+                                            <XCircle className="w-4 h-4 mr-2" />
+                                            Reject
+                                          </Button>
+                                        </>
                                     )}
-
-                                    {/* View Portfolio button always visible for companies */}
                                     <Button
                                         size="sm"
                                         variant="outline"
                                         onClick={() => viewPortfolio(app.studentId)}
-                                        className="w-full border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+                                        className="w-full flex-1 border-2 border-primary/20 text-primary hover:bg-primary transition-all duration-200 font-semibold"
                                     >
                                       <Eye className="w-4 h-4 mr-2" />
-                                      View Student Portfolio
+                                      View Portfolio
                                     </Button>
                                   </>
                               )}
-
                               {userType === "Student" && (
                                   <Button
                                       size="sm"
                                       variant="outline"
-                                      className="w-full bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/10 font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                                      className="w-full bg-muted/50 border-border/50 font-semibold"
                                       onClick={() =>
                                           setShowCompany({
                                             company: app.internship?.company || null,
@@ -474,7 +466,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                                       }
                                   >
                                     <Eye className="w-4 h-4 mr-2" />
-                                    View Company Details
+                                    View Details
                                   </Button>
                               )}
                             </div>
@@ -486,7 +478,6 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
               </div>
             </>
         )}
-
 
         <AnimatePresence>
           {showPortfolio && portfolio && (
@@ -862,7 +853,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                                       onClick={() =>
                                           window.location.assign(`/assignments/${showCompany.internship?.id}`)
                                       }
-                                      className="rounded-xl text-foreground px-4 py-2 text-sm font-semibold flex items-center justify-center w-full"
+                                      className="rounded-xl text-foreground px-4 py-2 text-sm font-semibold flex items-center justify-center"
                                       style={{
                                         background:
                                             "linear-gradient(135deg, var(--internship-modal-gradient-from), var(--internship-modal-gradient-to))",
