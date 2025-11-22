@@ -49,32 +49,30 @@ export function AssignmentsTabContent() {
     const router = useRouter()
 
     const load = useCallback(async () => {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
+
+        const minDelay = new Promise(res => setTimeout(res, 300));
+
         try {
-            const res = await fetch("/api/projects")
-            const text = await res.text()
-            try {
-                const parsed = JSON.parse(text)
-                if (!Array.isArray(parsed)) {
-                    setError("Unexpected API response shape")
-                    setProjects([])
-                } else {
-                    setProjects(parsed)
-                }
-            } catch (parseErr) {
-                console.error("Failed to parse /api/projects", parseErr)
-                setError("Invalid API response")
-                setProjects([])
+            const res = await fetch("/api/projects", { cache: "no-store" });
+            const parsed = await res.json();
+
+            if (!Array.isArray(parsed)) {
+                setError("Unexpected API response shape");
+                setProjects([]);
+            } else {
+                setProjects(parsed);
             }
-        } catch (err: unknown) {
-            console.error("Failed to fetch /api/projects", err)
-            setError(err instanceof Error ? err.message : "Failed to fetch projects")
-            setProjects([])
-        } finally {
-            setLoading(false)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to fetch projects");
+            setProjects([]);
         }
-    }, [])
+
+        await minDelay;
+        setLoading(false);
+    }, []);
+
 
     useEffect(() => {
         load()

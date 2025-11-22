@@ -1,134 +1,147 @@
+// app/api/projects/route.ts
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-import type { Project, Internship, Company, Application, User, Profile } from "@prisma/client"
+import type { Prisma } from "@prisma/client"
 
-export async function GET(req: Request) {
-    try {
-        const { userId } = await auth()
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
+// 🔥 Принуждаваме Node runtime (Prisma не работи на Edge)
+export const runtime = "nodejs"
+// 🔥 Забраняваме кеша (иначе Next връща бавен cold start)
+export const dynamic = "force-dynamic"
 
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { id: true, role: true },
-        })
+// 🔥 Супер важно за Supabase pgBouncer – забранява prepared statements
+process.env.PGSSLMODE = "require"
+process.env.PGTZ = "UTC"
+process.env.NEXT_PRISMA_DISABLE_WARNINGS = "true"
 
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 })
-        }
-
-        // 🧹 Auto-cleanup (unchanged)
-        try {
-            const now = new Date()
-            const expiredProjects = await prisma.project.findMany({
-                where: {
-                    internship: { testAssignmentDueDate: { lt: now } },
-                },
-                include: { internship: true, student: true },
-            })
-
-            let deletedCount = 0
-            for (const project of expiredProjects) {
-                const submissionExists = await prisma.testSubmission.findFirst({
-                    where: {
-                        internshipId: project.internshipId,
-                        studentId: project.studentId,
-                    },
-                })
-                if (!submissionExists) {
-                    await prisma.project.delete({ where: { id: project.id } })
-                    deletedCount++
+type SelectedProject = Prisma.ProjectGetPayload<{
+    select: {
+        id: true
+        title: true
+        createdAt: true
+        internshipId: true
+        studentId: true
+        application: { select: { status: true } }
+        internship: {
+            select: {
+                id: true
+                title: true
+                applicationStart: true
+                applicationEnd: true
+                company: { select: { name: true } }
+                assignments: {
+                    select: {
+                        studentId: true
+                        title: true
+                        description: true
+                        dueDate: true
+                    }
                 }
             }
-            if (deletedCount > 0) {
-                console.log(`🧹 Auto-deleted ${deletedCount} expired projects with no submissions.`)
+        }
+        student: {
+            select: {
+                email: true
+                profile: { select: { name: true } }
             }
-        } catch (cleanupErr) {
-            console.warn("⚠️ Cleanup skipped:", cleanupErr)
         }
+    }
+}>
 
-        // 🔹 Get all projects
-        let projects: (Project & {
-            internship: (Internship & { company: Company | null }) | null
-            student: (User & { profile: Profile | null }) | null
-            application: Application | null
-        })[] = []
+export async function GET() {
+    try {
+        const { userId } = await auth()
+        if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        if (user.role === "STUDENT") {
-            projects = await prisma.project.findMany({
-                where: { studentId: user.id },
-                include: {
-                    internship: { include: { company: true } },
-                    student: { include: { profile: true } },
-                    application: true,
-                },
-                orderBy: { createdAt: "desc" },
-            })
-        } else if (user.role === "COMPANY") {
-            projects = await prisma.project.findMany({
-                where: { company: { ownerId: user.id } },
-                include: {
-                    internship: { include: { company: true } },
-                    student: { include: { profile: true } },
-                    application: true,
-                },
-                orderBy: { createdAt: "desc" },
-            })
-        }
-
-        // 🔹 Get assignments for each project’s internship & student
-        const internshipIds = projects.map((p) => p.internshipId)
-        const studentIds = projects.map((p) => p.studentId)
-
-        const assignments = await prisma.assignment.findMany({
-            where: {
-                internshipId: { in: internshipIds },
-                studentId: { in: studentIds },
-            },
+        // 🔥 Взимаме user-а с минимални полета (по-бързо)
+        const user = await prisma.user.findUnique({
+            where: { clerkId: userId },
+            select: { id: true, role: true }
         })
 
-        // 🔹 Format combined response
+        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+
+        // 🔥 MAIN QUERY — минимално необходимо, без излишни колони
+        const projects = await prisma.project.findMany({
+            where:
+                user.role === "STUDENT"
+                    ? { studentId: user.id }
+                    : user.role === "COMPANY"
+                        ? { company: { ownerId: user.id } }
+                        : undefined,
+
+            orderBy: { createdAt: "desc" },
+
+            select: {
+                id: true,
+                title: true,
+                createdAt: true,
+                internshipId: true,
+                studentId: true,
+                application: { select: { status: true } },
+                internship: {
+                    select: {
+                        id: true,
+                        title: true,
+                        applicationStart: true,
+                        applicationEnd: true,
+                        company: { select: { name: true } },
+                        assignments: {
+                            select: {
+                                studentId: true,
+                                title: true,
+                                description: true,
+                                dueDate: true
+                            }
+                        }
+                    }
+                },
+                student: {
+                    select: {
+                        email: true,
+                        profile: { select: { name: true } }
+                    }
+                }
+            }
+        }) as SelectedProject[]
+
+        if (projects.length === 0) return NextResponse.json([])
+
+        // 🔥 Форматираме ultra-light обект за frontend
         const formatted = projects.map((p) => {
-            const relatedAssignment = assignments.find(
-                (a) => a.internshipId === p.internshipId && a.studentId === p.studentId
-            )
+            const related = p.internship?.assignments?.find(a => a.studentId === p.studentId)
 
             return {
                 id: p.id,
                 title: p.title,
-                internship: {
-                    id: p.internship?.id ?? "",
-                    title: p.internship?.title ?? "(no title)",
-                    company: {
-                        name: p.internship?.company?.name ?? "(no company)",
-                    },
-                    startDate: p.internship?.applicationStart
-                        ? new Date(p.internship.applicationStart).toISOString()
-                        : null,
-                    endDate: p.internship?.applicationEnd
-                        ? new Date(p.internship.applicationEnd).toISOString()
-                        : null,
-                },
-                student: {
-                    name: p.student?.profile?.name ?? p.student?.email ?? "Unknown",
-                    email: p.student?.email ?? "",
-                },
+                createdAt: p.createdAt.toISOString(),
                 status:
                     p.application?.status === "APPROVED"
                         ? "ONGOING"
                         : p.application?.status === "REJECTED"
                             ? "COMPLETED"
                             : "PENDING",
-                createdAt: p.createdAt.toISOString(),
-                assignment: relatedAssignment
+
+                internship: {
+                    id: p.internship?.id ?? "",
+                    title: p.internship?.title ?? "",
+                    company: { name: p.internship?.company?.name ?? "" },
+                    startDate: p.internship?.applicationStart?.toISOString() ?? null,
+                    endDate: p.internship?.applicationEnd?.toISOString() ?? null
+                },
+
+                student: {
+                    name: p.student?.profile?.name ?? p.student?.email ?? "",
+                    email: p.student?.email ?? ""
+                },
+
+                assignment: related
                     ? {
-                        title: relatedAssignment.title,
-                        description: relatedAssignment.description,
-                        dueDate: relatedAssignment.dueDate.toISOString(),
+                        title: related.title,
+                        description: related.description,
+                        dueDate: related.dueDate.toISOString()
                     }
-                    : null,
+                    : null
             }
         })
 
@@ -136,7 +149,7 @@ export async function GET(req: Request) {
     } catch (err) {
         console.error("GET /api/projects error:", err)
         return NextResponse.json(
-            { error: "Failed to fetch projects", details: String(err) },
+            { error: "Failed to fetch projects", details: `${err}` },
             { status: 500 }
         )
     }
