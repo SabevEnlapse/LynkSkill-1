@@ -37,7 +37,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
 
-    const [displayCount, setDisplayCount] = useState(4)
+    const [displayCount, setDisplayCount] = useState(6)
 
     const loadData = useCallback(async () => {
         try {
@@ -386,7 +386,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                                 )}
                                                             </Button>
                                                         ) : (
-                                                            <div className="w-full flex flex-col sm:flex-row gap-2">
+                                                            <div className="w-full flex flex-col gap-2">
                                                                 <ApplyButton
                                                                     internshipId={item.id}
                                                                     goToPortfolioTab={() => setActiveTab?.("apps")}
