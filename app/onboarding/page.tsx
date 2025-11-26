@@ -841,7 +841,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <MapPin className="w-5 h-5 text-muted-foreground" />
                                             <Label htmlFor="companyLocation" className="text-lg font-bold">
-                                                Location <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                                                Location
                                             </Label>
                                         </div>
                                         <Input
