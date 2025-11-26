@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label"
 import { StudentPolicyModal } from "@/components/student-policy-modal"
 import { CompanyPolicyModal } from "@/components/company-policy-modal"
 import { z } from "zod"
+import {safeFetch} from "@/lib/api";
 
 const companySchema = z.object({
     companyEik: z
@@ -147,292 +148,262 @@ export default function OnboardingPage() {
     }
 
     const handleEikChange = async (value: string) => {
-        setEik(value)
-        setCompanyValid(null)
-        setError("")
+        setEik(value);
+        setCompanyValid(null);
+        setError("");
 
-        if (value.length < 9) return
+        if (value.length < 9) return;
 
         try {
-            const res = await fetch(`/api/validate-eik?eik=${value}`, { cache: "no-store" })
+            const data = await safeFetch<{ valid: boolean | "true" | "false"; error?: string }>(
+                `/api/validate-eik?eik=${value}`,
+                { cache: "no-store" }
+            );
 
-            // Read body once, as text
-            const raw = await res.text()
+            console.log("EIK API Response:", data);
 
-            interface EikValidationResponse {
-                valid: boolean | "true" | "false"
-                error?: string
-            }
-            let data: EikValidationResponse | null = null
-            try {
-                data = JSON.parse(raw)
-            } catch {
-                console.error("EIK API returned non-JSON response:", raw.slice(0, 200))
-                setCompanyValid(false)
-                setError("Server returned invalid response")
-                return
-            }
-
-            console.log("EIK API Response:", { ok: res.ok, data })
-
-            if (res.ok && data && (data.valid === true || data.valid === "true")) {
-                setCompanyValid(true)
-                setError("")
+            if (data && (data.valid === true || data.valid === "true")) {
+                setCompanyValid(true);
+                setError("");
             } else {
-                setCompanyValid(false)
-                setError(data?.error || "EIK not found")
+                setCompanyValid(false);
+                setError(data?.error || "EIK not found");
             }
         } catch (err) {
-            console.error("EIK validation error:", err)
-            setCompanyValid(false)
-            setError("Unexpected error")
+            console.error("EIK validation error:", err);
+            setCompanyValid(false);
+            setError("Unexpected error");
         }
-    }
+    };
 
     const handleLogoUpload = async (file: File) => {
-        setIsUploadingLogo(true)
-        setError("")
+        setIsUploadingLogo(true);
+        setError("");
 
         try {
-            const previewUrl = URL.createObjectURL(file)
-            setLogoPreview(previewUrl)
+            const previewUrl = URL.createObjectURL(file);
+            setLogoPreview(previewUrl);
 
-            const formData = new FormData()
-            formData.append("file", file)
+            const formData = new FormData();
+            formData.append("file", file);
 
-            const res = await fetch("/api/upload-logo", {
+            const data = await safeFetch<{ logoUrl: string }>("/api/upload-logo", {
                 method: "POST",
                 body: formData,
                 cache: "no-store",
-            })
+            });
 
-            const contentType = res.headers.get("content-type")
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await res.text()
-                console.error("Non-JSON response:", text.substring(0, 200))
-                throw new Error("Server returned an invalid response. Check console for details.")
-            }
+            const uploadedUrl = data.logoUrl;
+            const input = document.querySelector<HTMLInputElement>('[name="companyLogoHidden"]');
+            if (input) input.value = uploadedUrl;
 
-            const data = await res.json()
-
-            if (!res.ok) {
-                throw new Error(data.error || "Failed to upload logo")
-            }
-
-            const uploadedUrl = data.logoUrl
-
-            const input = document.querySelector<HTMLInputElement>('[name="companyLogoHidden"]')
-            if (input) input.value = uploadedUrl
-
-            console.log("✅ Logo uploaded successfully:", uploadedUrl)
+            console.log("✅ Logo uploaded successfully:", uploadedUrl);
         } catch (error) {
-            console.error("Logo upload failed:", error)
-            setError(error instanceof Error ? error.message : "Logo upload failed. Please try again.")
-            setLogoPreview(null)
+            console.error("Logo upload failed:", error);
+            setError(error instanceof Error ? error.message : "Logo upload failed. Please try again.");
+            setLogoPreview(null);
         } finally {
-            setIsUploadingLogo(false)
+            setIsUploadingLogo(false);
         }
-    }
+    };
 
     const handleStudentProceedClick = async () => {
-        setError("")
+        setError("");
 
         if (!dob) {
-            setError("Please enter your date of birth")
-            return
+            setError("Please enter your date of birth");
+            return;
         }
 
         if (!ageValid) {
-            setError("According to Bulgarian law, you must be at least 16 years old to use this platform")
-            return
+            setError("According to Bulgarian law, you must be at least 16 years old to use this platform");
+            return;
         }
 
         try {
-            const formData = new FormData()
-            formData.append("role", "student")
-            formData.append("dob", dob)
+            const formData = new FormData();
+            formData.append("role", "student");
+            formData.append("dob", dob);
 
-            const res = await completeOnboarding(formData)
+            const res = await completeOnboarding(formData);
 
             if (res?.createdPortfolioId) {
-                setCreatedPortfolioId(res.createdPortfolioId)
-                setShowStudentPolicyModal(true)
+                setCreatedPortfolioId(res.createdPortfolioId);
+                setShowStudentPolicyModal(true);
             } else {
-                setError(res?.error || "Unknown error creating portfolio")
+                setError(res?.error || "Unknown error creating portfolio");
             }
         } catch (err) {
-            console.error(err)
-            setError("Error creating portfolio")
+            console.error(err);
+            setError("Error creating portfolio");
         }
-    }
+    };
 
     const handleAcceptStudentPolicies = async () => {
         if (!createdPortfolioId) {
-            setError("Portfolio not created yet")
-            return
+            setError("Portfolio not created yet");
+            return;
         }
 
         try {
-            const res = await fetch("/api/student/accept-policies", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    portfolioId: createdPortfolioId,
-                    tosAccepted: studentTosChecked,
-                    privacyAccepted: studentPrivacyChecked,
-                }),
-            })
+            const data = await safeFetch<{ success?: boolean; error?: string }>(
+                "/api/student/accept-policies",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        portfolioId: createdPortfolioId,
+                        tosAccepted: studentTosChecked,
+                        privacyAccepted: studentPrivacyChecked,
+                    }),
+                }
+            );
 
-            let data: { error?: string } | null = null
-            try {
-                data = await res.json()
-            } catch {
-                // If response is empty or invalid JSON, skip
-                console.warn("⚠️ API returned non-JSON or empty response")
+            if (data.success) {
+                setStudentPolicyAccepted(true);
+                setShowStudentPolicyModal(false);
+            } else {
+                setError(data.error || "Failed to accept policies");
             }
-
-            if (!res.ok) {
-                const msg = data?.error || `Request failed with status ${res.status}`
-                throw new Error(msg)
-            }
-
-            setStudentPolicyAccepted(true)
-            setShowStudentPolicyModal(false)
         } catch (err) {
-            console.error("❌ handleAcceptStudentPolicies error:", err)
-            setError(err instanceof Error ? err.message : "Failed to accept policies")
+            console.error("❌ handleAcceptStudentPolicies error:", err);
+            setError(err instanceof Error ? err.message : "Failed to accept policies");
         }
-    }
+    };
 
     const handleProceedClick = async () => {
-        setError("")
+        setError("");
 
-        if (selectedRole !== "company") return
+        if (selectedRole !== "company") return;
 
         const result = companySchema.safeParse({
             companyEik: eik,
             companyName,
-            companyDescription: document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value,
-            companyLocation: document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value,
-        })
+            companyDescription:
+            document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value,
+            companyLocation:
+            document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value,
+        });
 
         if (!result.success) {
-            setError(result.error.issues[0].message)
-            return
+            setError(result.error.issues[0].message);
+            return;
         }
 
         if (!companyValid) {
-            setError("EIK not found in registry")
-            return
+            setError("EIK not found in registry");
+            return;
         }
 
         try {
-            const formData = new FormData()
-            formData.append("role", "company")
-            formData.append("companyEik", eik)
-            formData.append("companyName", companyName)
+            const formData = new FormData();
+            formData.append("role", "company");
+            formData.append("companyEik", eik);
+            formData.append("companyName", companyName);
             formData.append(
                 "companyDescription",
-                document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value || "",
-            )
+                document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value || ""
+            );
             formData.append(
                 "companyLocation",
-                document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value || "",
-            )
+                document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value || ""
+            );
 
-            const res = await completeOnboarding(formData)
+            const res = await completeOnboarding(formData);
 
             if (res?.createdCompanyId) {
-                setCreatedCompanyId(res.createdCompanyId)
-                setShowPolicyModal(true)
+                setCreatedCompanyId(res.createdCompanyId);
+                setShowPolicyModal(true);
             } else {
-                setError(res?.error || "Unknown error creating company")
+                setError(res?.error || "Unknown error creating company");
             }
         } catch (err) {
-            console.error(err)
-            setError("Error creating company")
+            console.error(err);
+            setError("Error creating company");
         }
-    }
+    };
 
     const handleAcceptPolicies = async () => {
         if (!createdCompanyId) {
-            setError("Company not created yet")
-            return
+            setError("Company not created yet");
+            return;
         }
 
         try {
-            const res = await fetch("/api/company/accept-policies", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    companyId: createdCompanyId,
-                    tosAccepted: tosChecked,
-                    privacyAccepted: privacyChecked,
-                }),
-            })
+            const data = await safeFetch<{ success?: boolean; error?: string }>(
+                "/api/company/accept-policies",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        companyId: createdCompanyId,
+                        tosAccepted: tosChecked,
+                        privacyAccepted: privacyChecked,
+                    }),
+                }
+            );
 
-            if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.error || "Failed to accept policies")
+            if (data.success) {
+                setPolicyAccepted(true);
+                setShowPolicyModal(false);
+            } else {
+                setError(data.error || "Failed to accept policies");
             }
-
-            setPolicyAccepted(true)
-            setShowPolicyModal(false)
         } catch (err) {
-            console.error(err)
-            setError("Failed to accept policies")
+            console.error("❌ handleAcceptPolicies error:", err);
+            setError(err instanceof Error ? err.message : "Failed to accept policies");
         }
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setError("")
+        e.preventDefault();
+        setError("");
 
-        const formData = new FormData(e.currentTarget)
-        const role = formData.get("role")
+        const formData = new FormData(e.currentTarget);
+        const role = formData.get("role");
 
         if (role === "student" && !studentPolicyAccepted) {
-            setError("You must accept the policy before continuing")
-            return
+            setError("You must accept the policy before continuing");
+            return;
         }
 
         if (role === "company" && !policyAccepted) {
-            setError("You must accept the policy before continuing")
-            return
+            setError("You must accept the policy before continuing");
+            return;
         }
 
-        setIsPending(true)
+        setIsPending(true);
 
         try {
-            const res = await completeOnboarding(formData)
+            const res = await completeOnboarding(formData);
 
             if (res?.error) {
-                setError(res.error)
-                return
+                setError(res.error);
+                return;
             }
 
             if (res?.dashboard) {
-                await user?.reload()
-                router.push(res.dashboard)
+                await user?.reload();
+                router.push(res.dashboard);
             }
         } catch (err) {
-            console.error(err)
-            setError("An error occurred during onboarding")
+            console.error(err);
+            setError("An error occurred during onboarding");
         } finally {
-            setIsPending(false)
+            setIsPending(false);
         }
-    }
+    };
 
     const getProgressStep = () => {
-        if (!selectedRole) return 0
+        if (!selectedRole) return 0;
         if (selectedRole === "student") {
-            if (!studentPolicyAccepted) return 1
-            return 2
+            if (!studentPolicyAccepted) return 1;
+            return 2;
         }
-        if (selectedRole === "company" && !policyAccepted) return 1
-        if (policyAccepted) return 2
-        return 1
-    }
+        if (selectedRole === "company" && !policyAccepted) return 1;
+        if (policyAccepted) return 2;
+        return 1;
+    };
 
     const progressStep = getProgressStep()
     const totalSteps = selectedRole === "student" ? 3 : selectedRole === "company" ? 3 : 2
@@ -841,7 +812,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <MapPin className="w-5 h-5 text-muted-foreground" />
                                             <Label htmlFor="companyLocation" className="text-lg font-bold">
-                                                Location <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                                                Location <span className="text-muted-foreground font-normal text-sm"></span>
                                             </Label>
                                         </div>
                                         <Input
