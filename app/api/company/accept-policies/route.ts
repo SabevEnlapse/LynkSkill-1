@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 
+//test
 export async function POST(req: NextRequest) {
     try {
         const { userId } = await auth()
