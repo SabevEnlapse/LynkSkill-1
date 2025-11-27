@@ -24,17 +24,31 @@ import { Input } from "@/components/ui/input"
 
 type ApiProject = {
     id: string
+    title: string
+    createdAt: string
+
+    status: "ONGOING" | "COMPLETED" | "PENDING"
+
     internship: {
         id: string
         title: string
         company: { name: string }
-        startDate: string
-        endDate: string
+        startDate: string | null
+        endDate: string | null
     }
-    student: { name: string; email: string }
-    status: "ONGOING" | "COMPLETED"
-    createdAt: string
+
+    student: {
+        name: string
+        email: string
+    }
+
+    assignment: {
+        title: string
+        description: string
+        dueDate: string
+    } | null
 }
+
 
 export function AssignmentsTabContent() {
     const [projects, setProjects] = useState<ApiProject[]>([])
@@ -253,7 +267,7 @@ export function AssignmentsTabContent() {
                                                     {proj.internship.title}
                                                 </CardTitle>
                                                 <Badge
-                                                    variant={proj.status === "ONGOING" ? "secondary" : "default"}
+                                                    variant={["ONGOING", "PENDING"].includes(proj.status) ? "secondary" : "default"}
                                                     className="rounded-xl shrink-0 group-hover:scale-105 transition-transform group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30"
                                                 >
                                                     {proj.status}
