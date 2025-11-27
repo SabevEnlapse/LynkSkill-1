@@ -531,7 +531,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                                 internship: app.internship || null,
                                                                 application: app,
                                                                 assignmentRequired: Boolean(app.assignmentRequired),
-                                                                project: null, // FIXED
+                                                                project: app.project || null
                                                             })
                                                         }
                                                     >
