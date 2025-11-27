@@ -60,16 +60,24 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
     const [filter, setFilter] = useState<"all" | "recent">("all")
 
     const loadApplications = useCallback(async () => {
-        setLoading(true)
-        const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
+    setLoading(true)
+    const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
 
-        const res = await fetch(url)
-        if (res.ok) {
-            const data: Application[] = await res.json()
-            setApplications(data)
-        }
-        setLoading(false)
-    }, [userType])
+    const res = await fetch(url)
+    if (res.ok) {
+        const data: Application[] = await res.json()
+
+        setApplications(
+            data.map(app => ({
+                ...app,
+                assignmentRequired: Boolean(app.assignmentRequired),
+                hasUploadedFiles: Boolean(app.hasUploadedFiles)
+            }))
+        )
+    }
+    setLoading(false)
+}, [userType])
+
 
     useEffect(() => {
         loadApplications()
