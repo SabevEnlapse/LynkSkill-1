@@ -508,19 +508,21 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                 )}
                                                 {userType === "Student" && (
                                                     <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="w-full bg-muted/50 border-border/50 font-semibold"
-                                                        onClick={() =>
-                                                            setShowCompany({
-                                                                company: app.internship?.company || null,
-                                                                internship: app.internship || null,
-                                                            })
-                                                        }
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-2"/>
-                                                        View Details
-                                                    </Button>
+    size="sm"
+    variant="outline"
+    className="w-full bg-muted/50 border-border/50 font-semibold"
+    onClick={() =>
+        setShowCompany({
+            company: app.internship?.company || null,
+            internship: app.internship || null,
+            application: app,
+        })
+    }
+>
+    <Eye className="w-4 h-4 mr-2"/>
+    View Details
+</Button>
+
                                                 )}
                                             </div>
                                         </div>
