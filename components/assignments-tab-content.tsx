@@ -217,9 +217,14 @@ export function AssignmentsTabContent() {
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {finalProjects.map((proj) => {
-                            const start = new Date(proj.internship.startDate).getTime()
-                            const end = new Date(proj.internship.endDate).getTime()
-                            const progress = Math.min(100, Math.max(0, ((Date.now() - start) / (end - start)) * 100))
+                            const startDate = proj.internship.startDate ? new Date(proj.internship.startDate) : null
+const endDate = proj.internship.endDate ? new Date(proj.internship.endDate) : null
+
+const progress =
+    startDate && endDate
+        ? Math.min(100, Math.max(0, ((Date.now() - startDate.getTime()) / (endDate.getTime() - startDate.getTime())) * 100))
+        : 0
+
 
                             return (
                                 <motion.div
@@ -301,8 +306,14 @@ export function AssignmentsTabContent() {
                                                         <Clock className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
                                                         <span className="font-medium">Period:</span>
                                                         <span className="ml-1">
-                              {new Date(proj.internship.startDate).toLocaleDateString()} -{" "}
-                                                            {new Date(proj.internship.endDate).toLocaleDateString()}
+                             {proj.internship.startDate
+    ? new Date(proj.internship.startDate).toLocaleDateString()
+    : "N/A"}
+{" - "}
+{proj.internship.endDate
+    ? new Date(proj.internship.endDate).toLocaleDateString()
+    : "N/A"}
+
                             </span>
                                                     </div>
                                                 </div>
