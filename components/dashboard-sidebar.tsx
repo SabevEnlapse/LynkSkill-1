@@ -128,7 +128,7 @@ export function DashboardSidebar({
                     </button>
                 </AnimateIcon >
                     {/* Assignments - Always visible */}
-                    <AnimateIcon animateOnHover>
+                    {/* <AnimateIcon animateOnHover>
                         <button
                             onClick={() => setActiveTab("projects")}
                             className="flex w-full cursor-pointer items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted transition-colors"
@@ -138,7 +138,7 @@ export function DashboardSidebar({
                                 <span>Assignments</span>
                             </div>
                         </button>
-                    </AnimateIcon >
+                    </AnimateIcon > */}
 
                     {/* My Experience - Always visible */}
                     <AnimateIcon animateOnHover>
