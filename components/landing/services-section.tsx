@@ -59,7 +59,7 @@ const servicesData: ServiceData[] = [
         color: "blue",
         businessBenefit: "Discover talent through comprehensive portfolios",
         studentBenefit: "Stand out with professional presentation",
-        mascotImage: "/linky-mascot-portfolio.png",
+        mascotImage: "/linky-mascot.png",
     },
     {
         id: "experience",
@@ -79,7 +79,7 @@ const servicesData: ServiceData[] = [
         color: "cyan",
         businessBenefit: "Identify high-potential candidates early",
         studentBenefit: "Build a professional reputation and network",
-        mascotImage: "/linky-mascot.png",
+        mascotImage: "/linky-mascot-left.png",
     },
 ]
 
@@ -175,8 +175,8 @@ export function ServicesSection() {
                         </motion.div>
                         <span
                             className="text-sm md:text-base font-semibold bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-              Revolutionary Student-Business Connection
-            </span>
+                            Revolutionary Student-Business Connection
+                        </span>
                     </motion.div>
 
                     <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight">
