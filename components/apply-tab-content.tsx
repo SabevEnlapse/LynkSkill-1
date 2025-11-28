@@ -1,10 +1,10 @@
 "use client"
 
-import {useEffect, useState, useCallback} from "react"
-import {motion, AnimatePresence} from "framer-motion"
-import {Button} from "@/components/ui/button"
-import {Input} from "@/components/ui/input"
-import type {Application, Portfolio} from "@/app/types"
+import { useEffect, useState, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import type { Application, Portfolio } from "@/app/types"
 import {
     Building2,
     User,
@@ -32,7 +32,7 @@ interface ApplicationsTabContentProps {
     userType: "Student" | "Company"
 }
 
-export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) {
+export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps) {
     const [applications, setApplications] = useState<Application[]>([])
     const [loading, setLoading] = useState(true)
     const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
@@ -66,23 +66,23 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
     const [filter, setFilter] = useState<"all" | "recent">("all")
 
     const loadApplications = useCallback(async () => {
-    setLoading(true)
-    const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
+        setLoading(true)
+        const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
 
-    const res = await fetch(url)
-    if (res.ok) {
-        const data: Application[] = await res.json()
+        const res = await fetch(url)
+        if (res.ok) {
+            const data: Application[] = await res.json()
 
-        setApplications(
-            data.map(app => ({
-                ...app,
-                assignmentRequired: Boolean(app.assignmentRequired),
-                hasUploadedFiles: Boolean(app.hasUploadedFiles)
-            }))
-        )
-    }
-    setLoading(false)
-}, [userType])
+            setApplications(
+                data.map(app => ({
+                    ...app,
+                    assignmentRequired: Boolean(app.assignmentRequired),
+                    hasUploadedFiles: Boolean(app.hasUploadedFiles)
+                }))
+            )
+        }
+        setLoading(false)
+    }, [userType])
 
 
     useEffect(() => {
@@ -98,11 +98,11 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
     async function updateApplication(id: string, status: "APPROVED" | "REJECTED") {
         const res = await fetch(`/api/applications/${id}`, {
             method: "PATCH",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({status}),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
         })
         if (res.ok) {
-            setApplications((prev) => prev.map((app) => (app.id === id ? {...app, status} : app)))
+            setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status } : app)))
         }
     }
 
@@ -135,9 +135,9 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                     {[...Array(6)].map((_, i) => (
                         <motion.div
                             key={i}
-                            initial={{opacity: 0, y: 20}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{delay: i * 0.1}}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
                             className="relative overflow-hidden bg-gradient-to-br from-[var(--application-card-gradient-from)] to-[var(--application-card-gradient-to)] rounded-2xl p-6 shadow-[0_8px_30px_var(--application-shadow-light)] border border-border/50"
                         >
                             <div
@@ -262,7 +262,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                         <div className="space-y-2">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
-                                    <TrendingUp className="w-6 h-6 text-white"/>
+                                    <TrendingUp className="w-6 h-6 text-white" />
                                 </div>
                                 <h1 className="text-3xl font-bold text-white tracking-tight">
                                     {userType === "Student" ? "My Applications" : "Received Applications"}
@@ -290,7 +290,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                     className="rounded-2xl"
                     onClick={() => setFilter("all")}
                 >
-                    <Layers className="mr-2 h-4 w-4"/>
+                    <Layers className="mr-2 h-4 w-4" />
                     All Applications
                 </Button>
 
@@ -299,13 +299,13 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                     className="rounded-2xl"
                     onClick={() => setFilter("recent")}
                 >
-                    <Clock className="mr-2 h-4 w-4"/>
+                    <Clock className="mr-2 h-4 w-4" />
                     Recent
                 </Button>
 
                 <div className="flex-1"></div>
                 <div className="relative w-full md:w-auto mt-3 md:mt-0">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground"/>
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Search applications..."
@@ -321,20 +321,20 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                     disabled={refreshing || loading}
                     className="rounded-2xl"
                 >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}/>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                     {refreshing ? "Refreshing..." : "Refresh"}
                 </Button>
             </div>
 
             {finalApplications.length === 0 ? (
-                <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} className="text-center py-16">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
                     <div className="relative mb-8">
                         <div
                             className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-full w-24 h-24 flex items-center justify-center mx-auto shadow-lg">
-                            <Briefcase className="w-12 h-12 text-muted-foreground"/>
+                            <Briefcase className="w-12 h-12 text-muted-foreground" />
                         </div>
                         <div className="absolute -top-2 -right-2 bg-primary/20 rounded-full p-2">
-                            <Sparkles className="w-4 h-4 text-primary"/>
+                            <Sparkles className="w-4 h-4 text-primary" />
                         </div>
                     </div>
                     <h3 className="text-2xl font-bold text-foreground mb-3">
@@ -378,9 +378,9 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                 return (
                                     <motion.div
                                         key={app.id}
-                                        initial={{opacity: 0, y: 20, scale: 0.95}}
-                                        animate={{opacity: 1, y: 0, scale: 1}}
-                                        exit={{opacity: 0, y: -20, scale: 0.95}}
+                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
                                         transition={{
                                             delay: index * 0.1,
                                             type: "spring",
@@ -390,7 +390,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                         whileHover={{
                                             y: -8,
                                             scale: 1.02,
-                                            transition: {duration: 0.2, type: "spring", stiffness: 400},
+                                            transition: { duration: 0.2, type: "spring", stiffness: 400 },
                                         }}
                                         className="group relative overflow-hidden bg-gradient-to-br from-[var(--application-card-gradient-from)] to-[var(--application-card-gradient-to)] rounded-2xl p-6 shadow-[0_8px_30px_var(--application-shadow-light)] hover:shadow-[0_20px_50px_var(--application-shadow-medium)] border border-border/50 transition-all duration-300"
                                     >
@@ -408,33 +408,33 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                             <>
                                                                 <div
                                                                     className="p-2 bg-primary/10 rounded-xl flex items-center justify-center">
-                                                                    <Building2 className="w-4 h-4 text-primary"/>
+                                                                    <Building2 className="w-4 h-4 text-primary" />
                                                                 </div>
                                                                 <div className="flex flex-col leading-tight">
-                                                            <span className="font-semibold text-base">
-                                                                {app.internship?.company?.name || "Unknown Company"}
-                                                            </span>
+                                                                    <span className="font-semibold text-base">
+                                                                        {app.internship?.company?.name || "Unknown Company"}
+                                                                    </span>
                                                                 </div>
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <div
                                                                     className="p-2 bg-primary/10 rounded-xl flex items-center justify-center">
-                                                                    <User className="w-4 h-4 text-primary"/>
+                                                                    <User className="w-4 h-4 text-primary" />
                                                                 </div>
 
                                                                 <div className="flex flex-col leading-tight">
                                                                     {/* NAME */}
                                                                     <span className="font-semibold text-base">
-                                                                {app.student?.profile?.name || "Unknown Student"}
-                                                            </span>
+                                                                        {app.student?.profile?.name || "Unknown Student"}
+                                                                    </span>
 
                                                                     {/* EMAIL */}
                                                                     <a
                                                                         href={`mailto:${app.student?.email}`}
                                                                         className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5"
                                                                     >
-                                                                        <Mail className="w-3 h-3"/>
+                                                                        <Mail className="w-3 h-3" />
                                                                         {app.student?.email || "No email"}
                                                                     </a>
                                                                 </div>
@@ -446,17 +446,17 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                 <div
                                                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${statusConfig.className} backdrop-blur-sm`}
                                                 >
-                                                    <StatusIcon className="w-4 h-4"/>
+                                                    <StatusIcon className="w-4 h-4" />
                                                     {statusConfig.label}
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center text-muted-foreground text-sm mb-6">
                                                 <div className="p-1.5 bg-muted/20 rounded-lg mr-2">
-                                                    <Calendar className="w-4 h-4"/>
+                                                    <Calendar className="w-4 h-4" />
                                                 </div>
                                                 <span className="font-medium">
-                                                  Applied {new Date(app.createdAt || Date.now()).toLocaleDateString()}
+                                                    Applied {new Date(app.createdAt || Date.now()).toLocaleDateString()}
                                                 </span>
                                             </div>
 
@@ -466,28 +466,27 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                 app.assignmentRequired &&
                                                 !app.hasUploadedFiles && (
                                                     <div
-                                                    className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                                                    <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
-                                                        <span className="text-base">⚠️</span>
-                                                        <span className="font-medium">Student must upload an assignment before you can review.</span>
-                                                    </p>
-                                                </div>
-                                            )}
+                                                        className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                                                        <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                                                            <span className="text-base">⚠️</span>
+                                                            <span className="font-medium">Student must upload an assignment before you can review.</span>
+                                                        </p>
+                                                    </div>
+                                                )}
 
-                                            <div className="flex gap-3">
+                                            {/* BUTTONS CONTAINER */}
+                                            <div className="mt-6 space-y-3">
+
                                                 {userType === "Company" && (
                                                     <>
+                                                        {/* ---------- ROW 1: APPROVE + REJECT ---------- */}
                                                         {app.status === "PENDING" && (
-                                                            <>
+                                                            <div className="flex gap-3">
                                                                 <Button
                                                                     size="sm"
                                                                     disabled={app.assignmentRequired && !app.hasUploadedFiles}
                                                                     onClick={() => updateApplication(app.id, "APPROVED")}
-                                                                    className={`flex-1 font-semibold transition-all duration-200 ${
-                                                                        app.assignmentRequired && !app.hasUploadedFiles
-                                                                            ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                                                            : "bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl"
-                                                                    }`}
+                                                                    className="flex-1 font-semibold bg-green-600 hover:bg-green-600/70 text-white"
                                                                 >
                                                                     <CheckCircle className="w-4 h-4 mr-2" />
                                                                     Approve
@@ -498,49 +497,70 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                                     variant="outline"
                                                                     disabled={app.assignmentRequired && !app.hasUploadedFiles}
                                                                     onClick={() => updateApplication(app.id, "REJECTED")}
-                                                                    className={`flex-1 font-semibold transition-all duration-200 ${
-                                                                        app.assignmentRequired && !app.hasUploadedFiles
-                                                                            ? "border-muted text-muted-foreground cursor-not-allowed"
-                                                                            : "border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)]"
-                                                                    }`}
+                                                                    className="flex-1 font-semibold border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
                                                                 >
                                                                     <XCircle className="w-4 h-4 mr-2" />
                                                                     Reject
                                                                 </Button>
-                                                            </>
+                                                            </div>
                                                         )}
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => viewPortfolio(app.studentId)}
-                                                            className="w-full flex-1 border-2 border-primary/20 text-primary hover:bg-primary transition-all duration-200 font-semibold"
-                                                        >
-                                                            <Eye className="w-4 h-4 mr-2"/>
-                                                            View Portfolio
-                                                        </Button>
+
+                                                        {/* ---------- ROW 2: PORTFOLIO + ASSIGNMENT ---------- */}
+                                                        <div className="flex gap-3">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => viewPortfolio(app.studentId)}
+                                                                className="flex-1 border-primary/20 text-primary hover:bg-primary hover:text-white font-semibold"
+                                                            >
+                                                                <Eye className="w-4 h-4 mr-2" />
+                                                                View Portfolio
+                                                            </Button>
+
+                                                            {(app.assignmentRequired || app.project) && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        if (!app.project?.id) {
+                                                                            alert("The student has not uploaded the assignment yet.")
+                                                                            return
+                                                                        }
+
+                                                                        window.location.assign(`/assignments/${app.project.id}`)
+                                                                    }}
+                                                                    className="flex-1 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold"
+                                                                >
+                                                                    <FileText className="w-4 h-4 mr-2" />
+                                                                    View Assignment
+                                                                </Button>
+                                                            )}
+
+                                                        </div>
                                                     </>
                                                 )}
+
                                                 {userType === "Student" && (
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         className="w-full bg-muted/50 border-border/50 font-semibold"
-                                                       onClick={() =>
+                                                        onClick={() =>
                                                             setShowCompany({
                                                                 company: app.internship?.company || null,
                                                                 internship: app.internship || null,
                                                                 application: app,
                                                                 assignmentRequired: Boolean(app.assignmentRequired),
-                                                                project: app.project || null
+                                                                project: app.project || null,
                                                             })
                                                         }
                                                     >
-                                                        <Eye className="w-4 h-4 mr-2"/>
+                                                        <Eye className="w-4 h-4 mr-2" />
                                                         View Details
                                                     </Button>
-
                                                 )}
                                             </div>
+
                                         </div>
                                     </motion.div>
                                 )
@@ -553,17 +573,17 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
             <AnimatePresence>
                 {showPortfolio && portfolio && (
                     <motion.div
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
                         onClick={() => setShowPortfolio(false)}
                     >
                         <motion.div
-                            initial={{scale: 0.9, opacity: 0, y: 20}}
-                            animate={{scale: 1, opacity: 1, y: 0}}
-                            exit={{scale: 0.9, opacity: 0, y: 20}}
-                            transition={{type: "spring", stiffness: 300, damping: 30}}
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="bg-background rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-border/20"
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -589,7 +609,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                         onClick={() => setShowPortfolio(false)}
                                         className="rounded-full h-12 w-12 hover:bg-white/20 text-white hover:text-white transition-all duration-200"
                                     >
-                                        <XCircle className="w-6 h-6"/>
+                                        <XCircle className="w-6 h-6" />
                                     </Button>
                                 </div>
                             </div>
@@ -600,21 +620,21 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                     {/* Personal Info */}
                                     <div className="space-y-6">
                                         <motion.div
-                                            initial={{opacity: 0, x: -20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.1}}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <User className="w-5 h-5 text-primary"/>
+                                                    <User className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Personal Information
                                             </h3>
                                             <div className="space-y-3 text-sm">
                                                 {portfolio.age && (
                                                     <div className="flex items-center">
-                                                        <Calendar className="w-4 h-4 mr-3 text-muted-foreground"/>
+                                                        <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
                                                         <span className="font-medium">Age: {portfolio.age}</span>
                                                     </div>
                                                 )}
@@ -626,14 +646,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
 
                                         {/* Skills */}
                                         <motion.div
-                                            initial={{opacity: 0, x: -20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.2}}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Star className="w-5 h-5 text-primary"/>
+                                                    <Star className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Skills
                                             </h3>
@@ -642,34 +662,34 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
 
                                         {/* Links */}
                                         <motion.div
-                                            initial={{opacity: 0, x: -20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.3}}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.3 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <ExternalLink className="w-5 h-5 text-primary"/>
+                                                    <ExternalLink className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Links
                                             </h3>
                                             <div className="flex gap-3">
                                                 {portfolio.linkedin && (
                                                     <Button size="sm" variant="outline" asChild
-                                                            className="font-semibold bg-transparent">
+                                                        className="font-semibold bg-transparent">
                                                         <a href={portfolio.linkedin} target="_blank"
-                                                           rel="noopener noreferrer">
-                                                            <Linkedin className="w-4 h-4 mr-2"/>
+                                                            rel="noopener noreferrer">
+                                                            <Linkedin className="w-4 h-4 mr-2" />
                                                             LinkedIn
                                                         </a>
                                                     </Button>
                                                 )}
                                                 {portfolio.github && (
                                                     <Button size="sm" variant="outline" asChild
-                                                            className="font-semibold bg-transparent">
+                                                        className="font-semibold bg-transparent">
                                                         <a href={portfolio.github} target="_blank"
-                                                           rel="noopener noreferrer">
-                                                            <Github className="w-4 h-4 mr-2"/>
+                                                            rel="noopener noreferrer">
+                                                            <Github className="w-4 h-4 mr-2" />
                                                             GitHub
                                                         </a>
                                                     </Button>
@@ -681,14 +701,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                     {/* Education & Experience */}
                                     <div className="space-y-6">
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.1}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <GraduationCap className="w-5 h-5 text-primary"/>
+                                                    <GraduationCap className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Education
                                             </h3>
@@ -696,14 +716,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                         </motion.div>
 
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.2}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Briefcase className="w-5 h-5 text-primary"/>
+                                                    <Briefcase className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Projects
                                             </h3>
@@ -711,14 +731,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                         </motion.div>
 
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.3}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.3 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Award className="w-5 h-5 text-primary"/>
+                                                    <Award className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Certifications
                                             </h3>
@@ -735,17 +755,17 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
             <AnimatePresence>
                 {showCompany && (
                     <motion.div
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
                         onClick={() => setShowCompany(null)}
                     >
                         <motion.div
-                            initial={{scale: 0.9, opacity: 0, y: 20}}
-                            animate={{scale: 1, opacity: 1, y: 0}}
-                            exit={{scale: 0.9, opacity: 0, y: 20}}
-                            transition={{type: "spring", stiffness: 300, damping: 30}}
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="bg-background rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-border/20"
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -772,7 +792,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                         onClick={() => setShowCompany(null)}
                                         className="rounded-full h-12 w-12 hover:bg-white/20 text-white hover:text-white transition-all duration-200"
                                     >
-                                        <XCircle className="w-6 h-6"/>
+                                        <XCircle className="w-6 h-6" />
                                     </Button>
                                 </div>
                             </div>
@@ -783,14 +803,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                     {/* Company Information */}
                                     <div className="space-y-6">
                                         <motion.div
-                                            initial={{opacity: 0, x: -20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.1}}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Building2 className="w-5 h-5 text-primary"/>
+                                                    <Building2 className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Company Information
                                             </h3>
@@ -825,14 +845,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
 
                                         {/* Additional Details */}
                                         <motion.div
-                                            initial={{opacity: 0, x: -20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.2}}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Sparkles className="w-5 h-5 text-primary"/>
+                                                    <Sparkles className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Company Details
                                             </h3>
@@ -852,14 +872,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                     {/* Links and Actions */}
                                     <div className="space-y-6">
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.1}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <ExternalLink className="w-5 h-5 text-primary"/>
+                                                    <ExternalLink className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Links & Resources
                                             </h3>
@@ -876,7 +896,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <ExternalLink className="w-4 h-4 mr-2"/>
+                                                            <ExternalLink className="w-4 h-4 mr-2" />
                                                             Visit Website
                                                         </a>
                                                     </Button>
@@ -890,14 +910,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
 
                                         {/* --- Application Status --- */}
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.2}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <TrendingUp className="w-5 h-5 text-primary"/>
+                                                    <TrendingUp className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Application Status
                                             </h3>
@@ -912,14 +932,14 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
 
                                         {/* --- Internship Details + Assignment --- */}
                                         <motion.div
-                                            initial={{opacity: 0, x: 20}}
-                                            animate={{opacity: 1, x: 0}}
-                                            transition={{delay: 0.3}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.3 }}
                                             className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-border/50"
                                         >
                                             <h3 className="font-bold text-card-foreground mb-4 flex items-center text-lg">
                                                 <div className="p-2 bg-primary/10 rounded-xl mr-3">
-                                                    <Briefcase className="w-5 h-5 text-primary"/>
+                                                    <Briefcase className="w-5 h-5 text-primary" />
                                                 </div>
                                                 Internship Details
                                             </h3>

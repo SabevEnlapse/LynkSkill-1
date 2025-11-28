@@ -43,13 +43,10 @@ export async function POST(
         })
 
         if (!assignment) {
-            return NextResponse.json(
-                { error: "Assignment not found" },
-                { status: 404 }
-            )
+            return NextResponse.json({ error: "Assignment not found" }, { status: 404 })
         }
 
-        // Access control
+        // STUDENT ACCESS
         if (dbUser.role === "STUDENT") {
             if (assignment.studentId !== dbUser.id) {
                 return NextResponse.json(
@@ -59,8 +56,13 @@ export async function POST(
             }
         }
 
+        // COMPANY ACCESS
         if (dbUser.role === "COMPANY") {
-            if (assignment.internship.companyId !== dbUser.id) {
+            const company = await prisma.company.findFirst({
+                where: { ownerId: dbUser.id },
+            })
+
+            if (!company || assignment.internship.companyId !== company.id) {
                 return NextResponse.json(
                     { error: "Forbidden: not your internship" },
                     { status: 403 }
@@ -92,7 +94,7 @@ export async function POST(
                 .from("assignments-files")
                 .getPublicUrl(filePath)
 
-            const record = await prisma.assignmentFile.create({
+            const fileRecord = await prisma.assignmentFile.create({
                 data: {
                     assignmentId,
                     userId: dbUser.id,
@@ -102,7 +104,7 @@ export async function POST(
                 },
             })
 
-            uploadedFilesData.push(record)
+            uploadedFilesData.push(fileRecord)
         }
 
         return NextResponse.json({ success: true, files: uploadedFilesData })

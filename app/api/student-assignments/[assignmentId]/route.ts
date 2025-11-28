@@ -19,7 +19,10 @@ export async function GET(
         })
 
         if (!dbUser) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 })
+            return NextResponse.json(
+                { error: "User not found in database" },
+                { status: 404 }
+            )
         }
 
         // Fetch assignment
@@ -35,28 +38,25 @@ export async function GET(
         })
 
         if (!assignment) {
-            return NextResponse.json({ error: "Assignment not found" }, { status: 404 })
+            return NextResponse.json(
+                { error: "Assignment not found" },
+                { status: 404 }
+            )
         }
 
-        // STUDENT ACCESS
-        if (dbUser.role === "STUDENT") {
-            if (assignment.studentId !== dbUser.id) {
-                return NextResponse.json(
-                    { error: "Forbidden: this is not your assignment" },
-                    { status: 403 }
-                )
-            }
+        // Access control
+        if (dbUser.role === "STUDENT" && assignment.studentId !== dbUser.id) {
+            return NextResponse.json(
+                { error: "Forbidden: this is not your assignment" },
+                { status: 403 }
+            )
         }
 
-        // COMPANY ACCESS
         if (dbUser.role === "COMPANY") {
-            const company = await prisma.company.findFirst({
-                where: { ownerId: dbUser.id },
-            })
-
-            if (!company || assignment.internship.companyId !== company.id) {
+            const owns = assignment.internship.companyId === dbUser.id
+            if (!owns) {
                 return NextResponse.json(
-                    { error: "Forbidden: this is not your internship" },
+                    { error: "Forbidden: this internship does not belong to you" },
                     { status: 403 }
                 )
             }
@@ -72,6 +72,9 @@ export async function GET(
         })
     } catch (error) {
         console.error("Error fetching assignment:", error)
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        )
     }
 }
