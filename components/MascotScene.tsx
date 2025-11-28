@@ -14,12 +14,12 @@ interface MascotSceneProps {
 }
 
 export function MascotScene({
-                                mascotUrl,
-                                steps,
-                                onFinish,
-                                setActiveTab,
-                                userType,
-                            }: MascotSceneProps) {
+    mascotUrl,
+    steps,
+    onFinish,
+    setActiveTab,
+    userType,
+}: MascotSceneProps) {
     const [visible, setVisible] = useState(true)
     const [step, setStep] = useState(-1) // -1 = intro, then 0..steps.length-1
 
@@ -34,6 +34,31 @@ export function MascotScene({
     const handleBack = () => {
         if (step > 0) setStep(step - 1)
     }
+
+
+    // IMAGES START FROM STEP 3 (index 3)
+    const sceneImages =
+        userType === "Student"
+            ? [
+                null,
+                null,
+                null,
+                "/scenes/students/portfolio.png",
+                "/scenes/students/apply.png",
+                "/scenes/students/accepted-or-not.png",
+                "/scenes/students/assignments.png",
+                "/scenes/students/myexperience.png",
+            ]
+            : [
+                null,
+                null,
+                null,
+                "/scenes/company/internship.png",
+                "/scenes/company/applied-or-not.png",
+                "/scenes/company/assignments.png",
+                "/scenes/company/myexperience.png",
+            ]
+
 
     return (
         <AnimatePresence>
@@ -98,21 +123,18 @@ export function MascotScene({
                             exit={{ opacity: 0, y: -30 }}
                             transition={{ duration: 0.5 }}
                         >
-                            {/* Scene image (for now testscene.png everywhere) */}
-                            <motion.div
-                                className="relative w-full md:w-[60%] h-[300px] md:h-[500px]"
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ duration: 0.6 }}
-                            >
+                            {sceneImages[step] && (
                                 <Image
-                                    src={"/scenes/testscene.png"}
+                                    src={sceneImages[step]!}
                                     alt={`Scene ${step + 1}`}
-                                    fill
-                                    className="object-contain rounded-3xl"
+                                    width={600}
+                                    height={400}
+                                    className="rounded-3xl object-contain"
                                     priority
                                 />
-                            </motion.div>
+                            )}
+
+
 
                             {/* Linky + bubble */}
                             <motion.div
@@ -145,36 +167,35 @@ export function MascotScene({
                                     />
 
                                     <div className="flex gap-3 mt-6">
-    <Button
-        onClick={handleBack}
-        disabled={step === 0}
-        variant="outline"
-        className={`flex-1 rounded-2xl font-bold ${
-            step === 0
-                ? "opacity-50 cursor-not-allowed"
-                : "bg-transparent border-white text-white hover:bg-white/20"
-        }`}
-    >
-        Back
-    </Button>
+                                        <Button
+                                            onClick={handleBack}
+                                            disabled={step === 0}
+                                            variant="outline"
+                                            className={`flex-1 rounded-2xl font-bold ${step === 0
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : "bg-transparent border-white text-white hover:bg-white/20"
+                                                }`}
+                                        >
+                                            Back
+                                        </Button>
 
-    <Button
-        onClick={() => {
-            setVisible(false)
-            onFinish()
-        }}
-        className="flex-1 bg-transparent border border-white text-white hover:bg-white/20 rounded-2xl font-bold"
-    >
-        Skip
-    </Button>
+                                        <Button
+                                            onClick={() => {
+                                                setVisible(false)
+                                                onFinish()
+                                            }}
+                                            className="flex-1 bg-transparent border border-white text-white hover:bg-white/20 rounded-2xl font-bold"
+                                        >
+                                            Skip
+                                        </Button>
 
-    <Button
-        onClick={handleNext}
-        className="flex-1 bg-white text-purple-600 hover:bg-gray-100 rounded-2xl font-bold"
-    >
-        {step === steps.length - 1 ? "Finish" : "Next"}
-    </Button>
-</div>
+                                        <Button
+                                            onClick={handleNext}
+                                            className="flex-1 bg-white text-purple-600 hover:bg-gray-100 rounded-2xl font-bold"
+                                        >
+                                            {step === steps.length - 1 ? "Finish" : "Next"}
+                                        </Button>
+                                    </div>
 
 
                                     <div className="hidden md:block absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[15px] border-t-transparent border-r-[15px] border-r-purple-500 border-b-[15px] border-b-transparent" />

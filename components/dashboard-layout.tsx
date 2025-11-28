@@ -503,7 +503,7 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                 `🚀 So let me guide you through it.`,
                                 `📝 First, from here you <strong>create an internship</strong> so students can see you.`,
                                 `📥 After that, this is the tab where you can <strong>see students who applied</strong> and decide to accept or reject them.<br/><br/><em>P.S. If you gave them a test, they must complete it before you can decide.</em>`,
-                                `🧩 Here is the <strong>"Assignments"</strong> tab where you can track any assignments you gave to students.`,
+                                `🧩 Here you can track any assignments you gave to students.`,
                                 `🎓 On the <strong>"My Experience"</strong> tab, you can see which students have tagged you with pictures and videos of your work together. You can validate and accept if they really worked with you — or reject if not. Then you'll <strong>grade them</strong> based on their performance.`,
                             ]
                     }
