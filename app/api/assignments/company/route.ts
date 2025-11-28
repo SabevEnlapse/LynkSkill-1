@@ -33,7 +33,13 @@ export async function GET() {
                 testAssignmentDescription: true,
 
                 assignments: {
-                    include: {
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        dueDate: true,
+                        createdAt: true,
+
                         student: {
                             select: {
                                 id: true,
@@ -41,6 +47,7 @@ export async function GET() {
                                 profile: { select: { name: true } }
                             }
                         },
+
                         submissions: {
                             select: {
                                 id: true,
@@ -49,9 +56,7 @@ export async function GET() {
                                 size: true,
                                 createdAt: true,
                             }
-                        },
-                        status: true,
-                        createdAt: true
+                        }
                     }
                 }
             },
