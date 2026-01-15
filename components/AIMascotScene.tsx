@@ -3,22 +3,77 @@
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
-import { X, Sparkles } from "lucide-react"
+import { useEffect, useState, useRef } from "react"
+import { X, Sparkles, Send } from "lucide-react"
 import { MarkdownRenderer } from "./MarkdownRenderer"
+import { Input } from "@/components/ui/input"
+
+interface ConversationMessage {
+    role: "user" | "assistant"
+    content: string
+}
 
 interface AIMascotSceneProps {
     aiReply?: string
-    portfolio?: unknown
+    portfolio?: any
     onClose: () => void
 }
 
-export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) {
+export default function AIMascotScene({ aiReply, portfolio, onClose }: AIMascotSceneProps) {
     const [visible, setVisible] = useState(true)
+    const [messages, setMessages] = useState<ConversationMessage[]>([])
+    const [input, setInput] = useState("")
+    const [loading, setLoading] = useState(false)
+    const chatContainerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (aiReply) {
+            setMessages([{ role: "assistant", content: aiReply }])
+        }
+    }, [aiReply])
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        }
+    }, [messages])
 
     const handleClose = () => {
         setVisible(false)
         setTimeout(onClose, 400)
+    }
+
+    const handleSendMessage = async () => {
+        if (!input.trim() || loading) return
+
+        const userMessage: ConversationMessage = { role: "user", content: input }
+        setMessages((prev) => [...prev, userMessage])
+        setInput("")
+        setLoading(true)
+
+        try {
+            const res = await fetch("/api/assistant", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    type: "portfolio-chat",
+                    message: input,
+                    portfolio: portfolio,
+                    history: messages,
+                }),
+            })
+            const data = await res.json()
+            const assistantMessage: ConversationMessage = { role: "assistant", content: data.reply }
+            setMessages((prev) => [...prev, assistantMessage])
+        } catch (err) {
+            const errorMessage: ConversationMessage = {
+                role: "assistant",
+                content: "Sorry, something went wrong. Please try again.",
+            }
+            setMessages((prev) => [...prev, errorMessage])
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -49,7 +104,7 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                             damping: 30,
                         }}
                         onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-3xl bg-card shadow-2xl border border-border/50"
+                        className="relative w-full max-w-3xl h-[90vh] flex flex-col rounded-3xl bg-card shadow-2xl border border-border/50"
                     >
                         <div
                             className="absolute top-0 left-0 right-0 h-1"
@@ -74,7 +129,7 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                                     <Sparkles className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-semibold text-foreground">AI Portfolio Report</h2>
+                                    <h2 className="text-lg font-semibold text-foreground">Chat with Linky</h2>
                                     <p className="text-xs text-muted-foreground">Powered by Linky</p>
                                 </div>
                             </div>
@@ -89,133 +144,112 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                         </div>
 
                         {/* Content */}
-                        <div className="overflow-y-auto max-h-[calc(90vh-160px)] bg-background">
-                            <div className="p-6 md:p-8 lg:p-10 space-y-8">
+                        <div
+                            ref={chatContainerRef}
+                            className="overflow-y-auto flex-grow h-full max-h-[calc(90vh-160px)] bg-background/80 p-6 md:p-8 space-y-6 bg-[url('/grid.svg')] bg-repeat"
+                        >
+                            <div className="text-center py-4">
+                                <h3 className="text-lg font-semibold">Welcome to AI Chat!</h3>
+                                <p className="text-sm text-muted-foreground">Ask me anything about your portfolio.</p>
+                            </div>
+                            {messages.map((msg, index) => (
                                 <motion.div
-                                    className="flex justify-center"
-                                    initial={{ opacity: 0, y: -20 }}
+                                    key={index}
+                                    initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1, duration: 0.5 }}
+                                    transition={{ duration: 0.3 }}
+                                    className={`flex items-start gap-4 ${msg.role === "user" ? "justify-end" : ""}`}
                                 >
-                                    <motion.div
-                                        animate={{
-                                            y: [0, -8, 0],
-                                            rotate: [0, 2, 0, -2, 0],
-                                        }}
-                                        transition={{
-                                            duration: 4,
-                                            repeat: Number.POSITIVE_INFINITY,
-                                            ease: "easeInOut",
-                                        }}
-                                        className="relative"
-                                    >
+                                    {msg.role === "assistant" && (
                                         <div
-                                            className="absolute inset-0 blur-3xl rounded-full scale-150 opacity-40"
-                                            style={{
-                                                background: "radial-gradient(circle, var(--portfolio-hero-from), var(--portfolio-hero-to))",
-                                            }}
-                                        />
-                                        <div
-                                            className="relative w-36 h-36 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-96 lg:h-96 rounded-full p-4 border-2"
-                                            style={{
-                                                background: "linear-gradient(135deg, rgba(100, 80, 255, 0.1), rgba(150, 100, 255, 0.1))",
-                                                borderColor: "var(--portfolio-hero-from)",
-                                                boxShadow: "0 0 30px rgba(100, 80, 255, 0.2)",
-                                            }}
-                                        >
-                                            <Image
-                                                src="/linky-mascot.png"
-                                                alt="Linky AI Assistant"
-                                                fill
-                                                className="object-contain drop-shadow-lg p-2"
-                                                priority
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </motion.div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2, duration: 0.5 }}
-                                    className="space-y-4"
-                                >
-                                    {/* Message label */}
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div
-                                            className="w-2 h-2 rounded-full animate-pulse"
-                                            style={{ backgroundColor: "var(--portfolio-hero-from)" }}
-                                        />
-                                        <span>Portfolio Analysis & Recommendations</span>
-                                    </div>
-
-                                    {/* Message content */}
-                                    <div className="relative group">
-                                        <div
-                                            className="absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                                             style={{
                                                 background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
                                             }}
-                                        />
-
-                                        <div className="relative bg-card rounded-2xl p-6 md:p-8 border border-border/50 shadow-sm">
-                                            <div
-                                                className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-10"
-                                                style={{
-                                                    background: "linear-gradient(135deg, var(--portfolio-hero-from), transparent)",
-                                                }}
-                                            />
-
-                                            <div className="text-foreground/90 leading-relaxed text-sm md:text-base">
-                                                {aiReply ? (
-                                                    <MarkdownRenderer content={aiReply} />
-                                                ) : (
-                                                    <div className="flex items-center gap-3 text-muted-foreground">
-                                                        <div className="flex gap-1">
-                                                            <div
-                                                                className="w-2 h-2 rounded-full animate-bounce"
-                                                                style={{
-                                                                    backgroundColor: "var(--portfolio-hero-from)",
-                                                                    animationDelay: "0ms",
-                                                                }}
-                                                            />
-                                                            <div
-                                                                className="w-2 h-2 rounded-full animate-bounce"
-                                                                style={{
-                                                                    backgroundColor: "var(--portfolio-hero-to)",
-                                                                    animationDelay: "150ms",
-                                                                }}
-                                                            />
-                                                            <div
-                                                                className="w-2 h-2 rounded-full animate-bounce"
-                                                                style={{
-                                                                    backgroundColor: "var(--portfolio-hero-from)",
-                                                                    animationDelay: "300ms",
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span>Analyzing your portfolio...</span>
-                                                    </div>
-                                                )}
+                                        >
+                                            <Image src="/Linky_head.png" alt="Linky" width={24} height={24} />
+                                        </div>
+                                    )}
+                                    <div
+                                        className={`relative max-w-xl p-4 rounded-2xl ${
+                                            msg.role === "user"
+                                                ? "bg-secondary text-primary-foreground rounded-br-none"
+                                                : "bg-card border border-border/50 rounded-bl-none"
+                                        }`}
+                                    >
+                                        <MarkdownRenderer content={msg.content} />
+                                    </div>
+                                </motion.div>
+                            ))}
+                            {loading && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-start gap-4"
+                                >
+                                    <div
+                                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                                        style={{
+                                            background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
+                                        }}
+                                    >
+                                        <Image src="/Linky_head.png" alt="Linky" width={24} height={24} />
+                                    </div>
+                                    <div className="bg-card border border-border/50 p-4 rounded-2xl">
+                                        <div className="flex items-center gap-3 text-muted-foreground">
+                                            <div className="flex gap-1">
+                                                <div
+                                                    className="w-2 h-2 rounded-full animate-bounce"
+                                                    style={{
+                                                        backgroundColor: "var(--portfolio-hero-from)",
+                                                        animationDelay: "0ms",
+                                                    }}
+                                                />
+                                                <div
+                                                    className="w-2 h-2 rounded-full animate-bounce"
+                                                    style={{
+                                                        backgroundColor: "var(--portfolio-hero-to)",
+                                                        animationDelay: "150ms",
+                                                    }}
+                                                />
+                                                <div
+                                                    className="w-2 h-2 rounded-full animate-bounce"
+                                                    style={{
+                                                        backgroundColor: "var(--portfolio-hero-from)",
+                                                        animationDelay: "300ms",
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 </motion.div>
-                            </div>
+                            )}
                         </div>
 
-                        <div className="bg-card border-t border-border/50 px-6 py-4 flex items-center justify-between">
-                            <p className="text-xs text-muted-foreground">Report generated by AI • Review carefully</p>
-                            <Button
-                                onClick={handleClose}
-                                className="px-6 rounded-full font-medium shadow-sm text-white border-0"
-                                style={{
-                                    background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
-                                    boxShadow: "0 4px 15px rgba(100, 80, 255, 0.3)",
-                                }}
-                            >
-                                Close
-                            </Button>
+                        {/* Footer with Input */}
+                        <div className="bg-card border-t border-border/50 px-6 py-4">
+                            <div className="flex items-center gap-3">
+                                <Input
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                                    placeholder="Ask a follow-up question..."
+                                    className="flex-1 bg-background rounded-full px-5 py-3 text-base border-2 border-border/50 focus-visible:ring-2 focus-visible:ring-primary/50 transition-all duration-300 ease-in-out"
+                                    disabled={loading}
+                                />
+                                <Button
+                                    onClick={handleSendMessage}
+                                    disabled={loading || !input.trim()}
+                                    size="icon"
+                                    className="rounded-full w-12 h-12 flex-shrink-0 text-white"
+                                    style={{
+                                        background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
+                                        boxShadow: "0 4px 15px rgba(100, 80, 255, 0.3)",
+                                    }}
+                                >
+                                    <Send className="h-6 w-6" />
+                                </Button>
+                            </div>
                         </div>
                     </motion.div>
                 </motion.div>
