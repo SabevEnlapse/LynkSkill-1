@@ -5,8 +5,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import type { Components } from 'react-markdown';
-import { Button } from '@/components/ui/button';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Sparkles } from 'lucide-react';
 import 'highlight.js/styles/github-dark.css';
 
 interface MarkdownRendererProps {
@@ -14,88 +13,181 @@ interface MarkdownRendererProps {
     className?: string;
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
-    content,
-    className = ""
-}) => {
-    const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
+// Separate CopyButton component to handle its own state
+const CopyButton: React.FC<{ text: string }> = ({ text }) => {
+    const [copied, setCopied] = useState(false);
 
-    const copyToClipboard = async (text: string, blockId: string) => {
+    const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(text);
-            setCopiedBlockId(blockId);
-            setTimeout(() => setCopiedBlockId(null), 2000);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error("Failed to copy:", err);
         }
     };
 
-    const components: Components = {
-        h2: ({ node, ...props }) => (
-            <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100" {...props} />
-        ),
-        h3: ({ node, ...props }) => (
-            <h3 className="text-lg font-medium mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />
-        ),
-        p: ({ node, ...props }) => (
-            <p className="mb-3 text-gray-700 dark:text-gray-300 leading-relaxed" {...props} />
-        ),
-        ul: ({ node, ...props }) => (
-            <ul className="list-disc list-inside mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />
-        ),
-        ol: ({ node, ...props }) => (
-            <ol className="list-decimal list-inside mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />
-        ),
-        li: ({ node, ...props }) => (
-            <li className="ml-2" {...props} />
-        ),
-        strong: ({ node, ...props }) => (
-            <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />
-        ),
-        code: ({ node, className, ...props }) => {
-            const isInline = !className || !className.startsWith('language-');
-            return isInline ? (
-                <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm text-gray-800 dark:text-gray-200" {...props} />
+    return (
+        <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all duration-200 bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white border border-white/10 hover:border-white/20"
+        >
+            {copied ? (
+                <>
+                    <Check className="w-3.5 h-3.5 text-green-400" />
+                    <span className="text-green-400">Copied!</span>
+                </>
             ) : (
-                <code className="block bg-gray-900 dark:bg-gray-950 p-4 rounded-lg text-sm overflow-x-auto" {...props} />
+                <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                </>
+            )}
+        </button>
+    );
+};
+
+// Example block component for bio/text examples with special styling
+const ExampleBlock: React.FC<{ children: React.ReactNode; text: string }> = ({ children, text }) => {
+    return (
+        <div className="my-4 rounded-xl overflow-hidden border border-purple-500/30 bg-gradient-to-br from-purple-950/50 via-indigo-950/50 to-blue-950/50 shadow-lg shadow-purple-500/10">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border-b border-purple-500/20">
+                <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-semibold text-purple-300 uppercase tracking-wide">Example</span>
+                </div>
+                <CopyButton text={text} />
+            </div>
+            <div className="p-4">
+                <div className="text-sm text-gray-200 leading-relaxed font-medium">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
+    content,
+    className = ""
+}) => {
+    // Extract code content from pre children
+    const extractTextFromChildren = (children: React.ReactNode): string => {
+        if (typeof children === 'string') return children;
+        if (Array.isArray(children)) {
+            return children.map(extractTextFromChildren).join('');
+        }
+        if (React.isValidElement(children) && children.props?.children) {
+            return extractTextFromChildren(children.props.children);
+        }
+        return '';
+    };
+
+    const components: Components = {
+        h2: ({ ...props }) => (
+            <h2 className="text-xl font-semibold mt-6 mb-3 text-foreground" {...props} />
+        ),
+        h3: ({ ...props }) => (
+            <h3 className="text-lg font-medium mt-4 mb-2 text-foreground/90" {...props} />
+        ),
+        p: ({ children, ...props }) => {
+            return (
+                <p className="mb-3 text-foreground/80 leading-relaxed" {...props}>{children}</p>
+            );
+        },
+        ul: ({ ...props }) => (
+            <ul className="list-disc list-inside mb-3 space-y-1.5 text-foreground/80" {...props} />
+        ),
+        ol: ({ ...props }) => (
+            <ol className="list-decimal list-inside mb-3 space-y-1.5 text-foreground/80" {...props} />
+        ),
+        li: ({ ...props }) => (
+            <li className="ml-2 leading-relaxed" {...props} />
+        ),
+        strong: ({ children, ...props }) => {
+            const text = extractTextFromChildren(children);
+            // Style labels like "Bio Example:", "Improved example:", etc.
+            if (text.toLowerCase().includes('example')) {
+                return (
+                    <strong className="font-bold text-purple-400" {...props}>{children}</strong>
+                );
+            }
+            return (
+                <strong className="font-semibold text-foreground" {...props}>{children}</strong>
+            );
+        },
+        em: ({ ...props }) => (
+            <em className="italic text-foreground/70" {...props} />
+        ),
+        code: ({ className, children, ...props }) => {
+            const isInline = !className || !className.startsWith('language-');
+            const text = extractTextFromChildren(children);
+            
+            if (isInline) {
+                // Check if this looks like an example/suggestion (longer inline code)
+                const isExample = text.length > 50 || text.includes('with') || text.includes('Developer');
+                
+                if (isExample) {
+                    return (
+                        <ExampleBlock text={text}>
+                            {children}
+                        </ExampleBlock>
+                    );
+                }
+                
+                return (
+                    <code className="bg-muted px-1.5 py-0.5 rounded text-sm text-foreground font-mono" {...props}>
+                        {children}
+                    </code>
+                );
+            }
+            
+            return (
+                <code className={`block text-sm overflow-x-auto ${className || ''}`} {...props}>
+                    {children}
+                </code>
             );
         },
         pre: ({ children, ...props }) => {
-            const codeContent = String(children).replace(/\n$/, '');
-            const blockId = Math.random().toString(36).substring(7);
-            const isCopied = copiedBlockId === blockId;
+            const codeContent = extractTextFromChildren(children).replace(/\n$/, '');
             
             return (
-                <div className="relative mb-3 group">
-                    <div className="absolute top-2 right-2 z-10">
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs bg-card/80 backdrop-blur-sm border-border/50 hover:bg-muted"
-                            onClick={() => copyToClipboard(codeContent, blockId)}
-                        >
-                            {isCopied ? (
-                                <>
-                                    <Check className="w-3 h-3 mr-1" />
-                                    Copied
-                                </>
-                            ) : (
-                                <>
-                                    <Copy className="w-3 h-3 mr-1" />
-                                    Copy
-                                </>
-                            )}
-                        </Button>
+                <div className="relative my-4 rounded-xl overflow-hidden border border-border/50 bg-[#0d1117] shadow-lg group">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-border/30">
+                        <div className="flex items-center gap-2">
+                            <div className="flex gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                            </div>
+                            <span className="text-xs text-muted-foreground ml-2">Code</span>
+                        </div>
+                        <CopyButton text={codeContent} />
                     </div>
-                    <pre className="bg-gray-900 dark:bg-gray-950 p-4 rounded-lg overflow-x-auto mb-4" {...props}>
+                    <pre className="p-4 overflow-x-auto text-sm" {...props}>
                         {children}
                     </pre>
                 </div>
             );
         },
-        blockquote: ({ node, ...props }) => (
-            <blockquote className="border-l-4 border-blue-500 pl-4 my-4 italic text-gray-600 dark:text-gray-400" {...props} />
-        ),
+        blockquote: ({ children, ...props }) => {
+            const text = extractTextFromChildren(children);
+            
+            // Check if this might be an example or suggestion
+            if (text.length > 30) {
+                return (
+                    <ExampleBlock text={text}>
+                        {children}
+                    </ExampleBlock>
+                );
+            }
+            
+            return (
+                <blockquote className="border-l-4 border-purple-500/50 pl-4 my-4 italic text-foreground/70 bg-muted/30 py-2 rounded-r-lg" {...props}>
+                    {children}
+                </blockquote>
+            );
+        },
     };
 
     return (

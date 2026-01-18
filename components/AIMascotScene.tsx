@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react"
 import { X, Sparkles, Send } from "lucide-react"
 import { MarkdownRenderer } from "./MarkdownRenderer"
 import { Input } from "@/components/ui/input"
+import { Portfolio } from "@/app/types"
 
 interface ConversationMessage {
     role: "user" | "assistant"
@@ -15,7 +16,7 @@ interface ConversationMessage {
 
 interface AIMascotSceneProps {
     aiReply?: string
-    portfolio?: any
+    portfolio?: Portfolio
     onClose: () => void
 }
 
@@ -65,7 +66,7 @@ export default function AIMascotScene({ aiReply, portfolio, onClose }: AIMascotS
             const data = await res.json()
             const assistantMessage: ConversationMessage = { role: "assistant", content: data.reply }
             setMessages((prev) => [...prev, assistantMessage])
-        } catch (err) {
+        } catch {
             const errorMessage: ConversationMessage = {
                 role: "assistant",
                 content: "Sorry, something went wrong. Please try again.",
@@ -146,80 +147,94 @@ export default function AIMascotScene({ aiReply, portfolio, onClose }: AIMascotS
                         {/* Content */}
                         <div
                             ref={chatContainerRef}
-                            className="overflow-y-auto flex-grow h-full max-h-[calc(90vh-160px)] bg-background/80 p-6 md:p-8 space-y-6 bg-[url('/grid.svg')] bg-repeat"
+                            className="overflow-y-auto flex-grow h-full max-h-[calc(90vh-160px)] bg-gradient-to-b from-background/95 to-background p-4 md:p-6 space-y-4"
                         >
-                            <div className="text-center py-4">
-                                <h3 className="text-lg font-semibold">Welcome to AI Chat!</h3>
-                                <p className="text-sm text-muted-foreground">Ask me anything about your portfolio.</p>
-                            </div>
+                            {messages.length === 0 && (
+                                <div className="text-center py-8">
+                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))" }}>
+                                        <Sparkles className="w-8 h-8 text-white" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground">Welcome to AI Chat!</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">Ask me anything about your portfolio.</p>
+                                </div>
+                            )}
                             {messages.map((msg, index) => (
                                 <motion.div
                                     key={index}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className={`flex items-start gap-4 ${msg.role === "user" ? "justify-end" : ""}`}
+                                    transition={{ duration: 0.3, delay: 0.05 }}
+                                    className={`flex items-start gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
                                 >
                                     {msg.role === "assistant" && (
                                         <div
-                                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                                            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-purple-500/20"
                                             style={{
                                                 background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
                                             }}
                                         >
-                                            <Image src="/Linky_head.png" alt="Linky" width={24} height={24} />
+                                            <Image src="/Linky_head.png" alt="Linky" width={22} height={22} />
                                         </div>
                                     )}
                                     <div
-                                        className={`relative max-w-xl p-4 rounded-2xl ${
+                                        className={`relative max-w-[85%] md:max-w-[75%] ${
                                             msg.role === "user"
-                                                ? "bg-secondary text-primary-foreground rounded-br-none"
-                                                : "bg-card border border-border/50 rounded-bl-none"
+                                                ? "bg-gradient-to-br from-purple-600 to-indigo-600 text-white px-4 py-3 rounded-2xl rounded-br-md shadow-lg shadow-purple-500/20"
+                                                : "bg-card/80 backdrop-blur-sm border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md shadow-md"
                                         }`}
                                     >
-                                        <MarkdownRenderer content={msg.content} />
+                                        {msg.role === "user" ? (
+                                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                                        ) : (
+                                            <div className="text-sm">
+                                                <MarkdownRenderer content={msg.content} />
+                                            </div>
+                                        )}
                                     </div>
+                                    {msg.role === "user" && (
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                            <span className="text-white text-xs font-semibold">You</span>
+                                        </div>
+                                    )}
                                 </motion.div>
                             ))}
                             {loading && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-start gap-4"
+                                    className="flex items-start gap-3"
                                 >
                                     <div
-                                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                                        className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-purple-500/20"
                                         style={{
                                             background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
                                         }}
                                     >
-                                        <Image src="/Linky_head.png" alt="Linky" width={24} height={24} />
+                                        <Image src="/Linky_head.png" alt="Linky" width={22} height={22} />
                                     </div>
-                                    <div className="bg-card border border-border/50 p-4 rounded-2xl">
-                                        <div className="flex items-center gap-3 text-muted-foreground">
-                                            <div className="flex gap-1">
-                                                <div
-                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                    style={{
-                                                        backgroundColor: "var(--portfolio-hero-from)",
-                                                        animationDelay: "0ms",
-                                                    }}
-                                                />
-                                                <div
-                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                    style={{
-                                                        backgroundColor: "var(--portfolio-hero-to)",
-                                                        animationDelay: "150ms",
-                                                    }}
-                                                />
-                                                <div
-                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                    style={{
-                                                        backgroundColor: "var(--portfolio-hero-from)",
-                                                        animationDelay: "300ms",
-                                                    }}
-                                                />
-                                            </div>
+                                    <div className="bg-card/80 backdrop-blur-sm border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md shadow-md">
+                                        <div className="flex items-center gap-1.5">
+                                            <div
+                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                style={{
+                                                    backgroundColor: "var(--portfolio-hero-from)",
+                                                    animationDelay: "0ms",
+                                                }}
+                                            />
+                                            <div
+                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                style={{
+                                                    backgroundColor: "var(--portfolio-hero-to)",
+                                                    animationDelay: "150ms",
+                                                }}
+                                            />
+                                            <div
+                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                style={{
+                                                    backgroundColor: "var(--portfolio-hero-from)",
+                                                    animationDelay: "300ms",
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                 </motion.div>
@@ -227,27 +242,31 @@ export default function AIMascotScene({ aiReply, portfolio, onClose }: AIMascotS
                         </div>
 
                         {/* Footer with Input */}
-                        <div className="bg-card border-t border-border/50 px-6 py-4">
-                            <div className="flex items-center gap-3">
-                                <Input
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                                    placeholder="Ask a follow-up question..."
-                                    className="flex-1 bg-background rounded-full px-5 py-3 text-base border-2 border-border/50 focus-visible:ring-2 focus-visible:ring-primary/50 transition-all duration-300 ease-in-out"
-                                    disabled={loading}
-                                />
+                        <div className="bg-card/95 backdrop-blur-md border-t border-border/50 px-4 md:px-6 py-4">
+                            <div className="flex items-center gap-2 md:gap-3">
+                                <div className="flex-1 relative">
+                                    <Input
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                                        placeholder="Ask a follow-up question..."
+                                        className="w-full bg-background/80 rounded-xl px-4 py-3 text-sm border border-border/50 focus-visible:ring-2 focus-visible:ring-purple-500/50 focus-visible:border-purple-500/50 transition-all duration-200 placeholder:text-muted-foreground/60"
+                                        disabled={loading}
+                                    />
+                                </div>
                                 <Button
                                     onClick={handleSendMessage}
                                     disabled={loading || !input.trim()}
                                     size="icon"
-                                    className="rounded-full w-12 h-12 flex-shrink-0 text-white"
+                                    className="rounded-xl w-11 h-11 flex-shrink-0 text-white transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                                     style={{
-                                        background: "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
-                                        boxShadow: "0 4px 15px rgba(100, 80, 255, 0.3)",
+                                        background: loading || !input.trim() 
+                                            ? "linear-gradient(135deg, #6b7280, #4b5563)" 
+                                            : "linear-gradient(135deg, var(--portfolio-hero-from), var(--portfolio-hero-to))",
+                                        boxShadow: loading || !input.trim() ? "none" : "0 4px 15px rgba(100, 80, 255, 0.3)",
                                     }}
                                 >
-                                    <Send className="h-6 w-6" />
+                                    <Send className="h-5 w-5" />
                                 </Button>
                             </div>
                         </div>

@@ -130,7 +130,12 @@ export async function generatePortfolioAudit(portfolioData: PortfolioData, opena
     model: "gpt-4o-mini",
     input: formatPortfolioAuditPrompt(portfolioData),
   });
-  return response.output_text || "No response generated.";
+  // Access the text content from the response structure
+  const output = response.output?.[0];
+  if (output && 'content' in output && Array.isArray(output.content) && output.content[0] && 'text' in output.content[0]) {
+    return output.content[0].text;
+  }
+  return "No response generated.";
 }
 
 export async function generateChatAdvisorResponse(
@@ -146,7 +151,12 @@ export async function generateChatAdvisorResponse(
     model: "gpt-4o-mini",
     input: formatChatAdvisorPrompt(portfolioData, memory, conversation, userMessage),
   });
-  return response.output_text || "No response generated.";
+  // Access the text content from the response structure
+  const output = response.output?.[0];
+  if (output && 'content' in output && Array.isArray(output.content) && output.content[0] && 'text' in output.content[0]) {
+    return output.content[0].text;
+  }
+  return "No response generated.";
 }
 
 export const INSIGHT_EXTRACTION_PROMPT = `You are analyzing a portfolio audit to extract structured insights.
@@ -185,7 +195,13 @@ export async function extractInsightsFromAudit(auditContent: string, openai: Ope
       input: formatInsightExtractionPrompt(auditContent),
     });
     
-    const content = response.output_text || "{}";
+    // Access the text content from the response structure
+    const output = response.output?.[0];
+    let content = "{}";
+    if (output && 'content' in output && Array.isArray(output.content) && output.content[0] && 'text' in output.content[0]) {
+      content = output.content[0].text;
+    }
+    
     // Try to parse JSON, handle potential markdown code blocks
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     const jsonStr = jsonMatch ? jsonMatch[0] : content;
