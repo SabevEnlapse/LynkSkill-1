@@ -59,7 +59,7 @@ const ExampleBlock: React.FC<{ children: React.ReactNode; text: string }> = ({ c
                 <CopyButton text={text} />
             </div>
             <div className="p-4">
-                <div className="text-sm text-gray-200 leading-relaxed font-medium">
+                <div className="text-sm text-gray-200 leading-relaxed font-medium whitespace-pre-wrap break-words">
                     {children}
                 </div>
             </div>
@@ -149,25 +149,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             );
         },
         pre: ({ children, ...props }) => {
-            const codeContent = extractTextFromChildren(children).replace(/\n$/, '');
-            
+            // Simple pre wrapper - the code inside will handle ExampleBlock if needed
             return (
-                <div className="relative my-4 rounded-xl overflow-hidden border border-border/50 bg-[#0d1117] shadow-lg group">
-                    <div className="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-border/30">
-                        <div className="flex items-center gap-2">
-                            <div className="flex gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                                <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                            </div>
-                            <span className="text-xs text-muted-foreground ml-2">Code</span>
-                        </div>
-                        <CopyButton text={codeContent} />
-                    </div>
-                    <pre className="p-4 overflow-x-auto text-sm" {...props}>
-                        {children}
-                    </pre>
-                </div>
+                <pre className="whitespace-pre-wrap break-words text-sm my-2" {...props}>
+                    {children}
+                </pre>
             );
         },
         blockquote: ({ children, ...props }) => {

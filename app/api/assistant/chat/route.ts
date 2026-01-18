@@ -105,6 +105,21 @@ function evaluationToMemory(evaluationResult: EvaluationResult): StudentMemory {
   const careerGoalMatch = evaluationText.match(/career goal[:\s]*([^.]+)/gi);
   const careerGoal = careerGoalMatch ? careerGoalMatch[1].trim() : null;
 
+  // Extract improvement suggestions
+  const improvementSuggestions: string[] = [];
+  const suggestionPatterns = [
+    /suggested?[:\s]*([^.]+)/gi,
+    /improve(?:ment)?[:\s]*([^.]+)/gi,
+    /recommend(?:ation)?[:\s]*([^.]+)/gi,
+  ];
+
+  for (const pattern of suggestionPatterns) {
+    const match = evaluationText.match(pattern);
+    if (match) {
+      improvementSuggestions.push(match[1].trim());
+    }
+  }
+
   return {
     reviewedSections: sections,
     identifiedWeaknesses,
@@ -112,6 +127,9 @@ function evaluationToMemory(evaluationResult: EvaluationResult): StudentMemory {
     lastFocusedSection,
     careerGoal,
     auditGenerated: true,
+    improvementSuggestions,
+    questionsAsked: [],
+    topicsDiscussed: [],
   };
 }
 
@@ -245,40 +263,43 @@ async function generateSimpleChatResponse(
   message: string,
   sessionMessages: ChatMessage[]
 ): Promise<string> {
-  // Build conversation history for context
-  const recentMessages = sessionMessages.slice(-6); // Last 3 exchanges
+  // Build conversation history for context - last 8 messages for better memory
+  const recentMessages = sessionMessages.slice(-8);
   const historyText = recentMessages
-    .map((msg) => `${msg.role}: ${msg.content}`)
-    .join("\n");
+    .map((msg) => `**${msg.role === 'user' ? 'Student' : 'Linky'}**: ${msg.content}`)
+    .join("\n\n");
 
-  const simplePrompt = `You are Linky, a friendly AI career advisor helping students improve their portfolios.
+  const simplePrompt = `You are Linky, a friendly and knowledgeable AI career advisor helping students aged 16-22 improve their portfolios and land internships.
 
-## YOUR ROLE:
-- Answer ONLY what the student asks
-- Keep replies short and actionable
-- Provide examples only if relevant to their question
-- Ask one clarifying question if needed to give better advice
-
-## TONE:
-- Professional
-- Supportive
-- Direct
-- Not academic
-
-## STRICT RULES:
-- Answer ONLY the specific question asked
-- Keep response under 5 lines if possible
-- Use code blocks for any examples
-- No long explanations
-- No filler sentences
-- If you need more info, ask ONE clarifying question
-- Be direct and actionable
+## YOUR PERSONALITY:
+- Warm, supportive, and encouraging
+- Direct and actionable - no fluffy advice
+- Use casual language with occasional emojis
+- Be like a helpful mentor, not a formal advisor
+- Remember what's been discussed in the conversation
 
 ## CONVERSATION HISTORY:
-${historyText}
+${historyText || 'This is the start of our conversation.'}
 
-## STUDENT QUESTION:
-${message}`;
+## STUDENT'S CURRENT QUESTION:
+${message}
+
+## HOW TO RESPOND:
+1. Answer their specific question directly
+2. Give actionable, specific advice
+3. Provide examples in code blocks when helpful:
+\`\`\`
+Example text here
+\`\`\`
+4. If you need more context, ask ONE clarifying question
+5. Reference earlier parts of the conversation if relevant
+
+## RULES:
+- Keep responses under 150 words unless they ask for detailed examples
+- Be specific and practical
+- If they mention a portfolio section, give concrete suggestions
+- End with encouragement or a helpful follow-up suggestion
+- Never repeat advice from earlier in the conversation`;
 
   try {
     const response = await openai.responses.create({
