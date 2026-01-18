@@ -1502,7 +1502,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
             </div>
             {showMascot && (
                 <AIMascotScene
-                    portfolio={portfolio}
+                    portfolio={portfolio ?? undefined}
                     aiReply={aiReply ?? "No reply yet."}
                     onClose={() => setShowMascot(false)}
                 />

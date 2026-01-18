@@ -7,7 +7,6 @@ import { useEffect, useState, useRef } from "react"
 import { X, Sparkles, Send, MessageSquare, Lightbulb, FileText, Target } from "lucide-react"
 import { MarkdownRenderer } from "./MarkdownRenderer"
 import { Input } from "@/components/ui/input"
-import { Portfolio } from "@/app/types"
 import { useUser } from "@clerk/nextjs"
 
 interface ConversationMessage {
@@ -17,7 +16,8 @@ interface ConversationMessage {
 
 interface AIMascotSceneProps {
     aiReply?: string
-    portfolio?: Portfolio
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    portfolio?: any
     onClose: () => void
 }
 

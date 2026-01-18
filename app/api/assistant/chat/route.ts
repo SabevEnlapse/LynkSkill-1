@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
 import { openai } from "@/lib/openai";
-import { Prisma } from "@prisma/client";
-import {
-  generateChatAdvisorResponse,
-  PortfolioData,
-  StudentMemory,
-} from "../prompts";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -28,17 +21,8 @@ export interface ChatMessage {
 export interface ChatSessionData {
   id: string;
   userId: string;
-  evaluationId: string | null;
   messages: ChatMessage[];
   createdAt: Date;
-}
-
-/**
- * Evaluation result structure from the database
- */
-interface EvaluationResult {
-  evaluation?: string;
-  [key: string]: unknown;
 }
 
 /**
@@ -47,188 +31,53 @@ interface EvaluationResult {
 interface ChatRequestBody {
   mode: string;
   message: string;
-  evaluationId?: string | null;
 }
+
+// ============================================================================
+// IN-MEMORY SESSION STORAGE
+// ============================================================================
+
+/**
+ * In-memory cache for chat sessions
+ * Key: userId, Value: ChatSessionData
+ * Sessions are kept in memory for the duration of the server process
+ */
+const sessionCache = new Map<string, ChatSessionData>();
+
+// Clean up old sessions every 30 minutes (sessions older than 2 hours)
+const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, session] of sessionCache.entries()) {
+    if (now - session.createdAt.getTime() > SESSION_TTL_MS) {
+      sessionCache.delete(userId);
+    }
+  }
+}, 30 * 60 * 1000);
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
 /**
- * Converts Evaluation result to StudentMemory
- * Extracts relevant information from the stored evaluation
- */
-function evaluationToMemory(evaluationResult: EvaluationResult): StudentMemory {
-  const evaluationText = evaluationResult.evaluation || "";
-  const lowerEvaluation = evaluationText.toLowerCase();
-
-  // Extract weaknesses from evaluation text
-  const identifiedWeaknesses: string[] = [];
-  const weaknessPatterns = [
-    /weakness(?:es)?[:\s]*([^.]+)/gi,
-    /missing[:\s]*([^.]+)/gi,
-    /needs improvement[:\s]*([^.]+)/gi,
-  ];
-
-  for (const pattern of weaknessPatterns) {
-    const match = evaluationText.match(pattern);
-    if (match) {
-      identifiedWeaknesses.push(match[1].trim());
-    }
-  }
-
-  // Extract strengths from evaluation text
-  const strengths: string[] = [];
-  const strengthPatterns = [
-    /strength(?:s)?[:\s]*([^.]+)/gi,
-    /good[:\s]*([^.]+)/gi,
-    /well[- ]done[:\s]*([^.]+)/gi,
-  ];
-
-  for (const pattern of strengthPatterns) {
-    const match = evaluationText.match(pattern);
-    if (match) {
-      strengths.push(match[1].trim());
-    }
-  }
-
-  // Determine last focused section based on content
-  const sections = ['Headline', 'Bio', 'Skills', 'Projects', 'Experience', 'Education', 'Links'];
-  let lastFocusedSection: string | null = null;
-  for (const section of sections) {
-    if (lowerEvaluation.includes(section.toLowerCase())) {
-      lastFocusedSection = section;
-    }
-  }
-
-  // Extract career goal if mentioned
-  const careerGoalMatch = evaluationText.match(/career goal[:\s]*([^.]+)/gi);
-  const careerGoal = careerGoalMatch ? careerGoalMatch[1].trim() : null;
-
-  // Extract improvement suggestions
-  const improvementSuggestions: string[] = [];
-  const suggestionPatterns = [
-    /suggested?[:\s]*([^.]+)/gi,
-    /improve(?:ment)?[:\s]*([^.]+)/gi,
-    /recommend(?:ation)?[:\s]*([^.]+)/gi,
-  ];
-
-  for (const pattern of suggestionPatterns) {
-    const match = evaluationText.match(pattern);
-    if (match) {
-      improvementSuggestions.push(match[1].trim());
-    }
-  }
-
-  return {
-    reviewedSections: sections,
-    identifiedWeaknesses,
-    strengths,
-    lastFocusedSection,
-    careerGoal,
-    auditGenerated: true,
-    improvementSuggestions,
-    questionsAsked: [],
-    topicsDiscussed: [],
-  };
-}
-
-/**
  * Gets or creates a chat session for the user
- * Returns the session and whether it was newly created
+ * Uses in-memory storage for simplicity
  */
-async function getOrCreateChatSession(
-  userId: string,
-  evaluationId: string | null
-): Promise<{ session: ChatSessionData; isNew: boolean }> {
-  if (evaluationId) {
-    // Try to find existing session for this evaluation, ordered by most recent
-    const existingSession = await prisma.chatSession.findFirst({
-      where: {
-        userId,
-        evaluationId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    if (existingSession) {
-      return {
-        session: {
-          id: existingSession.id,
-          userId: existingSession.userId,
-          evaluationId: existingSession.evaluationId,
-          messages: (existingSession.messages as unknown as ChatMessage[]) || [],
-          createdAt: existingSession.createdAt,
-        },
-        isNew: false,
-      };
-    }
-
-    // Create new session linked to evaluation
-    const newSession = await prisma.chatSession.create({
-      data: {
-        userId,
-        evaluationId,
-        messages: [],
-      },
-    });
-
-    return {
-      session: {
-        id: newSession.id,
-        userId: newSession.userId,
-        evaluationId: newSession.evaluationId,
-        messages: [],
-        createdAt: newSession.createdAt,
-      },
-      isNew: true,
-    };
+function getOrCreateChatSession(userId: string): ChatSessionData {
+  const existing = sessionCache.get(userId);
+  if (existing) {
+    return existing;
   }
 
-  // Create standalone session without evaluation
-  // First check if there's an existing session without evaluation
-  const existingStandaloneSession = await prisma.chatSession.findFirst({
-    where: {
-      userId,
-      evaluationId: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  if (existingStandaloneSession) {
-    return {
-      session: {
-        id: existingStandaloneSession.id,
-        userId: existingStandaloneSession.userId,
-        evaluationId: existingStandaloneSession.evaluationId,
-        messages: (existingStandaloneSession.messages as unknown as ChatMessage[]) || [],
-        createdAt: existingStandaloneSession.createdAt,
-      },
-      isNew: false,
-    };
-  }
-
-  const newSession = await prisma.chatSession.create({
-    data: {
-      userId,
-      messages: [],
-    },
-  });
-
-  return {
-    session: {
-      id: newSession.id,
-      userId: newSession.userId,
-      evaluationId: newSession.evaluationId,
-      messages: [],
-      createdAt: newSession.createdAt,
-    },
-    isNew: true,
+  const newSession: ChatSessionData = {
+    id: `session_${userId}_${Date.now()}`,
+    userId,
+    messages: [],
+    createdAt: new Date(),
   };
+
+  sessionCache.set(userId, newSession);
+  return newSession;
 }
 
 /**
@@ -348,7 +197,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     // Parse and validate request body
     const body: ChatRequestBody = await req.json();
-    const { mode, message, evaluationId } = body;
+    const { mode, message } = body;
 
     if (mode !== "CHAT_ADVISOR") {
       return NextResponse.json(
@@ -364,74 +213,32 @@ export async function POST(req: Request): Promise<NextResponse> {
       );
     }
 
-    // Get or create chat session
-    const { session } = await getOrCreateChatSession(userId, evaluationId || null);
+    // Get or create chat session (in-memory)
+    const session = getOrCreateChatSession(userId);
 
-    // Get evaluation context if available
-    let portfolioData: PortfolioData | null = null;
-    let memory: StudentMemory | null = null;
+    // Generate response using simple chat (no portfolio context needed for now)
+    const responseText = await generateSimpleChatResponse(message, session.messages);
 
-    if (session.evaluationId) {
-      const evaluation = await prisma.evaluation.findUnique({
-        where: { id: session.evaluationId },
-      });
-
-      if (evaluation) {
-        try {
-          portfolioData = evaluation.portfolioData as unknown as PortfolioData;
-          memory = evaluationToMemory(evaluation.result as unknown as EvaluationResult);
-        } catch (error) {
-          console.error("Error parsing evaluation data:", error);
-          // Continue without portfolio context if parsing fails
-        }
-      }
-    }
-
-    let responseText: string;
-
-    // Generate response based on available context
-    if (!portfolioData || !memory) {
-      // Simple chat response without portfolio context
-      responseText = await generateSimpleChatResponse(message, session.messages);
-    } else {
-      // Generate chat response with portfolio context
-      responseText = await generateChatAdvisorResponse(
-        portfolioData,
-        memory,
-        message,
-        openai
-      );
-    }
-
-    // Store messages in session using transaction for data integrity
-    await prisma.$transaction(async (tx) => {
-      // Add user message
-      const currentSession = await tx.chatSession.findUnique({
-        where: { id: session.id },
-      });
-
-      if (!currentSession) {
-        throw new Error("Session not found");
-      }
-
-      const messages = (currentSession.messages as unknown as ChatMessage[]) || [];
-      messages.push({
-        role: "user",
-        content: message,
-        timestamp: new Date().toISOString(),
-      });
-
-      messages.push({
-        role: "assistant",
-        content: responseText,
-        timestamp: new Date().toISOString(),
-      });
-
-      await tx.chatSession.update({
-        where: { id: session.id },
-        data: { messages: messages as unknown as Prisma.InputJsonValue },
-      });
+    // Store messages in session (in-memory)
+    session.messages.push({
+      role: "user",
+      content: message,
+      timestamp: new Date().toISOString(),
     });
+
+    session.messages.push({
+      role: "assistant",
+      content: responseText,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Keep only the last 20 messages to prevent memory bloat
+    if (session.messages.length > 20) {
+      session.messages = session.messages.slice(-20);
+    }
+
+    // Update the cache
+    sessionCache.set(userId, session);
 
     return NextResponse.json({
       success: true,

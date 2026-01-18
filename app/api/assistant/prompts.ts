@@ -252,20 +252,32 @@ export async function generatePortfolioAudit(
 export async function generateChatAdvisorResponse(
   portfolioData: PortfolioData,
   memory: StudentMemory,
-  message: string,
+  conversationOrMessage: ConversationMessage[] | string,
   openai: OpenAI
 ): Promise<string> {
-  // Build conversation from memory's questionsAsked if we don't have full history
-  const conversationHistory: ConversationMessage[] = memory.questionsAsked.map((q, i) => ({
-    role: 'user' as const,
-    content: q,
-    timestamp: new Date(Date.now() - (memory.questionsAsked.length - i) * 60000).toISOString()
-  }));
+  // Handle both array (full conversation) and string (single message) inputs
+  let conversationHistory: ConversationMessage[];
+  let currentMessage: string;
+
+  if (Array.isArray(conversationOrMessage)) {
+    // Full conversation array passed - extract last user message
+    conversationHistory = conversationOrMessage;
+    const lastUserMessage = conversationHistory.filter(m => m.role === 'user').pop();
+    currentMessage = lastUserMessage?.content || '';
+  } else {
+    // Single message string passed - build history from memory
+    currentMessage = conversationOrMessage;
+    conversationHistory = memory.questionsAsked.map((q, i) => ({
+      role: 'user' as const,
+      content: q,
+      timestamp: new Date(Date.now() - (memory.questionsAsked.length - i) * 60000).toISOString()
+    }));
+  }
 
   try {
     const response = await openai.responses.create({
       model: "gpt-4o-mini",
-      input: formatChatAdvisorPrompt(portfolioData, memory, conversationHistory, message),
+      input: formatChatAdvisorPrompt(portfolioData, memory, conversationHistory, currentMessage),
     });
     return parseOpenAIResponse(response);
   } catch (error) {
