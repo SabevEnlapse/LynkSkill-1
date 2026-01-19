@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import type { AppProps } from 'next/app'
 import { I18nProvider } from '@/lib/i18n'
+import { AIModeProvider } from '@/lib/ai-mode-context'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -9,7 +10,9 @@ export default function App({ Component, pageProps }: AppProps) {
       signUpFallbackRedirectUrl="/onboarding"
     >
       <I18nProvider>
-        <Component {...pageProps} />
+        <AIModeProvider>
+          <Component {...pageProps} />
+        </AIModeProvider>
       </I18nProvider>
     </ClerkProvider>
   )

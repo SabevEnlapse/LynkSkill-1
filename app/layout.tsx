@@ -5,6 +5,7 @@ import './globals.css'
 import { ThemeProvider } from "@/components/theme-provider"
 import OnboardingWrapper from "@/components/OnboardingWrapper"
 import { I18nProvider } from "@/lib/i18n"
+import { AIModeProvider } from "@/lib/ai-mode-context"
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -134,8 +135,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 disableTransitionOnChange
             >
                 <I18nProvider>
-                    <OnboardingWrapper />
-                    <main>{children}</main>
+                    <AIModeProvider>
+                        <OnboardingWrapper />
+                        <main>{children}</main>
+                    </AIModeProvider>
                 </I18nProvider>
             </ThemeProvider>
             </body>

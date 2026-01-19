@@ -27,7 +27,10 @@ import { SavedInternshipsTab } from "@/components/saved-internships-tab"
 import { MessagesTabContent } from "@/components/messages-tab-content"
 import { InterviewsTabContent } from "@/components/interviews-tab-content"
 import { MascotScene } from "@/components/MascotScene"
+import { StudentAIChat } from "@/components/student-ai-chat"
+import { CompanyAIChat } from "@/components/company-ai-chat"
 import { useDashboard } from "@/lib/dashboard-context"
+import { useAIMode } from "@/lib/ai-mode-context"
 import { useTranslation } from "@/lib/i18n"
 
 interface DashboardLayoutProps {
@@ -37,6 +40,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ userType }: DashboardLayoutProps) {
     const { t } = useTranslation()
+    const { isAIMode } = useAIMode()
     const [activeTab, setActiveTab] = useState("home")
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -457,60 +461,78 @@ export function DashboardLayout({ userType }: DashboardLayoutProps) {
                         {/* Modal */}
                         <InternshipModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateInternship} />
 
+                        {/* AI Mode Content */}
                         <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <TabsContent value="home" className="space-y-8 mt-0">
-                                    <DashboardHero userType={userType} />
-                                    <RecentInternshipsSection userType={userType} setActiveTab={setActiveTab} />
-                                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                                        <RecentApplicationsSection userType={userType} setActiveTab={setActiveTab} />
-                                        <ActiveAssignmentsSection setActiveTab={setActiveTab} />
-                                    </div>
-                                    <CommunityHighlights setActiveTab={setActiveTab} />
-                                </TabsContent>
-
-                                {userType === "Student" ? (
-                                    <TabsContent value="apps" className="space-y-8 mt-0">
-                                        <Portfolio userType={userType} />
+                            {isAIMode ? (
+                                <motion.div
+                                    key="ai-mode"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
+                                    className="min-h-[calc(100vh-200px)]"
+                                >
+                                    {userType === "Student" ? (
+                                        <StudentAIChat />
+                                    ) : (
+                                        <CompanyAIChat />
+                                    )}
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <TabsContent value="home" className="space-y-8 mt-0">
+                                        <DashboardHero userType={userType} />
+                                        <RecentInternshipsSection userType={userType} setActiveTab={setActiveTab} />
+                                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                                            <RecentApplicationsSection userType={userType} setActiveTab={setActiveTab} />
+                                            <ActiveAssignmentsSection setActiveTab={setActiveTab} />
+                                        </div>
+                                        <CommunityHighlights setActiveTab={setActiveTab} />
                                     </TabsContent>
-                                ) : (
-                                    <TabsContent value="leaderboard" className="space-y-8 mt-0">
-                                        <LeaderboardTabContent />
+
+                                    {userType === "Student" ? (
+                                        <TabsContent value="apps" className="space-y-8 mt-0">
+                                            <Portfolio userType={userType} />
+                                        </TabsContent>
+                                    ) : (
+                                        <TabsContent value="leaderboard" className="space-y-8 mt-0">
+                                            <LeaderboardTabContent />
+                                        </TabsContent>
+                                    )}
+
+                                    <TabsContent value="files" className="space-y-8 mt-0">
+                                        <ApplicationsTabContent userType={userType} />
                                     </TabsContent>
-                                )}
 
-                                <TabsContent value="files" className="space-y-8 mt-0">
-                                    <ApplicationsTabContent userType={userType} />
-                                </TabsContent>
-
-                                <TabsContent value="projects" className="space-y-8 mt-0">
-                                    <AssignmentsTabContent />
-                                </TabsContent>
-
-                                <TabsContent value="learn" className="space-y-8 mt-0">
-                                    <MyExperienceTabContent />
-                                </TabsContent>
-
-                                {userType === "Student" && (
-                                    <TabsContent value="saved" className="space-y-8 mt-0">
-                                        <SavedInternshipsTab />
+                                    <TabsContent value="projects" className="space-y-8 mt-0">
+                                        <AssignmentsTabContent />
                                     </TabsContent>
-                                )}
 
-                                <TabsContent value="messages" className="space-y-8 mt-0">
-                                    <MessagesTabContent userType={userType} />
-                                </TabsContent>
+                                    <TabsContent value="learn" className="space-y-8 mt-0">
+                                        <MyExperienceTabContent />
+                                    </TabsContent>
 
-                                <TabsContent value="interviews" className="space-y-8 mt-0">
-                                    <InterviewsTabContent userType={userType} />
-                                </TabsContent>
-                            </motion.div>
+                                    {userType === "Student" && (
+                                        <TabsContent value="saved" className="space-y-8 mt-0">
+                                            <SavedInternshipsTab />
+                                        </TabsContent>
+                                    )}
+
+                                    <TabsContent value="messages" className="space-y-8 mt-0">
+                                        <MessagesTabContent userType={userType} />
+                                    </TabsContent>
+
+                                    <TabsContent value="interviews" className="space-y-8 mt-0">
+                                        <InterviewsTabContent userType={userType} />
+                                    </TabsContent>
+                                </motion.div>
+                            )}
                         </AnimatePresence>
                     </Tabs>
                 </main>

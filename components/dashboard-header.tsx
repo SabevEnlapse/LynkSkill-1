@@ -8,6 +8,7 @@ import { ModeToggle } from "@/components/theme-toggle"
 import { SignedIn, UserButton } from "@clerk/nextjs"
 import { NotificationBell } from "@/components/notification-bell"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { AIModeToggle } from "@/components/ai-mode-toggle"
 import { useTranslation } from "@/lib/i18n"
 
 interface DashboardHeaderProps {
@@ -53,6 +54,8 @@ export function DashboardHeader({
           </h1>
 
           <div className="flex items-center text-foreground gap-2 sm:gap-3">
+            <AIModeToggle />
+            
             <NotificationBell />
             
             <LanguageSwitcher />
