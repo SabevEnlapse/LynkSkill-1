@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { notifyNewApplication, notifyNewAssignment } from "@/lib/notifications";
 
 export async function POST(req: Request) {
     const { userId } = await auth();
@@ -46,11 +47,29 @@ export async function POST(req: Request) {
             internshipId,
         },
         include: {
-            internship: true,
+            internship: {
+                include: {
+                    company: {
+                        select: { ownerId: true, name: true }
+                    }
+                }
+            },
         },
     });
 
     const internship = application.internship;
+
+    // 📧 Notify company about new application
+    const studentProfile = await prisma.profile.findUnique({
+        where: { userId: student.id },
+        select: { name: true }
+    });
+    
+    await notifyNewApplication(
+        internship.company.ownerId,
+        studentProfile?.name || student.email,
+        internship.title
+    );
 
     // ------------------------------------------------------------
     // ✔ ONLY CREATE ASSIGNMENT IF INTERNSHIP HAS A TEST ASSIGNMENT
@@ -71,6 +90,14 @@ export async function POST(req: Request) {
                     dueDate: internship.testAssignmentDueDate!,
                 },
             });
+            
+            // 📧 Notify student about new assignment
+            await notifyNewAssignment(
+                application.studentId,
+                internship.testAssignmentTitle!,
+                internship.company.name,
+                internship.testAssignmentDueDate!
+            );
         } catch (err) {
             console.error("Failed to create test assignment:", err);
         }

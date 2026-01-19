@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,9 +25,16 @@ import {
     RefreshCw,
     Search,
     Layers,
-    FileText, Mail
+    FileText, Mail,
+    Undo2,
+    Loader2,
+    MessageSquare,
+    CalendarPlus
 } from 'lucide-react'
+import { toast } from "sonner"
 import { useDashboard } from "@/lib/dashboard-context"
+import { ScheduleInterviewModal } from "@/components/schedule-interview-modal"
+import { ReviewModal } from "@/components/review-modal"
 
 interface ApplicationsTabContentProps {
     userType: "Student" | "Company"
@@ -63,8 +70,24 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
     } | null>(null)
 
     const [refreshing, setRefreshing] = useState(false)
+    const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
+    
+    // Modal states for interview scheduling and reviews
+    const [interviewModal, setInterviewModal] = useState<{
+        open: boolean
+        applicationId: string
+        studentName: string
+        internshipTitle: string
+    }>({ open: false, applicationId: "", studentName: "", internshipTitle: "" })
+    
+    const [reviewModal, setReviewModal] = useState<{
+        open: boolean
+        applicationId: string
+        companyName: string
+        internshipTitle: string
+    }>({ open: false, applicationId: "", companyName: "", internshipTitle: "" })
 
     // Initialize from context
     useEffect(() => {
@@ -92,6 +115,57 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
         })
         if (res.ok) {
             setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status } : app)))
+        }
+    }
+
+    async function withdrawApplication(id: string) {
+        const confirm = window.confirm("Are you sure you want to withdraw this application? This cannot be undone.")
+        if (!confirm) return
+        
+        setWithdrawingId(id)
+        try {
+            const res = await fetch("/api/applications/withdraw", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ applicationId: id }),
+            })
+            
+            if (res.ok) {
+                setApplications((prev) => prev.filter((app) => app.id !== id))
+                mutateApplications()
+                toast.success("Application withdrawn successfully")
+            } else {
+                const data = await res.json()
+                toast.error(data.error || "Failed to withdraw application")
+            }
+        } catch (error) {
+            console.error("Withdraw error:", error)
+            toast.error("Something went wrong")
+        } finally {
+            setWithdrawingId(null)
+        }
+    }
+
+    async function startConversation(applicationId: string) {
+        try {
+            const res = await fetch("/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ applicationId }),
+            })
+            
+            if (res.ok) {
+                // Navigate to messages tab - dispatch custom event
+                const event = new CustomEvent("navigateToTab", { detail: "messages" })
+                window.dispatchEvent(event)
+                toast.success("Opening conversation...")
+            } else {
+                const data = await res.json()
+                toast.error(data.error || "Cannot start conversation")
+            }
+        } catch (error) {
+            console.error("Start conversation error:", error)
+            toast.error("Something went wrong")
         }
     }
 
@@ -526,27 +600,103 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                                                             )}
 
                                                         </div>
+
+                                                        {/* ---------- ROW 3: MESSAGE + SCHEDULE INTERVIEW (for approved) ---------- */}
+                                                        {app.status === "APPROVED" && (
+                                                            <div className="flex gap-3">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => startConversation(app.id)}
+                                                                    className="flex-1 border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white font-semibold"
+                                                                >
+                                                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                                                    Message
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => setInterviewModal({
+                                                                        open: true,
+                                                                        applicationId: app.id,
+                                                                        studentName: app.student?.profile?.name || app.student?.email || "Student",
+                                                                        internshipTitle: app.internship?.title || "Internship"
+                                                                    })}
+                                                                    className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white font-semibold"
+                                                                >
+                                                                    <CalendarPlus className="w-4 h-4 mr-2" />
+                                                                    Schedule
+                                                                </Button>
+                                                            </div>
+                                                        )}
                                                     </>
                                                 )}
 
                                                 {userType === "Student" && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="w-full bg-muted/50 border-border/50 font-semibold"
-                                                        onClick={() =>
-                                                            setShowCompany({
-                                                                company: app.internship?.company || null,
-                                                                internship: app.internship || null,
-                                                                application: app,
-                                                                assignmentRequired: Boolean(app.assignmentRequired),
-                                                                project: app.project || null,
-                                                            })
-                                                        }
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        View Details
-                                                    </Button>
+                                                    <div className="space-y-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="w-full bg-muted/50 border-border/50 font-semibold"
+                                                            onClick={() =>
+                                                                setShowCompany({
+                                                                    company: app.internship?.company || null,
+                                                                    internship: app.internship || null,
+                                                                    application: app,
+                                                                    assignmentRequired: Boolean(app.assignmentRequired),
+                                                                    project: app.project || null,
+                                                                })
+                                                            }
+                                                        >
+                                                            <Eye className="w-4 h-4 mr-2" />
+                                                            View Details
+                                                        </Button>
+                                                        
+                                                        {app.status === "PENDING" && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="w-full border-red-500/50 text-red-600 hover:bg-red-500 hover:text-white font-semibold"
+                                                                onClick={() => withdrawApplication(app.id)}
+                                                                disabled={withdrawingId === app.id}
+                                                            >
+                                                                {withdrawingId === app.id ? (
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                ) : (
+                                                                    <Undo2 className="w-4 h-4 mr-2" />
+                                                                )}
+                                                                Withdraw Application
+                                                            </Button>
+                                                        )}
+
+                                                        {app.status === "APPROVED" && (
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => startConversation(app.id)}
+                                                                    className="flex-1 border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white font-semibold"
+                                                                >
+                                                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                                                    Message
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => setReviewModal({
+                                                                        open: true,
+                                                                        applicationId: app.id,
+                                                                        companyName: app.internship?.company?.name || "Company",
+                                                                        internshipTitle: app.internship?.title || "Internship"
+                                                                    })}
+                                                                    className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white font-semibold"
+                                                                >
+                                                                    <Star className="w-4 h-4 mr-2" />
+                                                                    Review
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
 
@@ -978,6 +1128,26 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Schedule Interview Modal (Company) */}
+            <ScheduleInterviewModal
+                open={interviewModal.open}
+                onClose={() => setInterviewModal(prev => ({ ...prev, open: false }))}
+                applicationId={interviewModal.applicationId}
+                studentName={interviewModal.studentName}
+                internshipTitle={interviewModal.internshipTitle}
+                onSuccess={handleRefresh}
+            />
+
+            {/* Review Modal (Student) */}
+            <ReviewModal
+                open={reviewModal.open}
+                onClose={() => setReviewModal(prev => ({ ...prev, open: false }))}
+                applicationId={reviewModal.applicationId}
+                companyName={reviewModal.companyName}
+                internshipTitle={reviewModal.internshipTitle}
+                onSuccess={handleRefresh}
+            />
         </div>
     )
 }

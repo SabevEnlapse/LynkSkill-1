@@ -1,6 +1,6 @@
 "use client"
 
-import {Settings, X, Briefcase,} from "lucide-react"
+import {Settings, X} from "lucide-react"
 import Image from "next/image"
 import {Button} from "@/components/ui/button"
 import {ScrollArea} from "@/components/ui/scroll-area"
@@ -11,7 +11,6 @@ import {ChartColumnIncreasing} from "@/components/animate-ui/icons/chart-column-
 import {ClipboardList} from "@/components/animate-ui/icons/clipboard-list";
 import {CheckCheck} from "@/components/animate-ui/icons/check-check";
 import {UsersRound} from "@/components/animate-ui/icons/users-round";
-import {Layers} from "@/components/animate-ui/icons/layers";
 import {ClipboardCheck} from "@/components/animate-ui/icons/clipboard-check";
 
 interface DashboardSidebarProps {

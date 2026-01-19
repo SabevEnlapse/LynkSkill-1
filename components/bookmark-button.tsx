@@ -1,0 +1,137 @@
+"use client"
+
+import { useState } from "react"
+import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
+
+interface BookmarkButtonProps {
+    internshipId: string
+    isSaved: boolean
+    onToggle?: (saved: boolean) => void
+    variant?: "icon" | "button"
+    className?: string
+}
+
+export function BookmarkButton({
+    internshipId,
+    isSaved: initialSaved,
+    onToggle,
+    variant = "icon",
+    className
+}: BookmarkButtonProps) {
+    const [isSaved, setIsSaved] = useState(initialSaved)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const handleToggle = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        setIsLoading(true)
+        
+        try {
+            if (isSaved) {
+                // Remove bookmark
+                const res = await fetch("/api/saved-internships", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ internshipId })
+                })
+                
+                if (res.ok) {
+                    setIsSaved(false)
+                    onToggle?.(false)
+                    toast.success("Removed from saved")
+                } else {
+                    throw new Error("Failed to remove")
+                }
+            } else {
+                // Add bookmark
+                const res = await fetch("/api/saved-internships", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ internshipId })
+                })
+                
+                if (res.ok) {
+                    setIsSaved(true)
+                    onToggle?.(true)
+                    toast.success("Saved to bookmarks")
+                } else {
+                    const data = await res.json()
+                    if (data.error === "Already saved") {
+                        setIsSaved(true)
+                    } else {
+                        throw new Error(data.error || "Failed to save")
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Bookmark toggle error:", error)
+            toast.error("Something went wrong")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    if (variant === "icon") {
+        return (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleToggle}
+                disabled={isLoading}
+                className={cn(
+                    "h-8 w-8 rounded-full transition-all",
+                    isSaved && "text-yellow-500 hover:text-yellow-600",
+                    className
+                )}
+            >
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={isSaved ? "saved" : "not-saved"}
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                        >
+                            {isSaved ? (
+                                <BookmarkCheck className="h-4 w-4 fill-current" />
+                            ) : (
+                                <Bookmark className="h-4 w-4" />
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                )}
+            </Button>
+        )
+    }
+
+    return (
+        <Button
+            variant={isSaved ? "secondary" : "outline"}
+            onClick={handleToggle}
+            disabled={isLoading}
+            className={cn("gap-2", className)}
+        >
+            {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isSaved ? (
+                <>
+                    <BookmarkCheck className="h-4 w-4 fill-current" />
+                    Saved
+                </>
+            ) : (
+                <>
+                    <Bookmark className="h-4 w-4" />
+                    Save
+                </>
+            )}
+        </Button>
+    )
+}

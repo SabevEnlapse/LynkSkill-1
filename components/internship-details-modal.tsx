@@ -14,8 +14,14 @@ import {
     Building2,
     ExternalLink,
     AlertCircle,
+    Star,
 } from "lucide-react"
 import {format} from "date-fns"
+
+interface CompanyRating {
+    avgRating: number
+    totalReviews: number
+}
 
 interface Internship {
     id: string
@@ -139,6 +145,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
     const [internship, setInternship] = useState<Internship | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
+    const [companyRating, setCompanyRating] = useState<CompanyRating | null>(null)
 
     const fetchInternship = async () => {
         if (!internshipId) return
@@ -152,6 +159,18 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
             if (!res.ok) throw new Error("Failed to fetch")
             const data = await res.json()
             setInternship(data)
+            
+            // Fetch company rating
+            if (data.company?.id) {
+                const ratingRes = await fetch(`/api/reviews?companyId=${data.company.id}`)
+                if (ratingRes.ok) {
+                    const ratingData = await ratingRes.json()
+                    setCompanyRating({ 
+                        avgRating: ratingData.avgRating || 0, 
+                        totalReviews: ratingData.totalReviews || 0 
+                    })
+                }
+            }
         } catch (err) {
             console.error("Error fetching internship:", err)
             setError(true)
@@ -164,6 +183,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
         if (open && internshipId) {
             fetchInternship()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, internshipId])
 
     if (!open) return null
@@ -263,7 +283,20 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                             <Building2 className="h-5 w-5 text-blue-400"/>
                                         </div>
                                         <div className="flex-1 min-w-0 space-y-2">
-                                            <h3 className="text-base font-semibold text-foreground">{internship.company.name}</h3>
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-base font-semibold text-foreground">{internship.company.name}</h3>
+                                                {companyRating && companyRating.totalReviews > 0 && (
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                                                        <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                                                        <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                                                            {companyRating.avgRating.toFixed(1)}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            ({companyRating.totalReviews} review{companyRating.totalReviews !== 1 ? "s" : ""})
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                             <p className="text-sm text-muted-foreground leading-relaxed">{internship.company.description}</p>
                                             <div
                                                 className="flex flex-wrap gap-3 sm:gap-4 text-sm text-muted-foreground pt-1">

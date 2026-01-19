@@ -182,7 +182,7 @@ export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSection
                                     onClick={() => setActiveTab("projects")}
                                     className="cursor-pointer"
                                 >
-                                    <Card className="hover:shadow-lg hover:shadow-[var(--application-shadow-light)] transition-all duration-300 group border-l-4 border-l-[var(--experience-accent)]">
+                                    <Card className="hover:shadow-[var(--application-shadow-light)] transition-all duration-300 group border-l-4 border-l-[var(--experience-accent)]">
                                         <CardContent className="p-4">
                                             <div className="space-y-4">
                                                 {/* Header Section */}

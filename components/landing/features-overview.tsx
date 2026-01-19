@@ -2,7 +2,7 @@
 
 import {motion, useScroll, useTransform} from "framer-motion"
 import { Target, Zap, Shield, TrendingUp } from "lucide-react"
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 
 const features = [
     {
@@ -39,13 +39,12 @@ const features = [
 
 export function FeaturesOverview() {
 
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const { scrollY } = useScroll()
-    const y = useTransform(scrollY, [0, 500], [0, 150])
+    useTransform(scrollY, [0, 500], [0, 150])
 
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            setMousePosition({ x: e.clientX, y: e.clientY })
+        const handleMouseMove = () => {
+            // Mouse position tracking for potential future use
         }
         window.addEventListener('mousemove', handleMouseMove)
         return () => window.removeEventListener('mousemove', handleMouseMove)

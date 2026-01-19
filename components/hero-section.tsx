@@ -5,7 +5,6 @@ import { FeaturesOverview } from "@/components/landing/features-overview"
 import { ServicesSection } from "@/components/landing/services-section"
 import { HowItWorks } from "@/components/landing/how-it-works"
 import { StatsSection } from "@/components/landing/stats-section"
-import { TestimonialsSection } from "@/components/landing/testimonials-section"
 import { FAQSection } from "@/components/landing/faq-section"
 import { FooterCTA } from "@/components/landing/footer-cta"
 

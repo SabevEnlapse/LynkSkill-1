@@ -430,8 +430,8 @@ const sidebarItems = [
 ]
 
 export function DesignaliCreative() {
-  const [progress, setProgress] = useState(0)
-  const [notifications, setNotifications] = useState(5)
+  const [_progress, setProgress] = useState(0)
+  const [notifications] = useState(5)
   const [activeTab, setActiveTab] = useState("home")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

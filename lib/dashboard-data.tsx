@@ -1,4 +1,4 @@
-import { Grid, FileText, Layers, Briefcase } from "lucide-react"
+import { Grid, FileText, Briefcase } from "lucide-react"
 import {HouseIcon} from "@/components/dashboard/home-icon";
 import {BookOpenTextIcon} from "@/components/dashboard/portfolio-icon";
 import {BookOpenCheckIcon} from "@/components/BookOpenCheckIcon";

@@ -1,15 +1,16 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import type { Internship } from "@/app/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CardSkeleton } from "@/components/card-skeleton"
 import InternshipDetailsModal from "@/components/internship-details-modal"
-import { Input } from "@/components/ui/input"
-import { Layers, Clock, Search, RefreshCw, Trash2, MapPin, GraduationCap, DollarSign, Timer, BookOpen, Wrench, Building2, Briefcase, CheckCircle2, XCircle, Clock3, ArrowRight, Sparkles, Calendar, FileText } from 'lucide-react'
+import { Layers, Clock, RefreshCw, Trash2, MapPin, GraduationCap, DollarSign, Timer, BookOpen, Wrench, Building2, Briefcase, CheckCircle2, XCircle, Clock3, ArrowRight, Sparkles, Calendar, Search } from 'lucide-react'
 import ApplyButton from "@/components/ApplyBtn"
+import { BookmarkButton } from "@/components/bookmark-button"
+import { InternshipFiltersComponent, type InternshipFilters } from "@/components/internship-filters"
 import { useDashboard } from "@/lib/dashboard-context"
 
 interface Application {
@@ -30,16 +31,23 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
         internships: contextInternships, 
         applications: contextApplications,
         isLoadingInternships,
-        isLoadingApplications,
         mutateInternships,
-        mutateApplications
+        mutateApplications,
+        savedInternshipIds,
+        mutateSavedInternships
     } = useDashboard()
 
     const [refreshing, setRefreshing] = useState(false)
     const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null)
     const [open, setOpen] = useState(false)
-    const [selected, setSelected] = useState<Internship | null>(null)
-    const [searchQuery, setSearchQuery] = useState("")
+    const [filters, setFilters] = useState<InternshipFilters>({
+        search: "",
+        location: "all",
+        paid: "all",
+        minSalary: 0,
+        maxSalary: 10000,
+        skills: []
+    })
     const [filter, setFilter] = useState<"all" | "recent">("all")
     const [displayCount, setDisplayCount] = useState(6)
 
@@ -48,21 +56,93 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
     const applications = contextApplications as Application[]
     const isLoading = isLoadingInternships
 
+    // Extract unique locations from internships
+    const uniqueLocations = useMemo(() => {
+        const locs = new Set<string>()
+        internships.forEach(i => {
+            if (i.location) locs.add(i.location)
+        })
+        return Array.from(locs).sort()
+    }, [internships])
+
+    // Extract unique skills from internships
+    const uniqueSkills = useMemo(() => {
+        const skillsSet = new Set<string>()
+        internships.forEach(i => {
+            if (i.skills) {
+                // Skills could be comma-separated or array
+                const skillList = typeof i.skills === 'string' 
+                    ? i.skills.split(',').map(s => s.trim())
+                    : i.skills
+                skillList.forEach((s: string) => {
+                    if (s) skillsSet.add(s)
+                })
+            }
+        })
+        return Array.from(skillsSet).sort()
+    }, [internships])
+
+    // Memoized filter handler
+    const handleFiltersChange = useCallback((newFilters: InternshipFilters) => {
+        setFilters(newFilters)
+        setDisplayCount(6) // Reset display count when filters change
+    }, [])
+
     const handleRefresh = async () => {
         setRefreshing(true)
         await Promise.all([mutateInternships(), mutateApplications()])
         setRefreshing(false)
     }
 
-    const searchLower = searchQuery.toLowerCase()
-    const filteredInternships = internships.filter((internship) => {
-        return (
-            internship.title.toLowerCase().includes(searchLower) ||
-            internship.description.toLowerCase().includes(searchLower) ||
-            internship.location?.toLowerCase().includes(searchLower) ||
-            internship.skills?.toLowerCase().includes(searchLower)
-        )
-    })
+    // Apply all filters
+    const filteredInternships = useMemo(() => {
+        return internships.filter((internship) => {
+            // Search filter
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase()
+                const matchesSearch = 
+                    internship.title.toLowerCase().includes(searchLower) ||
+                    internship.description.toLowerCase().includes(searchLower) ||
+                    internship.location?.toLowerCase().includes(searchLower) ||
+                    internship.skills?.toLowerCase().includes(searchLower)
+                if (!matchesSearch) return false
+            }
+
+            // Location filter
+            if (filters.location !== "all") {
+                const locLower = internship.location?.toLowerCase() || ""
+                if (filters.location === "remote") {
+                    if (!locLower.includes("remote")) return false
+                } else if (!locLower.includes(filters.location.toLowerCase())) {
+                    return false
+                }
+            }
+
+            // Paid/Unpaid filter
+            if (filters.paid !== "all") {
+                if (filters.paid === "paid" && !internship.paid) return false
+                if (filters.paid === "unpaid" && internship.paid) return false
+            }
+
+            // Salary range filter (only for paid internships)
+            if (filters.paid !== "unpaid" && internship.paid && internship.salary) {
+                const salary = Number(internship.salary)
+                if (salary < filters.minSalary) return false
+                if (filters.maxSalary < 10000 && salary > filters.maxSalary) return false
+            }
+
+            // Skills filter
+            if (filters.skills.length > 0) {
+                const internshipSkills = internship.skills?.toLowerCase() || ""
+                const hasMatchingSkill = filters.skills.some(skill => 
+                    internshipSkills.includes(skill.toLowerCase())
+                )
+                if (!hasMatchingSkill) return false
+            }
+
+            return true
+        })
+    }, [internships, filters])
 
     const now = Date.now()
     const finalInternships =
@@ -75,7 +155,8 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
             : filteredInternships
 
     const displayedInternships = finalInternships.slice(0, displayCount)
-    const hasMore = displayCount < finalInternships.length
+    // hasMore can be used for "Load More" functionality
+    const _hasMore = displayCount < finalInternships.length
 
     return (
         <section className="space-y-6 md:space-y-8">
@@ -123,21 +204,6 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                         <Clock className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                         Recent
                     </Button>
-                </div>
-
-                <div className="hidden sm:block sm:flex-1" />
-
-                <div className="flex gap-2 md:gap-3">
-                    <div className="relative flex-1 sm:w-[280px] md:w-[320px]">
-                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search..."
-                            className="w-full rounded-xl md:rounded-2xl pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 h-auto border-2 focus:border-purple-500 transition-all shadow-md focus:shadow-lg text-sm md:text-base"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
 
                     <Button
                         size="lg"
@@ -151,6 +217,14 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                     </Button>
                 </div>
             </div>
+
+            {/* Advanced Filters */}
+            <InternshipFiltersComponent
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                locations={uniqueLocations}
+                allSkills={uniqueSkills}
+            />
 
             {finalInternships.length === 0 && !isLoading ? (
                 <div className="text-center py-16 md:py-20">
@@ -224,6 +298,14 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-destructive" />
                                                         </motion.button>
+                                                    )}
+                                                    {userType === "Student" && (
+                                                        <BookmarkButton
+                                                            internshipId={item.id}
+                                                            isSaved={savedInternshipIds.has(item.id)}
+                                                            onToggle={() => mutateSavedInternships()}
+                                                            className="bg-muted/50 hover:bg-muted"
+                                                        />
                                                     )}
                                                 </div>
                                             </CardHeader>

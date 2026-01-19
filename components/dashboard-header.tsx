@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ModeToggle } from "@/components/theme-toggle"
 import { SignedIn, UserButton } from "@clerk/nextjs"
+import { NotificationBell } from "@/components/notification-bell"
 
 interface DashboardHeaderProps {
   sidebarOpen: boolean
@@ -16,11 +17,11 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({
-                                  sidebarOpen,
+                                  sidebarOpen: _sidebarOpen,
                                   onToggleSidebar,
                                   onToggleMobileMenu,
-                                  notifications = 5,
-                                  userType,
+                                  notifications: _notifications = 5,
+                                  userType: _userType,
                                 }: DashboardHeaderProps) {
   return (
       <header className="sticky top-0 z-10 flex h-16 w-full items-center gap-3 border-b border-purple-500/20 bg-gradient-to-r from-background via-purple-950/10 to-background px-4 backdrop-blur-xl transition-all duration-500 animate-gradient-x">
@@ -48,6 +49,8 @@ export function DashboardHeader({
           </h1>
 
           <div className="flex items-center text-foreground gap-2 sm:gap-3">
+            <NotificationBell />
+            
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

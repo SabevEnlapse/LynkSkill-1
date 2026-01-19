@@ -46,6 +46,12 @@ interface RecentExperience {
     isBulk: boolean
 }
 
+interface SavedInternship {
+    id: string
+    internshipId: string
+    savedAt: string
+}
+
 interface UserData {
     id: string
     clerkId: string
@@ -91,6 +97,12 @@ interface DashboardContextType {
     recentExperiences: RecentExperience[]
     isLoadingExperiences: boolean
     
+    // Saved internships (for students)
+    savedInternships: SavedInternship[]
+    savedInternshipIds: Set<string>
+    isLoadingSaved: boolean
+    mutateSavedInternships: () => void
+    
     // Global loading state
     isInitialLoading: boolean
     
@@ -131,6 +143,7 @@ interface DashboardProviderProps {
         applications?: Application[]
         projects?: Project[]
         recentExperiences?: RecentExperience[]
+        savedInternships?: SavedInternship[]
     }
 }
 
@@ -228,6 +241,25 @@ export function DashboardProvider({
         }
     )
 
+    // Saved internships (students only)
+    const { 
+        data: savedInternships, 
+        isLoading: isLoadingSaved,
+        mutate: mutateSavedInternships 
+    } = useSWR<SavedInternship[]>(
+        userType === "Student" ? "/api/saved-internships" : null,
+        fetcher,
+        { 
+            ...swrConfig, 
+            fallbackData: initialData?.savedInternships ?? [],
+        }
+    )
+
+    // Compute saved internship IDs set for O(1) lookups
+    const savedInternshipIds = useMemo(() => {
+        return new Set((savedInternships ?? []).map(s => s.internshipId))
+    }, [savedInternships])
+
     // Refresh all data
     const refreshAll = useCallback(async () => {
         await Promise.all([
@@ -237,8 +269,9 @@ export function DashboardProvider({
             mutateApplications(),
             mutateProjects(),
             mutateExperiences(),
+            userType === "Student" ? mutateSavedInternships() : Promise.resolve(),
         ])
-    }, [mutateUser, mutateCompany, mutateInternships, mutateApplications, mutateProjects, mutateExperiences, userType])
+    }, [mutateUser, mutateCompany, mutateInternships, mutateApplications, mutateProjects, mutateExperiences, mutateSavedInternships, userType])
 
     // Global loading state (only true on first load without fallback data)
     const isInitialLoading = useMemo(() => {
@@ -267,6 +300,10 @@ export function DashboardProvider({
         mutateProjects: () => mutateProjects(),
         recentExperiences: recentExperiences ?? [],
         isLoadingExperiences,
+        savedInternships: savedInternships ?? [],
+        savedInternshipIds,
+        isLoadingSaved,
+        mutateSavedInternships: () => mutateSavedInternships(),
         isInitialLoading,
         refreshAll,
     }), [
@@ -276,6 +313,7 @@ export function DashboardProvider({
         applications, isLoadingApplications, mutateApplications,
         projects, isLoadingProjects, mutateProjects,
         recentExperiences, isLoadingExperiences,
+        savedInternships, savedInternshipIds, isLoadingSaved, mutateSavedInternships,
         isInitialLoading, refreshAll,
     ])
 
@@ -301,5 +339,6 @@ export type {
     UserData, 
     CompanyData, 
     Project, 
-    RecentExperience 
+    RecentExperience,
+    SavedInternship 
 }

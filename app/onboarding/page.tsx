@@ -140,7 +140,7 @@ export default function OnboardingPage() {
                 setAgeValid(true)
                 setError("")
             }
-        } catch (err) {
+        } catch (_err) {
             setAgeValid(false)
             setError("Invalid date format")
         }

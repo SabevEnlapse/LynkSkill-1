@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Home, Briefcase, FileText, ClipboardList, Award, Trophy } from "lucide-react"
+import { Plus, Home, Briefcase, FileText, Award, Trophy, Bookmark, MessageSquare, CalendarDays } from "lucide-react"
 import { InternshipModal } from "@/components/internship-modal"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -23,6 +23,9 @@ import MyExperienceTabContent from "./my-experience-tab-content"
 import type { Internship } from "@/app/types"
 // import {AnalyticsTabContent} from "@/components/analytics-tab-content";
 import { LeaderboardTabContent } from "@/components/leaderboard-tab-content"
+import { SavedInternshipsTab } from "@/components/saved-internships-tab"
+import { MessagesTabContent } from "@/components/messages-tab-content"
+import { InterviewsTabContent } from "@/components/interviews-tab-content"
 import { MascotScene } from "@/components/MascotScene"
 import { useDashboard } from "@/lib/dashboard-context"
 
@@ -31,7 +34,7 @@ interface DashboardLayoutProps {
     children?: React.ReactNode
 }
 
-export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
+export function DashboardLayout({ userType }: DashboardLayoutProps) {
     const [activeTab, setActiveTab] = useState("home")
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -53,7 +56,7 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
     const userName = user?.profile?.name ?? null
 
     // Local state for internships that can be mutated (for create/update/delete)
-    const [localInternships, setLocalInternships] = useState<Internship[]>([])
+    const [, setLocalInternships] = useState<Internship[]>([])
     
     // Sync context internships to local state
     useEffect(() => {
@@ -87,12 +90,19 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
             setLocalInternships((prev) => prev.map((i) => (i.id === customEvent.detail.id ? customEvent.detail : i)))
         }
 
+        function handleNavigateToTab(e: Event) {
+            const customEvent = e as CustomEvent<string>
+            setActiveTab(customEvent.detail)
+        }
+
         window.addEventListener("internshipDeleted", handleDeleted)
         window.addEventListener("internshipUpdated", handleUpdated)
+        window.addEventListener("navigateToTab", handleNavigateToTab)
 
         return () => {
             window.removeEventListener("internshipDeleted", handleDeleted)
             window.removeEventListener("internshipUpdated", handleUpdated)
+            window.removeEventListener("navigateToTab", handleNavigateToTab)
         }
     }, [])
 
@@ -304,6 +314,32 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                         <Award className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(147,51,234,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(147,51,234,0.6)]" />
                                         <span>My Experience</span>
                                     </TabsTrigger>
+
+                                    {userType === "Student" && (
+                                        <TabsTrigger
+                                            value="saved"
+                                            className="group cursor-pointer relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500/20 data-[state=active]:to-yellow-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-amber-500/10 hover:scale-105 data-[state=active]:scale-105"
+                                        >
+                                            <Bookmark className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                                            <span>Saved</span>
+                                        </TabsTrigger>
+                                    )}
+
+                                    <TabsTrigger
+                                        value="messages"
+                                        className="group cursor-pointer relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-indigo-500/10 hover:scale-105 data-[state=active]:scale-105"
+                                    >
+                                        <MessageSquare className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(99,102,241,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(99,102,241,0.6)]" />
+                                        <span>Messages</span>
+                                    </TabsTrigger>
+
+                                    <TabsTrigger
+                                        value="interviews"
+                                        className="group cursor-pointer relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/20 data-[state=active]:to-cyan-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-blue-500/10 hover:scale-105 data-[state=active]:scale-105"
+                                    >
+                                        <CalendarDays className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.6)]" />
+                                        <span>Interviews</span>
+                                    </TabsTrigger>
                                 </TabsList>
                             </motion.div>
 
@@ -382,6 +418,32 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                             <Award className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(147,51,234,0.8)]" />
                                             <span className="whitespace-nowrap text-center">Journey</span>
                                         </TabsTrigger>
+
+                                        {userType === "Student" && (
+                                            <TabsTrigger
+                                                value="saved"
+                                                className="group relative flex flex-col items-center justify-center gap-1 px-2.5 py-2.5 rounded-xl font-semibold text-[10px] leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500/20 data-[state=active]:to-yellow-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-muted-foreground flex-1 min-w-0 active:scale-95 hover:bg-amber-500/10"
+                                            >
+                                                <Bookmark className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+                                                <span className="whitespace-nowrap text-center">Saved</span>
+                                            </TabsTrigger>
+                                        )}
+
+                                        <TabsTrigger
+                                            value="messages"
+                                            className="group relative flex flex-col items-center justify-center gap-1 px-2.5 py-2.5 rounded-xl font-semibold text-[10px] leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/30 data-[state=inactive]:text-muted-foreground flex-1 min-w-0 active:scale-95 hover:bg-indigo-500/10"
+                                        >
+                                            <MessageSquare className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                                            <span className="whitespace-nowrap text-center">Chat</span>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger
+                                            value="interviews"
+                                            className="group relative flex flex-col items-center justify-center gap-1 px-2.5 py-2.5 rounded-xl font-semibold text-[10px] leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500/20 data-[state=active]:to-cyan-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30 data-[state=inactive]:text-muted-foreground flex-1 min-w-0 active:scale-95 hover:bg-blue-500/10"
+                                        >
+                                            <CalendarDays className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                                            <span className="whitespace-nowrap text-center">Calls</span>
+                                        </TabsTrigger>
                                     </TabsList>
                                 </motion.div>
                             </div>
@@ -440,6 +502,20 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
 
                                 <TabsContent value="learn" className="space-y-8 mt-0">
                                     <MyExperienceTabContent />
+                                </TabsContent>
+
+                                {userType === "Student" && (
+                                    <TabsContent value="saved" className="space-y-8 mt-0">
+                                        <SavedInternshipsTab />
+                                    </TabsContent>
+                                )}
+
+                                <TabsContent value="messages" className="space-y-8 mt-0">
+                                    <MessagesTabContent userType={userType} />
+                                </TabsContent>
+
+                                <TabsContent value="interviews" className="space-y-8 mt-0">
+                                    <InterviewsTabContent userType={userType} />
                                 </TabsContent>
                             </motion.div>
                         </AnimatePresence>

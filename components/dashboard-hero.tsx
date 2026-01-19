@@ -10,7 +10,7 @@ interface DashboardHeroProps {
   userType: "Student" | "Company"
 }
 
-export function DashboardHero({ userType }: DashboardHeroProps) {
+export function DashboardHero({ userType: _userType }: DashboardHeroProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

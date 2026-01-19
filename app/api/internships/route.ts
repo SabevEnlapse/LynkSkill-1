@@ -1,12 +1,13 @@
 // app/api/internships/route.ts
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 
 // Prisma + Supabase pgBouncer optimisation
 export const runtime = "nodejs";
-export const revalidate = 300;
+export const dynamic = "force-dynamic"; // Need dynamic for query params
 
 // ZOD schema
 const internshipSchema = z.object({
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
 }
 
 // ------------------- READ -------------------
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
@@ -95,8 +96,16 @@ export async function GET(req: Request) {
 
     if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { searchParams } = new URL(req.url);
+    const searchParams = req.nextUrl.searchParams;
     const internshipId = searchParams.get("id");
+    
+    // Parse filter parameters
+    const search = searchParams.get("search");
+    const location = searchParams.get("location");
+    const paid = searchParams.get("paid");
+    const minSalary = searchParams.get("minSalary");
+    const maxSalary = searchParams.get("maxSalary");
+    const skills = searchParams.get("skills"); // comma-separated
 
     // ------------------- SINGLE INTERNSHIP -------------------
     if (internshipId) {
@@ -188,17 +197,63 @@ export async function GET(req: Request) {
         return NextResponse.json(internships);
     }
 
-    // STUDENT → gets very light data (FASTER!)
+    // STUDENT → gets very light data (FASTER!) with filtering
+    const whereClause: Prisma.InternshipWhereInput = {};
+    
+    // Search by title or description
+    if (search) {
+        whereClause.OR = [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } }
+        ];
+    }
+    
+    // Filter by location
+    if (location && location !== "all") {
+        whereClause.location = { contains: location, mode: "insensitive" };
+    }
+    
+    // Filter by paid/unpaid
+    if (paid === "true") {
+        whereClause.paid = true;
+    } else if (paid === "false") {
+        whereClause.paid = false;
+    }
+    
+    // Filter by salary range
+    if (minSalary) {
+        whereClause.salary = { 
+            ...whereClause.salary as Prisma.FloatNullableFilter,
+            gte: parseFloat(minSalary) 
+        };
+    }
+    if (maxSalary) {
+        whereClause.salary = { 
+            ...whereClause.salary as Prisma.FloatNullableFilter,
+            lte: parseFloat(maxSalary) 
+        };
+    }
+    
+    // Filter by skills (stored as array in skills field)
+    if (skills) {
+        const skillList = skills.split(",").map(s => s.trim().toLowerCase());
+        whereClause.skills = { hasSome: skillList };
+    }
+
     const internships = await prisma.internship.findMany({
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         select: {
             id: true,
             title: true,
+            description: true,
             location: true,
             paid: true,
             salary: true,
+            skills: true,
             applicationStart: true,
             applicationEnd: true,
+            createdAt: true,
             company: { select: { name: true, logo: true } }
         }
     });

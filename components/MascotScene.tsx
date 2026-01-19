@@ -9,7 +9,7 @@ interface MascotSceneProps {
     mascotUrl: string
     steps: string[]
     onFinish: () => void
-    setActiveTab: (tab: string) => void
+    setActiveTab?: (tab: string) => void
     userType: "Student" | "Company"
 }
 
@@ -17,7 +17,7 @@ export function MascotScene({
     mascotUrl,
     steps,
     onFinish,
-    setActiveTab,
+    // setActiveTab prop available for future tab navigation during tutorial
     userType,
 }: MascotSceneProps) {
     const [visible, setVisible] = useState(true)

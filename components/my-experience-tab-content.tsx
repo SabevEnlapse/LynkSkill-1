@@ -103,7 +103,8 @@ export default function ExperienceTabContent() {
   const [fileSizeError, setFileSizeError] = useState<string | null>(null)
 
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null)
-  const [approvingExpId, setApprovingExpId] = useState<string | null>(null)
+  // approvingExpId is used for tracking approval state in UI
+  const [, setApprovingExpId] = useState<string | null>(null)
 
   const handleDownloadClick = (url: string) => {
     setSelectedFile(url)
@@ -793,7 +794,7 @@ export default function ExperienceTabContent() {
                           whileHover={{ scale: 1.02, y: -5 }}
                           whileTap={{ scale: 0.98 }}
                       >
-                        <Card className="overflow-hidden rounded-3xl border border-[var(--experience-card-shadow)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)] hover:shadow-lg hover:shadow-[var(--experience-card-shadow-hover)] transition-all duration-300 group">
+                        <Card className="overflow-hidden rounded-3xl border border-[var(--experience-card-shadow)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)] hover:shadow-[var(--experience-card-shadow-hover)] transition-all duration-300 group">
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-3">

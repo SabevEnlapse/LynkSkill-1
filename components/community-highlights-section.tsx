@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Download, Sparkles, Users, TrendingUp, ShieldAlert, ShieldCheck, Layers } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"

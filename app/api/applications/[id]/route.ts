@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
+import { notifyApplicationStatusChange } from "@/lib/notifications"
 
 export async function PATCH(
     req: Request,
@@ -96,6 +97,21 @@ export async function PATCH(
                 },
             })
         }
+
+        // ======================================================
+        // 5) Send notification to student about status change
+        // ======================================================
+        const company = await prisma.company.findFirst({
+            where: { id: updatedApplication.internship.companyId },
+            select: { name: true }
+        })
+        
+        await notifyApplicationStatusChange(
+            updatedApplication.studentId,
+            updatedApplication.internship.title,
+            company?.name || "Company",
+            status as "APPROVED" | "REJECTED"
+        )
 
         return NextResponse.json(updatedApplication)
     } catch (error) {

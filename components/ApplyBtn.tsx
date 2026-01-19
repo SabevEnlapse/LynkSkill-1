@@ -22,7 +22,8 @@ interface ApplyButtonProps {
 export default function ApplyButton({ internshipId, onApplied, goToPortfolioTab }: ApplyButtonProps) {
     const [isApplying, setIsApplying] = useState(false)
     const [showIncompleteModal, setShowIncompleteModal] = useState(false)
-    const router = useRouter()
+    // Router available for future navigation needs
+    useRouter()
 
     const handleApply = async () => {
         setIsApplying(true)

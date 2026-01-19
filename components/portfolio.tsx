@@ -206,7 +206,8 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
     const [portfolio, setPortfolio] = useState<PortfolioData | null>(null)
     const [isEditing, setIsEditing] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [activeSection, setActiveSection] = useState<string | null>(null)
+    // activeSection tracks which portfolio section is being edited
+    const [, setActiveSection] = useState<string | null>(null)
 
     const [customSkillInput, setCustomSkillInput] = useState("")
     const [customInterestInput, setCustomInterestInput] = useState("")
@@ -411,8 +412,8 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
         }))
     }
 
-    // AI FUNCTION
-    async function getAiRecommendations() {
+    // AI FUNCTION - Available for future AI recommendations feature
+    const _getAiRecommendations = async () => {
         if (!portfolio) return
         setLoadingAi(true)
         try {

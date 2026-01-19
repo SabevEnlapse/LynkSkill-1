@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { notifyExperienceGraded } from "@/lib/notifications"
 
 // PATCH /api/experience/[id] - Update experience status and grade
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -57,6 +58,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 grade: status === "approved" ? grade : null,
             },
         })
+
+        // 📧 Notify student about experience grading
+        if (status === "approved" && grade !== undefined) {
+            const company = user.companies.find((c: { id: string }) => c.id === experience.companyId)
+            await notifyExperienceGraded(
+                experience.studentId,
+                company?.name || "Company",
+                grade
+            )
+        }
 
         console.log(" Experience updated successfully:", updated.id)
         return NextResponse.json(updated)
