@@ -27,7 +27,8 @@ export async function GET(
                 projects: true,
                 experiences: {
                     include: {
-                        company: true
+                        company: true,
+                        project: true
                     }
                 }
             }
@@ -50,15 +51,15 @@ export async function GET(
                 id: p.id,
                 title: p.title,
                 description: p.description,
-                technologies: p.technologies || []
+                technologies: [] // Projects don't have technologies in schema
             })) || [],
             experiences: student.experiences?.map(e => ({
                 id: e.id,
-                title: e.title,
+                title: e.project?.title || "Experience",
                 company: e.company?.name || "Company",
-                description: e.description || undefined,
-                startDate: e.startDate.toISOString(),
-                endDate: e.endDate?.toISOString() || undefined
+                description: e.project?.description || undefined,
+                startDate: e.createdAt.toISOString(),
+                endDate: undefined
             })) || []
         }
 
