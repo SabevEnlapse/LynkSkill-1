@@ -148,23 +148,23 @@ export function StudentAIChat() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 backdrop-blur-sm shadow-xl bg-gradient-to-br from-purple-500/10 via-violet-500/10 to-indigo-500/5 border border-purple-500/20 mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-violet-500/5 to-indigo-500/10" />
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/5 border border-violet-500/20 mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-fuchsia-500/10" />
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 backdrop-blur-sm shadow-lg">
-                                <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-sm shadow-lg border border-violet-500/20">
+                                <Zap className="h-6 w-6 text-violet-500" />
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:via-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
                                 AI Career Assistant
                             </h2>
                         </div>
                         <p className="text-muted-foreground text-sm md:text-base font-medium flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            <Sparkles className="h-4 w-4 text-violet-500" />
                             Build your portfolio & find your perfect internship match
                         </p>
                     </div>
@@ -172,7 +172,7 @@ export function StudentAIChat() {
                     <Button
                         variant="outline"
                         onClick={handleStartOver}
-                        className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-purple-500/10"
+                        className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-all duration-300"
                     >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Start Over
@@ -182,16 +182,16 @@ export function StudentAIChat() {
                 {/* Progress indicator */}
                 <div className="relative z-10 mt-6">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                        <span className={cn("flex items-center gap-1", chatPhase !== "intro" && "text-purple-600 dark:text-purple-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", chatPhase !== "intro" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <User className="h-3 w-3" /> About You
                         </span>
-                        <span className={cn("flex items-center gap-1", ["portfolio", "matching", "results"].includes(chatPhase) && "text-purple-600 dark:text-purple-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", ["portfolio", "matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <FileText className="h-3 w-3" /> Portfolio
                         </span>
-                        <span className={cn("flex items-center gap-1", ["matching", "results"].includes(chatPhase) && "text-purple-600 dark:text-purple-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", ["matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <Target className="h-3 w-3" /> Matching
                         </span>
-                        <span className={cn("flex items-center gap-1", chatPhase === "results" && "text-purple-600 dark:text-purple-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", chatPhase === "results" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <CheckCircle2 className="h-3 w-3" /> Results
                         </span>
                     </div>
@@ -202,14 +202,14 @@ export function StudentAIChat() {
                             chatPhase === "portfolio" ? 50 :
                             chatPhase === "matching" ? 75 : 100
                         } 
-                        className="h-2 bg-purple-500/20"
+                        className="h-2 bg-violet-500/20"
                     />
                 </div>
             </div>
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                 {/* Chat Section */}
-                <div className="lg:col-span-2 flex flex-col rounded-2xl border-2 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col rounded-2xl border border-violet-500/20 bg-card/50 backdrop-blur-xl overflow-hidden shadow-lg">
                     {/* Messages */}
                     <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
@@ -226,23 +226,23 @@ export function StudentAIChat() {
                                         )}
                                     >
                                         {message.role === "assistant" && (
-                                            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 h-fit">
-                                                <Bot className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 h-fit border border-violet-500/20">
+                                                <Bot className="h-5 w-5 text-violet-500" />
                                             </div>
                                         )}
 
                                         <div className={cn(
-                                            "max-w-[80%] rounded-2xl px-4 py-3",
+                                            "max-w-[80%] rounded-2xl px-4 py-3 shadow-sm",
                                             message.role === "user" 
-                                                ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white"
-                                                : "bg-muted/50 border border-border/50"
+                                                ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white"
+                                                : "bg-card/80 border border-border/50"
                                         )}>
-                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                                         </div>
 
                                         {message.role === "user" && (
-                                            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 h-fit">
-                                                <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 h-fit border border-violet-500/20">
+                                                <User className="h-5 w-5 text-violet-500" />
                                             </div>
                                         )}
                                     </motion.div>
@@ -255,25 +255,25 @@ export function StudentAIChat() {
                                     animate={{ opacity: 1 }}
                                     className="flex gap-3"
                                 >
-                                    <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20">
-                                        <Bot className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                    <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 border border-violet-500/20">
+                                        <Bot className="h-5 w-5 text-violet-500" />
                                     </div>
-                                    <div className="bg-muted/50 border border-border/50 rounded-2xl px-4 py-3">
-                                        <div className="flex gap-1">
+                                    <div className="bg-card/80 border border-border/50 rounded-2xl px-4 py-3">
+                                        <div className="flex gap-1.5">
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-                                                className="w-2 h-2 rounded-full bg-purple-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-                                                className="w-2 h-2 rounded-full bg-purple-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-                                                className="w-2 h-2 rounded-full bg-purple-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                         </div>
                                     </div>
@@ -284,20 +284,20 @@ export function StudentAIChat() {
                     </ScrollArea>
 
                     {/* Input */}
-                    <form onSubmit={handleSubmit} className="p-4 border-t border-border/50 bg-muted/20">
+                    <form onSubmit={handleSubmit} className="p-4 border-t border-violet-500/10 bg-card/50 backdrop-blur-sm">
                         <div className="flex gap-3">
                             <Input
                                 ref={inputRef}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder="Tell me about yourself..."
-                                className="flex-1 rounded-xl border-2 border-border/50 focus:border-purple-500/50 bg-background"
+                                className="flex-1 rounded-xl border-2 border-border/50 focus:border-violet-500/50 bg-background/80 h-11 transition-all duration-300"
                                 disabled={isLoading}
                             />
                             <Button
                                 type="submit"
                                 disabled={!inputValue.trim() || isLoading}
-                                className="rounded-xl px-4 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700"
+                                className="rounded-xl px-5 h-11 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/20 transition-all duration-300"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -317,11 +317,15 @@ export function StudentAIChat() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                         >
-                            <Card className="border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
-                                <CardHeader className="pb-2">
+                            <Card className="border border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-fuchsia-500/5 backdrop-blur-xl shadow-lg overflow-hidden">
+                                <CardHeader className="pb-2 border-b border-violet-500/10">
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-purple-600" />
-                                        Your Portfolio
+                                        <div className="p-1.5 rounded-lg bg-violet-500/10">
+                                            <FileText className="h-5 w-5 text-violet-500" />
+                                        </div>
+                                        <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
+                                            Your Portfolio
+                                        </span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
@@ -351,7 +355,7 @@ export function StudentAIChat() {
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="w-full mt-2 rounded-xl text-purple-600 border-purple-500/30 hover:bg-purple-500/10"
+                                        className="w-full mt-2 rounded-xl text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10 hover:border-violet-500/50 transition-all duration-300"
                                     >
                                         View Full Portfolio
                                         <ArrowRight className="h-4 w-4 ml-2" />
@@ -368,11 +372,15 @@ export function StudentAIChat() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 }}
                         >
-                            <Card className="border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-indigo-500/5">
-                                <CardHeader className="pb-2">
+                            <Card className="border border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-fuchsia-500/5 backdrop-blur-xl shadow-lg overflow-hidden">
+                                <CardHeader className="pb-2 border-b border-violet-500/10">
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <Briefcase className="h-5 w-5 text-blue-600" />
-                                        Top Matches
+                                        <div className="p-1.5 rounded-lg bg-violet-500/10">
+                                            <Briefcase className="h-5 w-5 text-violet-500" />
+                                        </div>
+                                        <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
+                                            Top Matches
+                                        </span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
@@ -412,10 +420,10 @@ export function StudentAIChat() {
 
                     {/* Empty state */}
                     {!generatedPortfolio && internshipMatches.length === 0 && (
-                        <Card className="border-dashed border-2 border-border/50">
+                        <Card className="border-dashed border-2 border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="p-4 rounded-2xl bg-purple-500/10 mb-4">
-                                    <TrendingUp className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                                <div className="p-4 rounded-2xl bg-violet-500/10 mb-4">
+                                    <TrendingUp className="h-8 w-8 text-violet-500" />
                                 </div>
                                 <p className="text-sm text-muted-foreground">
                                     Chat with the AI to build your portfolio and discover matching internships

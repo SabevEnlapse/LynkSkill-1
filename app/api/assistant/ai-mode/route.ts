@@ -14,6 +14,41 @@ interface ConversationMessage {
     content: string
 }
 
+// Common skills to extract from conversation
+const SKILL_KEYWORDS = [
+    // Programming Languages
+    "javascript", "typescript", "python", "java", "c++", "c#", "ruby", "php", "go", "rust", "swift", "kotlin",
+    // Frontend
+    "react", "vue", "angular", "next.js", "nextjs", "svelte", "html", "css", "sass", "tailwind",
+    // Backend
+    "node", "nodejs", "express", "django", "flask", "spring", "laravel", ".net", "fastapi",
+    // Data/ML
+    "pandas", "numpy", "tensorflow", "pytorch", "machine learning", "data science", "data analysis", "sql", "mongodb",
+    // Design
+    "figma", "sketch", "adobe", "ui/ux", "ux", "ui design", "photoshop", "illustrator",
+    // DevOps
+    "docker", "kubernetes", "aws", "azure", "gcp", "ci/cd", "jenkins", "git",
+    // Mobile
+    "react native", "flutter", "ios", "android",
+    // Other
+    "api", "rest", "graphql", "agile", "scrum"
+]
+
+function extractSkillsFromText(text: string): string[] {
+    const lowerText = text.toLowerCase()
+    const foundSkills: string[] = []
+    
+    for (const skill of SKILL_KEYWORDS) {
+        if (lowerText.includes(skill.toLowerCase())) {
+            // Capitalize first letter for display
+            const displaySkill = skill.charAt(0).toUpperCase() + skill.slice(1)
+            foundSkills.push(displaySkill)
+        }
+    }
+    
+    return [...new Set(foundSkills)] // Remove duplicates
+}
+
 // System prompts for different modes
 const STUDENT_SYSTEM_PROMPT = `You are Linky, the friendly AI Career Assistant for LynkSkill - a platform that connects students with internship opportunities.
 
@@ -54,47 +89,26 @@ If you need to transition phases, include in your response:
 - To move to portfolio: Add [PHASE:portfolio] at the end
 - To move to matching: Add [PHASE:matching] at the end`
 
-const COMPANY_SYSTEM_PROMPT = `You are Linky, the AI Talent Scout for LynkSkill - a platform that connects companies with talented students for internships.
+const COMPANY_SYSTEM_PROMPT = `You are Linky, the AI Talent Scout for LynkSkill.
 
-Your personality:
-- Your name is Linky and you should introduce yourself as such when appropriate
-- You're professional, efficient, and helpful
-- You understand the hiring needs of companies
-- You have access to LynkSkill's database of students with various skills and backgrounds
-- Add occasional emojis to be engaging 🎯💼✨
+Your role: Help companies find perfect candidates from our student database.
 
-Your tasks:
-1. GATHERING PHASE: Understand what the company is looking for:
-   - What skills are required (programming languages, frameworks, tools)?
-   - What type of role (internship, entry-level, part-time)?
-   - What field (web development, data science, design, marketing, etc.)?
-   - Any specific requirements or preferences?
-   - Experience level expectations?
+IMPORTANT WORKFLOW:
+1. When user requests talent, ask 1-2 quick clarifying questions (experience level? remote/on-site?)
+2. After they answer, say something like "Perfect! Let me find the best matches..." 
+3. The system will automatically search when you're ready
 
-2. MATCHING PHASE: Once you understand their needs, immediately search for matching students on LynkSkill.
+Keep responses short, friendly, and add emojis occasionally 🎯💼✨
 
-IMPORTANT RULES:
-- Always remember you are Linky from LynkSkill
-- Be helpful, professional, and proactive
-- Don't ask too many questions - if you have at least one skill or field mentioned, proceed to search
-- Even with minimal info like "I need a developer" or "looking for React skills", proceed to matching
-- When the user mentions ANY skill, role type, or field, output the search criteria
-- Always be ready to search again with refined criteria if they want different results
+EXAMPLE:
+User: "Looking for React developers"
+You: "Great choice! 💪 Quick questions: What experience level? (student/intermediate/experienced) And remote or on-site?"
+User: "student, remote"
+You: "Perfect! Searching for student React developers for remote positions... 🔍"
 
-CRITICAL: As soon as the user mentions ANY of these, output the JSON to trigger search:
-- Any programming language (JavaScript, Python, Java, etc.)
-- Any framework (React, Vue, Angular, Django, etc.)
-- Any field (web, mobile, data, design, marketing, etc.)
-- Any role type (developer, designer, analyst, etc.)
+NEVER make up or describe fake candidates - real candidates will be shown automatically.
 
-Output format when ready to search: {"type": "ready_for_search", "criteria": {"skills": ["skill1", "skill2"], "roleType": "type", "field": "field", "requirements": []}}
-
-Current conversation phase: {phase}
-
-If you need to transition phases, include:
-- To move to matching: Add [PHASE:matching] at the end
-
-Remember: Users want quick results. If they say "find me a React developer", immediately output the search JSON - don't ask more questions.`
+Current phase: {phase}`
 
 export async function POST(req: NextRequest) {
     try {
@@ -145,7 +159,104 @@ export async function POST(req: NextRequest) {
             reply = reply.replace("[PHASE:matching]", "").trim()
         }
 
-        // Check for JSON output in reply
+        // Check for [SEARCH] tag for companies (new format)
+        if (userType === "company") {
+            const searchTagRegex = /\[SEARCH\](.*?)\[\/SEARCH\]/s
+            const searchTagMatch = reply.match(searchTagRegex)
+            
+            if (searchTagMatch) {
+                try {
+                    const jsonStr = searchTagMatch[1].trim()
+                    const searchData = JSON.parse(jsonStr)
+                    
+                    // Clean the reply - remove the search tag
+                    let cleanReply = reply.replace(searchTagRegex, "").trim()
+                    if (!cleanReply || cleanReply.length < 5) {
+                        cleanReply = "Searching for the best candidates... 🔍"
+                    }
+                    
+                    // Fetch matching students
+                    const skills = searchData.skills || []
+                    const matches = await findMatchingStudents(skills, searchData.field || "")
+                    
+                    return NextResponse.json({
+                        reply: cleanReply,
+                        phase: "results",
+                        matches,
+                        type: "search_complete"
+                    })
+                } catch (e) {
+                    console.error("Search tag parse error:", e)
+                }
+            }
+            
+            // Also try old JSON format as fallback
+            const searchJsonRegex = /\{\s*"type"\s*:\s*"ready_for_search"\s*,\s*"criteria"\s*:\s*\{[^}]*\}\s*\}/g
+            const searchMatch = reply.match(searchJsonRegex)
+            if (searchMatch) {
+                try {
+                    const jsonData = JSON.parse(searchMatch[searchMatch.length - 1])
+                    if (jsonData.type === "ready_for_search") {
+                        newPhase = "results"
+                        
+                        // Fetch matching students immediately
+                        const matches = await findMatchingStudents(jsonData.criteria?.skills || [], jsonData.criteria?.field || "")
+                        
+                        // Clean the reply - remove ALL JSON patterns
+                        let cleanReply = reply
+                            .replace(searchJsonRegex, "")
+                            .replace(/\{[^{}]*"type"[^{}]*\}/g, "")
+                            .trim()
+                        
+                        // If reply is empty or just whitespace, provide a default
+                        if (!cleanReply || cleanReply.length < 10) {
+                            cleanReply = "Got it! Searching for the best candidates for you... ✨"
+                        }
+                        
+                        return NextResponse.json({
+                            reply: cleanReply,
+                            phase: "results",
+                            matches,
+                            type: "search_complete"
+                        })
+                    }
+                } catch (e) {
+                    console.error("JSON parse error for search:", e)
+                }
+            }
+            
+            // NO FALLBACK AUTO-SEARCH - Only search when AI explicitly triggers with JSON
+            // This ensures Linky finishes gathering context before searching
+            
+            // Smart fallback: If AI says it's searching, extract skills and search
+            const isSearchingNow = reply.toLowerCase().includes("searching") || 
+                                    reply.toLowerCase().includes("let me find") ||
+                                    reply.toLowerCase().includes("finding") ||
+                                    reply.toLowerCase().includes("looking for the best") ||
+                                    reply.toLowerCase().includes("find the best")
+            
+            if (isSearchingNow) {
+                // Extract skills from the entire conversation including current message
+                const fullConversation = conversationHistory.map(m => m.content).join(" ") + " " + message + " " + reply
+                const extractedSkills = extractSkillsFromText(fullConversation)
+                
+                console.log("Search triggered! Extracted skills:", extractedSkills)
+                
+                if (extractedSkills.length > 0) {
+                    const matches = await findMatchingStudents(extractedSkills, "")
+                    console.log("Found matches:", matches.length)
+                    
+                    return NextResponse.json({
+                        reply,
+                        phase: "results",
+                        matches,
+                        type: "search_complete"
+                    })
+                }
+            }
+        }
+
+        // Handle other JSON patterns
         const jsonMatch = reply.match(/\{[\s\S]*?"type"[\s\S]*?\}/g)
         if (jsonMatch) {
             try {
@@ -166,21 +277,6 @@ export async function POST(req: NextRequest) {
                         portfolio: jsonData.data,
                         matches,
                         type: "portfolio_generated"
-                    })
-                }
-
-                // Handle student search for companies
-                if (jsonData.type === "ready_for_search" && userType === "company") {
-                    newPhase = "results"
-                    
-                    // Fetch matching students
-                    const matches = await findMatchingStudents(jsonData.criteria?.skills || [], jsonData.criteria?.field || "")
-                    
-                    return NextResponse.json({
-                        reply: "🔍 I've searched our database and found some great candidates for you! Here are the students that best match your requirements:",
-                        phase: "results",
-                        matches,
-                        type: "search_complete"
                     })
                 }
 
@@ -205,22 +301,6 @@ export async function POST(req: NextRequest) {
                     matches,
                     type: "matches_found"
                 })
-            }
-        }
-
-        // For companies: If no JSON was found but we can extract skills, auto-search
-        if (userType === "company" && phase !== "results" && !jsonMatch) {
-            const extractedSkills = extractSkillsFromConversation(conversationHistory, message)
-            if (extractedSkills.length > 0) {
-                const matches = await findMatchingStudents(extractedSkills, "")
-                if (matches.length > 0) {
-                    return NextResponse.json({
-                        reply: reply + "\n\n🎯 Based on your requirements, I found some matching candidates!",
-                        phase: "results",
-                        matches,
-                        type: "search_complete"
-                    })
-                }
             }
         }
 
@@ -319,62 +399,109 @@ async function findMatchingStudents(requiredSkills: string[], field: string) {
                 experiences: true,
                 projects: true
             },
-            take: 30
+            take: 50
         })
 
-        // Calculate match scores
+        console.log("Searching for skills:", requiredSkills, "Field:", field)
+        console.log("Total students in DB:", students.length)
+
+        // Calculate match scores with proper skill evaluation
         const matches = students.map(student => {
             let score = 0
             const reasons: string[] = []
             const foundSkills: string[] = []
 
-            // Get student's full text for matching
-            const portfolioSkills = student.portfolio?.skills?.join(" ") || ""
-            const portfolioInterests = student.portfolio?.interests?.join(" ") || ""
-            const studentText = `${student.portfolio?.bio || ""} ${student.portfolio?.headline || ""} ${portfolioSkills} ${portfolioInterests} ${
-                student.portfolio?.experience || ""
-            } ${student.projects?.map((p: { title: string; description: string }) => `${p.title} ${p.description}`).join(" ") || ""}`.toLowerCase()
+            // Get student's skills array directly from portfolio
+            const studentSkillsArray = (student.portfolio?.skills || []).map((s: string) => s.toLowerCase())
+            const studentInterests = (student.portfolio?.interests || []).map((s: string) => s.toLowerCase())
+            
+            // Get text content for broader matching
+            const bio = (student.portfolio?.bio || "").toLowerCase()
+            const headline = (student.portfolio?.headline || "").toLowerCase()
+            const experience = (student.portfolio?.experience || "").toLowerCase()
+            const projectsText = student.projects?.map((p: { title: string; description: string; technologies?: string[] }) => 
+                `${p.title} ${p.description} ${(p.technologies || []).join(" ")}`
+            ).join(" ").toLowerCase() || ""
+            
+            const fullText = `${bio} ${headline} ${experience} ${projectsText} ${studentSkillsArray.join(" ")} ${studentInterests.join(" ")}`
 
-            // Match by required skills
+            // Match by required skills - weighted scoring
             for (const skill of requiredSkills) {
-                if (studentText.includes(skill.toLowerCase())) {
-                    score += 25
+                const skillLower = skill.toLowerCase()
+                
+                // Direct skill match (highest weight)
+                if (studentSkillsArray.some(s => s.includes(skillLower) || skillLower.includes(s))) {
+                    score += 30
                     foundSkills.push(skill)
-                    reasons.push(`Has ${skill} experience`)
+                    reasons.push(`Skilled in ${skill}`)
+                }
+                // Skill in projects (high weight)
+                else if (projectsText.includes(skillLower)) {
+                    score += 20
+                    foundSkills.push(skill)
+                    reasons.push(`${skill} in projects`)
+                }
+                // Skill mentioned elsewhere (medium weight)
+                else if (fullText.includes(skillLower)) {
+                    score += 15
+                    foundSkills.push(skill)
+                    reasons.push(`Experience with ${skill}`)
                 }
             }
 
-            // Match by field
-            if (field && studentText.includes(field.toLowerCase())) {
-                score += 15
-                reasons.push(`Interested in ${field}`)
+            // Match by field/interest
+            if (field) {
+                const fieldLower = field.toLowerCase()
+                if (studentInterests.some(i => i.includes(fieldLower) || fieldLower.includes(i))) {
+                    score += 15
+                    reasons.push(`Interested in ${field}`)
+                } else if (fullText.includes(fieldLower)) {
+                    score += 10
+                    reasons.push(`Background in ${field}`)
+                }
             }
 
-            // Bonus for having portfolio
-            if (student.portfolio?.bio) {
-                score += 10
-                reasons.push("Has complete portfolio")
+            // Bonus for complete portfolio
+            if (student.portfolio?.bio && student.portfolio.bio.length > 50) {
+                score += 5
+                reasons.push("Detailed portfolio")
             }
 
-            // Bonus for having projects
+            // Bonus for projects (shows practical experience)
             if (student.projects && student.projects.length > 0) {
-                score += 10
-                reasons.push(`${student.projects.length} project(s)`)
+                const projectBonus = Math.min(student.projects.length * 5, 15)
+                score += projectBonus
+                reasons.push(`${student.projects.length} project${student.projects.length > 1 ? 's' : ''}`)
             }
 
-            // Cap at 100
-            score = Math.min(score, 98)
+            // Bonus for work experience
+            if (student.experiences && student.experiences.length > 0) {
+                score += 10
+                reasons.push(`${student.experiences.length} experience${student.experiences.length > 1 ? 's' : ''}`)
+            }
 
-            // Minimum score for variety
-            if (score < 25) score = Math.floor(Math.random() * 25) + 20
+            // Calculate match percentage based on how many required skills matched
+            const skillMatchRatio = requiredSkills.length > 0 
+                ? foundSkills.length / requiredSkills.length 
+                : 0
+            
+            // Adjust score based on skill match ratio
+            if (skillMatchRatio >= 0.8) {
+                score += 10 // Bonus for matching most skills
+            }
+            
+            // Cap at 98
+            score = Math.min(score, 98)
 
             return {
                 id: student.id,
                 name: student.profile?.name || student.portfolio?.fullName || "Student",
                 email: student.email || "",
+                avatar: student.profile?.image || undefined,
                 matchPercentage: score,
-                reasons: reasons.length > 0 ? reasons : ["Potential candidate"],
-                skills: foundSkills.length > 0 ? foundSkills : ["Available for internship"],
+                reasons: reasons.length > 0 ? reasons : ["Available candidate"],
+                skills: foundSkills.length > 0 ? foundSkills : studentSkillsArray.slice(0, 5),
+                allSkills: studentSkillsArray,
                 portfolio: {
                     headline: student.portfolio?.headline || undefined,
                     about: student.portfolio?.bio || undefined
@@ -382,8 +509,25 @@ async function findMatchingStudents(requiredSkills: string[], field: string) {
             }
         })
 
-        // Sort by match percentage
-        return matches.sort((a, b) => b.matchPercentage - a.matchPercentage).slice(0, 10)
+        // Sort by match percentage and filter
+        const sorted = matches
+            .filter(m => m.matchPercentage > 0) // Must have some match
+            .sort((a, b) => b.matchPercentage - a.matchPercentage)
+            .slice(0, 10)
+        
+        console.log("Matches found:", sorted.length, sorted.map(m => ({ name: m.name, score: m.matchPercentage, skills: m.skills })))
+        
+        // If no matches found, return students with portfolios
+        if (sorted.length === 0) {
+            console.log("No skill matches, returning students with portfolios")
+            return matches
+                .filter(m => m.portfolio?.headline || m.portfolio?.about)
+                .sort((a, b) => b.matchPercentage - a.matchPercentage)
+                .slice(0, 5)
+                .map(m => ({ ...m, matchPercentage: Math.max(m.matchPercentage, 20) }))
+        }
+        
+        return sorted
 
     } catch (error) {
         console.error("Error finding students:", error)

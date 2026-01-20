@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
 import { 
     Send, 
     Sparkles, 
@@ -15,9 +14,7 @@ import {
     Search,
     Zap,
     Users,
-    Mail,
-    Radar,
-    Brain
+    Mail
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,13 +43,10 @@ export function CompanyAIChat() {
 
     const [inputValue, setInputValue] = useState("")
     const [isTyping, setIsTyping] = useState(false)
-    const [isMatching, setIsMatching] = useState(false)
-    const [matchingProgress, setMatchingProgress] = useState(0)
-    const [matchingStatus, setMatchingStatus] = useState("Initializing...")
-    const [canCloseOverlay, setCanCloseOverlay] = useState(false)
+    const [isSearching, setIsSearching] = useState(false)
+    const [searchStatus, setSearchStatus] = useState("")
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
-    const matchingStartTime = useRef<number>(0)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -69,45 +63,82 @@ export function CompanyAIChat() {
         }
     }, [welcomeSent, sendWelcomeMessage])
 
-    // Simulate matching progress animation - minimum 2.5 seconds
-    const simulateMatchingProgress = async () => {
-        matchingStartTime.current = Date.now()
-        setCanCloseOverlay(false)
-        
-        const statuses = [
-            "Analyzing your requirements...",
-            "Searching student database...",
-            "Scanning portfolios...",
-            "Evaluating skill matches...",
-            "Ranking candidates...",
-            "Finalizing results..."
+    // Helper function to extract and strip JSON from message
+    const parseMessageForSearch = (text: string): { cleanText: string; searchCriteria: { skills: string[]; roleType: string; field: string } | null } => {
+        // Match JSON that starts with {"type": "ready_for_search" - more aggressive matching
+        const jsonPatterns = [
+            /\{\s*"type"\s*:\s*"ready_for_search"[^}]*\}\}?/g,
+            /\{"type":\s*"ready_for_search"[\s\S]*?\}\}/g,
+            /\{[\s\S]*?"type"\s*:\s*"ready_for_search"[\s\S]*?"requirements"\s*:\s*\[[^\]]*\]\s*\}\s*\}/g
         ]
         
-        // Slower progress for smoother animation (takes ~2.5 seconds)
-        for (let i = 0; i <= 100; i += 2) {
-            await new Promise(resolve => setTimeout(resolve, 50))
-            setMatchingProgress(i)
-            setMatchingStatus(statuses[Math.min(Math.floor((i / 100) * statuses.length), statuses.length - 1)])
+        let cleanText = text
+        let searchCriteria = null
+        
+        for (const regex of jsonPatterns) {
+            const matches = text.match(regex)
+            if (matches) {
+                for (const match of matches) {
+                    try {
+                        // Try to parse the JSON
+                        const jsonData = JSON.parse(match)
+                        if (jsonData.type === "ready_for_search" && jsonData.criteria) {
+                            searchCriteria = {
+                                skills: jsonData.criteria.skills || [],
+                                roleType: jsonData.criteria.roleType || "",
+                                field: jsonData.criteria.field || ""
+                            }
+                            cleanText = cleanText.replace(match, "").trim()
+                        }
+                    } catch {
+                        // Try fixing common JSON issues
+                        try {
+                            const fixedMatch = match.replace(/,\s*\}/, "}").replace(/,\s*\]/, "]")
+                            const jsonData = JSON.parse(fixedMatch)
+                            if (jsonData.type === "ready_for_search" && jsonData.criteria) {
+                                searchCriteria = {
+                                    skills: jsonData.criteria.skills || [],
+                                    roleType: jsonData.criteria.roleType || "",
+                                    field: jsonData.criteria.field || ""
+                                }
+                                cleanText = cleanText.replace(match, "").trim()
+                            }
+                        } catch {
+                            // Still failed, just remove anything that looks like JSON
+                            cleanText = cleanText.replace(match, "").trim()
+                        }
+                    }
+                }
+            }
         }
         
-        setCanCloseOverlay(true)
+        // Additional cleanup - remove any remaining JSON-like patterns
+        cleanText = cleanText.replace(/\{"type"[^}]*\}\}?/g, "").trim()
+        cleanText = cleanText.replace(/\{"type":[\s\S]*?\}\}/g, "").trim()
+        
+        return { cleanText, searchCriteria }
     }
 
-    // Smooth close function that ensures minimum display time
-    const closeMatchingOverlay = async () => {
-        const elapsed = Date.now() - matchingStartTime.current
-        const minDisplayTime = 2500 // Minimum 2.5 seconds
+    // Callback when search is triggered from AI message
+    const onSearchTriggered = async (criteria: { skills: string[]; roleType: string; field: string }) => {
+        setIsSearching(true)
+        setSearchStatus("🔍 Searching our talent database...")
         
-        if (elapsed < minDisplayTime) {
-            await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed))
+        // Show search progress
+        const statuses = [
+            "Analyzing your requirements...",
+            "Scanning student profiles...",
+            "Matching skills & experience...",
+            "Ranking best candidates..."
+        ]
+        
+        for (let i = 0; i < statuses.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+            setSearchStatus(statuses[i])
         }
         
-        // Smooth exit
-        setMatchingProgress(100)
-        setMatchingStatus("Found matching candidates!")
-        await new Promise(resolve => setTimeout(resolve, 800))
-        setIsMatching(false)
-        setMatchingProgress(0)
+        setIsSearching(false)
+        setSearchStatus("")
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -124,17 +155,6 @@ export function CompanyAIChat() {
 
         setIsLoading(true)
         setIsTyping(true)
-
-        // Check if this message might trigger a search (contains skill-related keywords)
-        const searchKeywords = ["find", "search", "looking for", "need", "want", "hire", "developer", "designer", "engineer", "intern", "student", "candidate"]
-        const mightTriggerSearch = searchKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))
-        
-        // Start matching animation if this looks like a search request
-        if (mightTriggerSearch || chatPhase === "gathering") {
-            setIsMatching(true)
-            setMatchingProgress(0)
-            simulateMatchingProgress()
-        }
 
         try {
             const response = await fetch("/api/assistant/ai-mode", {
@@ -153,39 +173,46 @@ export function CompanyAIChat() {
 
             const data = await response.json()
 
-            // Store response data first, then handle overlay closing
-            const hasMatches = data.matches && data.matches.length > 0
-
             if (data.error) {
                 addMessage({
                     role: "assistant",
                     content: "I apologize, but I encountered an issue. Please try again or rephrase your message."
                 })
             } else {
+                // Parse the reply to check for search JSON and strip it
+                const { cleanText, searchCriteria } = parseMessageForSearch(data.reply)
+                
+                // Add the cleaned message (without JSON)
                 addMessage({
                     role: "assistant",
-                    content: data.reply,
+                    content: cleanText,
                     metadata: { type: data.type, data: data.data }
                 })
+
+                // If search criteria was found, trigger the search callback
+                if (searchCriteria) {
+                    // Trigger search with UI feedback
+                    onSearchTriggered(searchCriteria)
+                }
 
                 // Update state based on response
                 if (data.phase) {
                     setChatPhase(data.phase)
                 }
 
-                if (data.matches) {
+                if (data.matches && data.matches.length > 0) {
+                    console.log("Setting matches:", data.matches.length)
                     setStudentMatches(data.matches)
+                    setChatPhase("results") // Ensure we move to results phase
+                    
+                    // Add results message after a short delay
+                    setTimeout(() => {
+                        addMessage({
+                            role: "assistant",
+                            content: `✅ Found ${data.matches.length} matching candidate${data.matches.length > 1 ? 's' : ''}! Check out their profiles on the right. Would you like me to refine the search or look for different skills?`
+                        })
+                    }, 500)
                 }
-            }
-
-            // Close matching overlay smoothly if it was shown
-            if (isMatching) {
-                if (hasMatches) {
-                    setMatchingStatus("Found matching candidates!")
-                } else {
-                    setMatchingStatus("Search complete!")
-                }
-                await closeMatchingOverlay()
             }
         } catch (error) {
             console.error("AI Mode error:", error)
@@ -193,11 +220,6 @@ export function CompanyAIChat() {
                 role: "assistant",
                 content: "I'm having trouble connecting. Please check your connection and try again."
             })
-            // Close overlay on error too
-            if (isMatching) {
-                setMatchingStatus("Please try again")
-                await closeMatchingOverlay()
-            }
         } finally {
             setIsLoading(false)
             setIsTyping(false)
@@ -216,159 +238,27 @@ export function CompanyAIChat() {
         return "from-gray-500 to-slate-500"
     }
 
-    // Matching Animation Overlay Component
-    const MatchingOverlay = () => (
-        <AnimatePresence mode="wait">
-            {isMatching && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
-                >
-                    <motion.div
-                        initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="relative max-w-md w-full mx-4 p-8 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-cyan-500/10 border border-indigo-500/30 shadow-2xl"
-                    >
-                        {/* AI Mascot */}
-                        <div className="flex flex-col items-center">
-                            <motion.div
-                                className="relative"
-                                animate={{ 
-                                    y: [0, -10, 0],
-                                    rotate: [-5, 5, -5]
-                                }}
-                                transition={{ 
-                                    duration: 2, 
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                            >
-                                <div className="relative w-32 h-32">
-                                    <Image
-                                        src="/linky-mascot.png"
-                                        alt="AI Assistant"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                    {/* Pulsing rings around mascot */}
-                                    <motion.div
-                                        className="absolute inset-0 rounded-full border-2 border-indigo-500/50"
-                                        animate={{ scale: [1, 1.5, 1.5], opacity: [0.5, 0, 0] }}
-                                        transition={{ duration: 2, repeat: Infinity }}
-                                    />
-                                    <motion.div
-                                        className="absolute inset-0 rounded-full border-2 border-blue-500/50"
-                                        animate={{ scale: [1, 1.3, 1.3], opacity: [0.5, 0, 0] }}
-                                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                                    />
-                                </div>
-                            </motion.div>
-
-                            {/* Search Animation */}
-                            <div className="mt-6 flex items-center gap-3">
-                                <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                >
-                                    <Radar className="w-6 h-6 text-indigo-500" />
-                                </motion.div>
-                                <motion.div
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ duration: 1, repeat: Infinity }}
-                                >
-                                    <Brain className="w-6 h-6 text-blue-500" />
-                                </motion.div>
-                                <motion.div
-                                    animate={{ rotate: [-10, 10, -10] }}
-                                    transition={{ duration: 0.5, repeat: Infinity }}
-                                >
-                                    <Search className="w-6 h-6 text-cyan-500" />
-                                </motion.div>
-                            </div>
-
-                            {/* Status Text */}
-                            <motion.p
-                                key={matchingStatus}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-4 text-lg font-semibold text-foreground text-center"
-                            >
-                                {matchingStatus}
-                            </motion.p>
-
-                            {/* Progress Bar */}
-                            <div className="w-full mt-4">
-                                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                    <motion.div
-                                        className="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500"
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${matchingProgress}%` }}
-                                        transition={{ duration: 0.3 }}
-                                    />
-                                </div>
-                                <p className="text-xs text-muted-foreground text-center mt-2">
-                                    {matchingProgress}% complete
-                                </p>
-                            </div>
-
-                            {/* Floating particles */}
-                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                {[...Array(6)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        className="absolute w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"
-                                        style={{
-                                            left: `${20 + i * 15}%`,
-                                            top: `${Math.random() * 100}%`
-                                        }}
-                                        animate={{
-                                            y: [-20, 20, -20],
-                                            opacity: [0.3, 0.8, 0.3],
-                                            scale: [0.8, 1.2, 0.8]
-                                        }}
-                                        transition={{
-                                            duration: 2 + Math.random() * 2,
-                                            repeat: Infinity,
-                                            delay: i * 0.2
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    )
-
     return (
         <div className="h-full flex flex-col">
-            {/* Matching Animation Overlay */}
-            <MatchingOverlay />
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 backdrop-blur-sm shadow-xl bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-cyan-500/5 border border-indigo-500/20 mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-blue-500/5 to-cyan-500/10" />
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/5 border border-violet-500/20 mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-fuchsia-500/10" />
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 backdrop-blur-sm shadow-lg">
-                                <Zap className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-sm shadow-lg border border-violet-500/20">
+                                <Zap className="h-6 w-6 text-violet-500" />
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:via-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
                                 AI Talent Scout
                             </h2>
                         </div>
                         <p className="text-muted-foreground text-sm md:text-base font-medium flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            <Sparkles className="h-4 w-4 text-violet-500" />
                             Find perfect candidates with AI-powered search
                         </p>
                     </div>
@@ -376,7 +266,7 @@ export function CompanyAIChat() {
                     <Button
                         variant="outline"
                         onClick={handleStartOver}
-                        className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-indigo-500/10"
+                        className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-all duration-300"
                     >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Start Over
@@ -386,13 +276,13 @@ export function CompanyAIChat() {
                 {/* Progress indicator */}
                 <div className="relative z-10 mt-6">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                        <span className={cn("flex items-center gap-1", chatPhase !== "intro" && "text-indigo-600 dark:text-indigo-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", chatPhase !== "intro" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <Building2 className="h-3 w-3" /> Your Needs
                         </span>
-                        <span className={cn("flex items-center gap-1", ["matching", "results"].includes(chatPhase) && "text-indigo-600 dark:text-indigo-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", ["matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <Search className="h-3 w-3" /> Searching
                         </span>
-                        <span className={cn("flex items-center gap-1", chatPhase === "results" && "text-indigo-600 dark:text-indigo-400")}>
+                        <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300", chatPhase === "results" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
                             <Users className="h-3 w-3" /> Candidates
                         </span>
                     </div>
@@ -402,14 +292,14 @@ export function CompanyAIChat() {
                             chatPhase === "gathering" ? 33 :
                             chatPhase === "matching" ? 66 : 100
                         } 
-                        className="h-2 bg-indigo-500/20"
+                        className="h-2 bg-violet-500/20"
                     />
                 </div>
             </div>
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                 {/* Chat Section */}
-                <div className="lg:col-span-2 flex flex-col rounded-2xl border-2 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col rounded-2xl border border-violet-500/20 bg-card/50 backdrop-blur-xl overflow-hidden shadow-lg">
                     {/* Messages */}
                     <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
@@ -426,54 +316,90 @@ export function CompanyAIChat() {
                                         )}
                                     >
                                         {message.role === "assistant" && (
-                                            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 h-fit">
-                                                <Bot className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                                            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 h-fit border border-violet-500/20">
+                                                <Bot className="h-5 w-5 text-violet-500" />
                                             </div>
                                         )}
 
                                         <div className={cn(
-                                            "max-w-[80%] rounded-2xl px-4 py-3",
+                                            "max-w-[80%] rounded-2xl px-4 py-3 shadow-sm",
                                             message.role === "user" 
-                                                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white"
-                                                : "bg-muted/50 border border-border/50"
+                                                ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white"
+                                                : "bg-card/80 border border-border/50"
                                         )}>
-                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                                         </div>
 
                                         {message.role === "user" && (
-                                            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 h-fit">
-                                                <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                                            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 h-fit border border-violet-500/20">
+                                                <Building2 className="h-5 w-5 text-violet-500" />
                                             </div>
                                         )}
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
 
-                            {isTyping && !isMatching && (
+                            {isTyping && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     className="flex gap-3"
                                 >
-                                    <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20">
-                                        <Bot className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                                    <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 border border-violet-500/20">
+                                        <Bot className="h-5 w-5 text-violet-500" />
                                     </div>
-                                    <div className="bg-muted/50 border border-border/50 rounded-2xl px-4 py-3">
-                                        <div className="flex gap-1">
+                                    <div className="bg-card/80 border border-border/50 rounded-2xl px-4 py-3">
+                                        <p className="text-xs text-muted-foreground mb-1">Linky is typing</p>
+                                        <div className="flex gap-1.5">
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-                                                className="w-2 h-2 rounded-full bg-indigo-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-                                                className="w-2 h-2 rounded-full bg-indigo-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                             <motion.div
-                                                animate={{ opacity: [0.4, 1, 0.4] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-                                                className="w-2 h-2 rounded-full bg-indigo-500"
+                                                animate={{ y: [0, -4, 0] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Searching UI State */}
+                            {isSearching && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    className="flex gap-3"
+                                >
+                                    <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/15 border border-violet-500/20">
+                                        <Search className="h-5 w-5 text-violet-500 animate-pulse" />
+                                    </div>
+                                    <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20 rounded-2xl px-4 py-3">
+                                        <p className="text-xs text-violet-600 dark:text-violet-400 font-medium mb-1">🔍 Searching...</p>
+                                        <p className="text-sm text-muted-foreground">{searchStatus}</p>
+                                        <div className="flex gap-1.5 mt-2">
+                                            <motion.div
+                                                animate={{ scale: [1, 1.2, 1] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
+                                            />
+                                            <motion.div
+                                                animate={{ scale: [1, 1.2, 1] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
+                                            />
+                                            <motion.div
+                                                animate={{ scale: [1, 1.2, 1] }}
+                                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                                                className="w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-500"
                                             />
                                         </div>
                                     </div>
@@ -484,20 +410,20 @@ export function CompanyAIChat() {
                     </ScrollArea>
 
                     {/* Input */}
-                    <form onSubmit={handleSubmit} className="p-4 border-t border-border/50 bg-muted/20">
+                    <form onSubmit={handleSubmit} className="p-4 border-t border-violet-500/10 bg-card/50 backdrop-blur-sm">
                         <div className="flex gap-3">
                             <Input
                                 ref={inputRef}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder="Describe the talent you're looking for..."
-                                className="flex-1 rounded-xl border-2 border-border/50 focus:border-indigo-500/50 bg-background"
+                                className="flex-1 rounded-xl border-2 border-border/50 focus:border-violet-500/50 bg-background/80 h-11 transition-all duration-300"
                                 disabled={isLoading}
                             />
                             <Button
                                 type="submit"
                                 disabled={!inputValue.trim() || isLoading}
-                                className="rounded-xl px-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                                className="rounded-xl px-5 h-11 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/20 transition-all duration-300"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -517,12 +443,16 @@ export function CompanyAIChat() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                         >
-                            <Card className="border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-blue-500/5">
-                                <CardHeader className="pb-2">
+                            <Card className="border border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-fuchsia-500/5 backdrop-blur-xl shadow-lg overflow-hidden">
+                                <CardHeader className="pb-2 border-b border-violet-500/10">
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <Users className="h-5 w-5 text-indigo-600" />
-                                        Matching Candidates
-                                        <Badge variant="secondary" className="ml-auto">
+                                        <div className="p-1.5 rounded-lg bg-violet-500/10">
+                                            <Users className="h-5 w-5 text-violet-500" />
+                                        </div>
+                                        <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
+                                            Matching Candidates
+                                        </span>
+                                        <Badge variant="secondary" className="ml-auto bg-violet-500/10 text-violet-600 dark:text-violet-400 border-0">
                                             {studentMatches.length}
                                         </Badge>
                                     </CardTitle>
@@ -537,8 +467,8 @@ export function CompanyAIChat() {
                                             className="p-3 rounded-xl border border-border/50 bg-card/50 hover:bg-card/80 transition-colors cursor-pointer group"
                                         >
                                             <div className="flex items-start gap-3">
-                                                <Avatar className="h-10 w-10 border-2 border-indigo-500/30">
-                                                    <AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-blue-500/20 text-indigo-600 text-sm font-bold">
+                                                <Avatar className="h-10 w-10 border-2 border-violet-500/20 shadow-sm">
+                                                    <AvatarFallback className="bg-gradient-to-br from-violet-500/20 to-purple-500/20 text-violet-600 dark:text-violet-400 text-sm font-bold">
                                                         {match.name?.charAt(0) || "S"}
                                                     </AvatarFallback>
                                                 </Avatar>
@@ -567,12 +497,12 @@ export function CompanyAIChat() {
                                                         ))}
                                                     </div>
 
-                                                    <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg">
+                                                    <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                        <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg hover:bg-violet-500/10 hover:text-violet-600">
                                                             <User className="h-3 w-3 mr-1" />
                                                             Profile
                                                         </Button>
-                                                        <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg">
+                                                        <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg hover:bg-violet-500/10 hover:text-violet-600">
                                                             <Mail className="h-3 w-3 mr-1" />
                                                             Contact
                                                         </Button>
@@ -588,10 +518,10 @@ export function CompanyAIChat() {
 
                     {/* Empty state */}
                     {studentMatches.length === 0 && (
-                        <Card className="border-dashed border-2 border-border/50">
+                        <Card className="border-dashed border-2 border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="p-4 rounded-2xl bg-indigo-500/10 mb-4">
-                                    <Search className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                                <div className="p-4 rounded-2xl bg-violet-500/10 mb-4">
+                                    <Search className="h-8 w-8 text-violet-500" />
                                 </div>
                                 <p className="text-sm text-muted-foreground">
                                     Tell me what kind of talent you need and I&apos;ll find the best matching candidates
@@ -619,10 +549,10 @@ export function CompanyAIChat() {
                                     key={i}
                                     variant="ghost"
                                     size="sm"
-                                    className="w-full justify-start text-xs h-8 rounded-lg hover:bg-indigo-500/10 text-left"
+                                    className="w-full justify-start text-xs h-8 rounded-lg hover:bg-violet-500/10 hover:text-violet-600 text-left transition-all duration-300"
                                     onClick={() => setInputValue(suggestion)}
                                 >
-                                    <Sparkles className="h-3 w-3 mr-2 text-indigo-500" />
+                                    <Sparkles className="h-3 w-3 mr-2 text-violet-500" />
                                     {suggestion}
                                 </Button>
                             ))}
