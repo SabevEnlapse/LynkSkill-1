@@ -111,13 +111,24 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
     }
 
     async function updateApplication(id: string, status: "APPROVED" | "REJECTED") {
-        const res = await fetch(`/api/applications/${id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status }),
-        })
-        if (res.ok) {
-            setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status } : app)))
+        try {
+            const res = await fetch(`/api/applications/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status }),
+            })
+            
+            if (res.ok) {
+                setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status } : app)))
+                mutateApplications()
+                toast.success(`Application ${status === "APPROVED" ? "approved" : "rejected"} successfully`)
+            } else {
+                const data = await res.json().catch(() => ({}))
+                toast.error(data.error || `Failed to ${status === "APPROVED" ? "approve" : "reject"} application`)
+            }
+        } catch (error) {
+            console.error("Update application error:", error)
+            toast.error("Something went wrong")
         }
     }
 

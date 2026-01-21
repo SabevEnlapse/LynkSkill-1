@@ -108,7 +108,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             ? (grade ?? calculateLegacyGrade(skillsRating, impactRating, growthRating))
             : null
 
-        const updated = await prisma.experience.update({
+        console.log(" Updating experience with data:", {
+            status,
+            grade: calculatedGrade,
+            skillsRating,
+            impactRating,
+            growthRating,
+            recommendation,
+            endorsementNote,
+        })
+
+        // Update experience - use simple update without include to avoid Prisma issues
+        await prisma.experience.update({
             where: { id },
             data: {
                 status,
@@ -117,9 +128,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 impactRating: status === "approved" ? impactRating : null,
                 growthRating: status === "approved" ? growthRating : null,
                 recommendation: status === "approved" ? recommendation : null,
-                endorsementNote: status === "approved" ? endorsementNote : null,
+                endorsementNote: status === "approved" ? (endorsementNote || null) : null,
             },
         })
+
+        // Fetch the updated experience with relations
+        const updated = await prisma.experience.findUnique({
+            where: { id },
+            include: {
+                student: true,
+                company: true,
+            },
+        })
+
+        if (!updated) {
+            return NextResponse.json({ error: "Failed to fetch updated experience" }, { status: 500 })
+        }
 
         // 📧 Notify student about experience endorsement
         if (status === "approved" && skillsRating && impactRating && growthRating) {
@@ -136,6 +160,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         return NextResponse.json(updated)
     } catch (error) {
         console.error(" PATCH /experience/[id] error:", error)
-        return NextResponse.json({ error: "Failed to update experience" }, { status: 500 })
+        const errorMessage = error instanceof Error ? error.message : "Failed to update experience"
+        return NextResponse.json({ error: errorMessage, details: String(error) }, { status: 500 })
     }
 }

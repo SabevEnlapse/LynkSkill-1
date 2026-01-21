@@ -20,13 +20,25 @@ export async function PATCH(
             return NextResponse.json({ error: "Invalid status" }, { status: 400 })
         }
 
+        // Get the current user
+        const user = await prisma.user.findUnique({
+            where: { clerkId: userId },
+            select: { id: true, role: true, companies: true }
+        })
+
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 })
+        }
+
         // ======================================================
         // 1) Load the application + internship + project
         // ======================================================
         const data = await prisma.application.findUnique({
             where: { id },
             include: {
-                internship: true,
+                internship: {
+                    include: { company: true }
+                },
                 student: true,
                 project: true,   // IMPORTANT for project creation check
             },
@@ -39,11 +51,29 @@ export async function PATCH(
             )
 
         // ======================================================
+        // 1.5) Verify the company user owns this internship
+        // ======================================================
+        if (user.role !== "COMPANY") {
+            return NextResponse.json(
+                { error: "Only companies can approve/reject applications" },
+                { status: 403 }
+            )
+        }
+
+        const userCompanyId = user.companies[0]?.id
+        if (!userCompanyId || data.internship.companyId !== userCompanyId) {
+            return NextResponse.json(
+                { error: "You can only manage applications for your own internships" },
+                { status: 403 }
+            )
+        }
+
+        // ======================================================
         // 2) Check assignment upload ONLY IF internship requires it
         // ======================================================
         const assignmentRequired = Boolean(data.internship.testAssignmentTitle)
 
-        if (assignmentRequired) {
+        if (assignmentRequired && status === "APPROVED") {
             const assignments = await prisma.assignment.findMany({
                 where: {
                     internshipId: data.internshipId,
@@ -57,7 +87,6 @@ export async function PATCH(
             const hasUploadedFiles = assignments.some(
                 (a: { submissions: { id: string }[] }) => a.submissions.length > 0
             )
-
 
             if (!hasUploadedFiles) {
                 return NextResponse.json(

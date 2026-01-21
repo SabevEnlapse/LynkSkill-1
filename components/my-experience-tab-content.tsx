@@ -381,23 +381,34 @@ export default function ExperienceTabContent() {
     endorsementNote?: string
   }) => {
     try {
+      const requestBody = {
+        status: action === "approve" ? "approved" : "rejected",
+        ...(action === "approve" && endorsement ? {
+          skillsRating: endorsement.skillsRating,
+          impactRating: endorsement.impactRating,
+          growthRating: endorsement.growthRating,
+          recommendation: endorsement.recommendation,
+          endorsementNote: endorsement.endorsementNote || null,
+        } : {}),
+      }
+      
+      console.log("Sending endorsement:", requestBody)
+      
       const res = await fetch(`/api/experience/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: action === "approve" ? "approved" : "rejected",
-          ...(action === "approve" && endorsement ? {
-            skillsRating: endorsement.skillsRating,
-            impactRating: endorsement.impactRating,
-            growthRating: endorsement.growthRating,
-            recommendation: endorsement.recommendation,
-            endorsementNote: endorsement.endorsementNote,
-          } : {}),
-        }),
+        body: JSON.stringify(requestBody),
       })
-      if (!res.ok) throw new Error("Action failed")
-      const updated = await res.json()
-      setExperiences((prev) => prev.map((exp) => (exp.id === updated.id ? updated : exp)))
+      
+      const data = await res.json()
+      
+      if (!res.ok) {
+        console.error("API error:", data)
+        alert(data.error || "Action failed")
+        return
+      }
+      
+      setExperiences((prev) => prev.map((exp) => (exp.id === data.id ? data : exp)))
 
       // Reset endorsement form
       setEndorsementData({
@@ -409,8 +420,8 @@ export default function ExperienceTabContent() {
       })
       setApprovingExpId(null)
     } catch (err) {
-      console.error(err)
-      alert("Action failed")
+      console.error("Network error:", err)
+      alert("Action failed - please check your connection")
     }
   }
 
