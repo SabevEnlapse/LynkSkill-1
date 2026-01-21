@@ -319,13 +319,17 @@
     "thisMonth": "Този месец",
     "allTime": "За цялото време",
     "noRankingsYet": "Все още няма класации",
-    "noRankingsDescription": "Класацията ще се попълни, когато студентите изпълнят задачи и спечелят точки",
+    "noRankingsDescription": "Класацията ще се попълни, когато студентите завършат стажове и получат препоръки",
     "rank": "Ранг",
     "avgGrade": "Средна оценка",
     "uniqueCompanies": "Работил с компании",
     "allRoundScore": "Общ резултат",
     "topPerformers": "Топ изпълнители",
-    "risingStars": "Изгряващи звезди"
+    "risingStars": "Изгряващи звезди",
+    "skillScore": "Оценка на уменията",
+    "experiences": "Опит",
+    "professionalScore": "Професионален резултат",
+    "endorsed": "Препоръчан"
   },
   "saved": {
     "title": "Запазени стажове",

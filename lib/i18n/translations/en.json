@@ -319,13 +319,17 @@
     "thisMonth": "This Month",
     "allTime": "All Time",
     "noRankingsYet": "No Rankings Yet",
-    "noRankingsDescription": "The leaderboard will populate as students complete assignments and earn points",
+    "noRankingsDescription": "The leaderboard will populate as students complete experiences and earn endorsements",
     "rank": "Rank",
     "avgGrade": "Average Grade",
     "uniqueCompanies": "Companies Worked With",
     "allRoundScore": "All-Round Score",
     "topPerformers": "Top Performers",
-    "risingStars": "Rising Stars"
+    "risingStars": "Rising Stars",
+    "skillScore": "Skill Score",
+    "experiences": "Experiences",
+    "professionalScore": "Professional Score",
+    "endorsed": "Endorsed"
   },
   "saved": {
     "title": "Saved Internships",

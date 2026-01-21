@@ -1,7 +1,11 @@
 "use client"
 
-import { ApplicationsTabContent } from "@/components/apply-tab-content"
+import { RecentInternshipsSection } from "@/components/recent-internships-section"
 
 export default function CompanyInternshipsPage() {
-    return <ApplicationsTabContent userType="Company" />
+    return (
+        <div className="p-4 md:p-6 lg:p-8 space-y-6">
+            <RecentInternshipsSection userType="Company" />
+        </div>
+    )
 }

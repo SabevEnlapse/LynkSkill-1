@@ -4,6 +4,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic" // Uses request.url
 
+// Calculate skill score for an experience
+function calculateExperienceScore(exp: {
+    skillsRating?: number | null
+    impactRating?: number | null
+    growthRating?: number | null
+    recommendation?: string | null
+    grade?: number | null
+}): number {
+    const skills = exp.skillsRating || 0
+    const impact = exp.impactRating || 0
+    const growth = exp.growthRating || 0
+    
+    if (skills && impact && growth) {
+        // New endorsement system score
+        let recommendationBonus = 0
+        switch (exp.recommendation) {
+            case 'highly_recommend': recommendationBonus = 15; break
+            case 'recommend': recommendationBonus = 10; break
+            case 'neutral': recommendationBonus = 5; break
+            case 'not_recommend': recommendationBonus = 0; break
+        }
+        return Math.round((skills * 8) + (impact * 7) + (growth * 5) + recommendationBonus)
+    } else if (exp.grade) {
+        // Fallback for legacy grade system (2-6 → equivalent score)
+        return (exp.grade - 1) * 15 // 2→15, 3→30, 4→45, 5→60, 6→75
+    }
+    return 0
+}
+
 export async function GET(req: NextRequest) {
     try {
         const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
@@ -37,13 +66,36 @@ export async function GET(req: NextRequest) {
             const clerkUser = clerkUserMap.get(student.clerkId);
 
             const approved = student.experiences;
-            const totalPoints = approved.length * 20;
-            const avgGrade =
-                approved.length > 0
-                    ? approved.reduce((sum, e) => sum + (e.grade || 0), 0) / approved.length
-                    : 0;
+            const totalExperiences = approved.length;
+            
+            // Calculate average skill score
+            const avgSkillScore = approved.length > 0
+                ? approved.reduce((sum, exp) => sum + calculateExperienceScore(exp), 0) / approved.length
+                : 0;
+            
+            // Count endorsements
+            const endorsementCounts = approved.reduce((acc, exp) => {
+                if (exp.recommendation) {
+                    acc[exp.recommendation] = (acc[exp.recommendation] || 0) + 1;
+                }
+                return acc;
+            }, {} as Record<string, number>);
+            
             const uniqueCompanies = new Set(approved.map((e) => e.companyId)).size;
-            const allRound = totalPoints + avgGrade * 10 + uniqueCompanies * 5;
+            
+            // Calculate professional score
+            const professionalScore = Math.round(
+                (avgSkillScore * 0.6) +
+                (totalExperiences * 5) +
+                (uniqueCompanies * 8) +
+                ((endorsementCounts['highly_recommend'] || 0) * 10) +
+                ((endorsementCounts['recommend'] || 0) * 5)
+            );
+
+            // Legacy compatibility
+            const avgGrade = approved.length > 0
+                ? approved.reduce((sum, e) => sum + (e.grade || 0), 0) / approved.length
+                : 0;
 
             return {
                 id: student.id,
@@ -53,15 +105,22 @@ export async function GET(req: NextRequest) {
                         : "Unnamed",
                 email: clerkUser?.emailAddresses?.[0]?.emailAddress || student.email,
                 imageUrl: clerkUser?.imageUrl || "/default-avatar.png",
-                totalPoints,
-                avgGrade: Math.round(avgGrade * 10) / 10,
+                // New metrics
+                totalExperiences,
+                avgSkillScore: Math.round(avgSkillScore),
                 uniqueCompanies,
-                allRound,
+                professionalScore,
+                highlyRecommended: endorsementCounts['highly_recommend'] || 0,
+                recommended: endorsementCounts['recommend'] || 0,
+                // Legacy fields for backward compatibility
+                totalPoints: totalExperiences * 20,
+                avgGrade: Math.round(avgGrade * 10) / 10,
+                allRound: professionalScore,
             };
         });
 
-        // 6️⃣ Sort leaderboard (after pagination for efficiency)
-        leaderboard.sort((a, b) => b.allRound - a.allRound);
+        // 6️⃣ Sort leaderboard by professional score
+        leaderboard.sort((a, b) => b.professionalScore - a.professionalScore);
 
         return NextResponse.json(leaderboard);
     } catch (err) {

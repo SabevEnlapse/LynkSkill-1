@@ -24,6 +24,11 @@ import {
   ShieldAlert,
   Eye,
   DownloadCloud,
+  Star,
+  TrendingUp,
+  Target,
+  ThumbsUp,
+  MessageSquare,
 } from "lucide-react"
 import {
   Dialog,
@@ -41,6 +46,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { StudentSummary } from "@/components/student-summary"
 import { useTranslation } from "@/lib/i18n"
 
@@ -49,6 +55,11 @@ type Experience = {
   status: string
   mediaUrls: string[]
   grade: number | null
+  skillsRating: number | null
+  impactRating: number | null
+  growthRating: number | null
+  recommendation: string | null
+  endorsementNote: string | null
   createdAt: string
   updatedAt: string
   student?: { id: string; email: string }
@@ -58,9 +69,14 @@ type Experience = {
 type Company = { id: string; name: string; logo: string | null }
 
 type Summary = {
+  totalExperiences: number
+  avgSkillScore: number
+  uniqueCompanies: number
+  professionalScore: number
+  endorsements?: Record<string, number>
+  // Legacy fields
   totalPoints: number
   avgGrade: number
-  uniqueCompanies: number
   allRound: number
 }
 
@@ -104,7 +120,21 @@ export default function ExperienceTabContent() {
 
   const [fileSizeError, setFileSizeError] = useState<string | null>(null)
 
-  const [selectedGrade, setSelectedGrade] = useState<number | null>(null)
+  // Endorsement form state
+  const [endorsementData, setEndorsementData] = useState<{
+    skillsRating: number | null
+    impactRating: number | null
+    growthRating: number | null
+    recommendation: string | null
+    endorsementNote: string
+  }>({
+    skillsRating: null,
+    impactRating: null,
+    growthRating: null,
+    recommendation: null,
+    endorsementNote: ""
+  })
+  
   // approvingExpId is used for tracking approval state in UI
   const [, setApprovingExpId] = useState<string | null>(null)
 
@@ -343,21 +373,40 @@ export default function ExperienceTabContent() {
     }
   }
 
-  const handleAction = async (id: string, action: "approve" | "reject", grade?: number | null) => {
+  const handleAction = async (id: string, action: "approve" | "reject", endorsement?: {
+    skillsRating?: number | null
+    impactRating?: number | null
+    growthRating?: number | null
+    recommendation?: string | null
+    endorsementNote?: string
+  }) => {
     try {
       const res = await fetch(`/api/experience/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: action === "approve" ? "approved" : "rejected",
-          grade: action === "approve" ? (grade ?? null) : null,
+          ...(action === "approve" && endorsement ? {
+            skillsRating: endorsement.skillsRating,
+            impactRating: endorsement.impactRating,
+            growthRating: endorsement.growthRating,
+            recommendation: endorsement.recommendation,
+            endorsementNote: endorsement.endorsementNote,
+          } : {}),
         }),
       })
       if (!res.ok) throw new Error("Action failed")
       const updated = await res.json()
       setExperiences((prev) => prev.map((exp) => (exp.id === updated.id ? updated : exp)))
 
-      setSelectedGrade(null)
+      // Reset endorsement form
+      setEndorsementData({
+        skillsRating: null,
+        impactRating: null,
+        growthRating: null,
+        recommendation: null,
+        endorsementNote: ""
+      })
       setApprovingExpId(null)
     } catch (err) {
       console.error(err)
@@ -902,10 +951,22 @@ export default function ExperienceTabContent() {
                                       onOpenChange={(open) => {
                                         if (open) {
                                           setApprovingExpId(exp.id)
-                                          setSelectedGrade(null)
+                                          setEndorsementData({
+                                            skillsRating: null,
+                                            impactRating: null,
+                                            growthRating: null,
+                                            recommendation: null,
+                                            endorsementNote: ""
+                                          })
                                         } else {
                                           setApprovingExpId(null)
-                                          setSelectedGrade(null)
+                                          setEndorsementData({
+                                            skillsRating: null,
+                                            impactRating: null,
+                                            growthRating: null,
+                                            recommendation: null,
+                                            endorsementNote: ""
+                                          })
                                         }
                                       }}
                                   >
@@ -915,75 +976,210 @@ export default function ExperienceTabContent() {
                                           className="w-full bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white rounded-2xl"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
-                                        Approve
+                                        Endorse & Approve
                                       </Button>
                                     </DialogTrigger>
 
-                                    <DialogContent className="sm:max-w-[500px] rounded-3xl border-2 border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)]">
+                                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-3xl border-2 border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)]">
                                       <DialogHeader className="space-y-3">
                                         <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] flex items-center justify-center">
-                                          <CheckCircle className="h-8 w-8 text-white" />
+                                          <ThumbsUp className="h-8 w-8 text-white" />
                                         </div>
-                                        <DialogTitle className="text-2xl text-center">Approve Experience</DialogTitle>
+                                        <DialogTitle className="text-2xl text-center">Professional Endorsement</DialogTitle>
                                         <p className="text-sm text-muted-foreground text-center">
-                                          Select a grade to evaluate the student&apos;s performance
+                                          Evaluate the student&apos;s performance across key professional competencies
                                         </p>
                                       </DialogHeader>
 
                                       <div className="space-y-6 py-4">
-                                        {/* Grade Selection Grid */}
+                                        {/* Skills Rating */}
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
-                                            <Sparkles className="h-4 w-4 text-[var(--experience-accent)]" />
-                                            Select Grade (2-6)
+                                            <Star className="h-4 w-4 text-yellow-500" />
+                                            Technical Skills
                                           </label>
-                                          <div className="grid grid-cols-5 gap-3">
-                                            {[2, 3, 4, 5, 6].map((gradeValue) => (
+                                          <p className="text-xs text-muted-foreground">How well did the student demonstrate practical and technical abilities?</p>
+                                          <div className="grid grid-cols-5 gap-2">
+                                            {[1, 2, 3, 4, 5].map((value) => (
                                                 <button
-                                                    key={gradeValue}
+                                                    key={value}
                                                     type="button"
-                                                    onClick={() => {
-                                                      setSelectedGrade(gradeValue)
-                                                    }}
+                                                    onClick={() => setEndorsementData(prev => ({ ...prev, skillsRating: value }))}
                                                     className={`
-                                          relative aspect-square rounded-2xl border-2 transition-all duration-300
-                                          flex flex-col items-center justify-center gap-1 p-3
-                                          hover:scale-105 hover:shadow-lg
-                                          ${
-                                                        selectedGrade === gradeValue
-                                                            ? "border-[var(--experience-accent)] bg-gradient-to-br from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] text-white shadow-lg shadow-[var(--experience-accent)]/30"
-                                                            : "border-[var(--experience-step-border)] bg-[var(--experience-step-background)] hover:border-[var(--experience-accent)]/50"
-                                                    }
-                                        `}
+                                                      relative p-3 rounded-xl border-2 transition-all duration-200
+                                                      flex flex-col items-center justify-center gap-1
+                                                      hover:scale-105
+                                                      ${endorsementData.skillsRating === value
+                                                        ? "border-yellow-500 bg-yellow-500/10 text-yellow-600"
+                                                        : "border-[var(--experience-step-border)] hover:border-yellow-500/50"
+                                                      }
+                                                    `}
                                                 >
-                                        <span
-                                            className={`text-2xl font-bold ${selectedGrade === gradeValue ? "text-white" : "text-foreground"}`}
-                                        >
-                                          {gradeValue}
-                                        </span>
-                                                  {selectedGrade === gradeValue && (
-                                                      <CheckCircle className="h-4 w-4 text-white absolute top-1 right-1" />
-                                                  )}
+                                                  <span className="text-lg font-bold">{value}</span>
+                                                  <span className="text-[10px] text-muted-foreground">
+                                                    {value === 1 && "Basic"}
+                                                    {value === 2 && "Fair"}
+                                                    {value === 3 && "Good"}
+                                                    {value === 4 && "Great"}
+                                                    {value === 5 && "Expert"}
+                                                  </span>
                                                 </button>
                                             ))}
                                           </div>
-
-                                          {/* Grade Description */}
-                                          {selectedGrade && (
-                                              <div className="mt-4 p-4 rounded-2xl bg-[var(--experience-step-background)] border border-[var(--experience-step-border)]">
-                                                <p className="text-sm font-medium text-[var(--experience-accent)] mb-1">
-                                                  Grade {selectedGrade} Selected
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                  {selectedGrade === 2 && "Basic performance - Needs significant improvement"}
-                                                  {selectedGrade === 3 && "Satisfactory performance - Meets minimum requirements"}
-                                                  {selectedGrade === 4 && "Good performance - Meets expectations"}
-                                                  {selectedGrade === 5 && "Very good performance - Exceeds expectations"}
-                                                  {selectedGrade === 6 && "Excellent performance - Outstanding work"}
-                                                </p>
-                                              </div>
-                                          )}
                                         </div>
+
+                                        {/* Impact Rating */}
+                                        <div className="space-y-3">
+                                          <label className="text-sm font-semibold flex items-center gap-2">
+                                            <Target className="h-4 w-4 text-blue-500" />
+                                            Project Impact
+                                          </label>
+                                          <p className="text-xs text-muted-foreground">What was the level of contribution to the project/company?</p>
+                                          <div className="grid grid-cols-5 gap-2">
+                                            {[1, 2, 3, 4, 5].map((value) => (
+                                                <button
+                                                    key={value}
+                                                    type="button"
+                                                    onClick={() => setEndorsementData(prev => ({ ...prev, impactRating: value }))}
+                                                    className={`
+                                                      relative p-3 rounded-xl border-2 transition-all duration-200
+                                                      flex flex-col items-center justify-center gap-1
+                                                      hover:scale-105
+                                                      ${endorsementData.impactRating === value
+                                                        ? "border-blue-500 bg-blue-500/10 text-blue-600"
+                                                        : "border-[var(--experience-step-border)] hover:border-blue-500/50"
+                                                      }
+                                                    `}
+                                                >
+                                                  <span className="text-lg font-bold">{value}</span>
+                                                  <span className="text-[10px] text-muted-foreground">
+                                                    {value === 1 && "Low"}
+                                                    {value === 2 && "Some"}
+                                                    {value === 3 && "Good"}
+                                                    {value === 4 && "High"}
+                                                    {value === 5 && "Major"}
+                                                  </span>
+                                                </button>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Growth Rating */}
+                                        <div className="space-y-3">
+                                          <label className="text-sm font-semibold flex items-center gap-2">
+                                            <TrendingUp className="h-4 w-4 text-green-500" />
+                                            Growth & Adaptability
+                                          </label>
+                                          <p className="text-xs text-muted-foreground">How much did the student learn and adapt during the internship?</p>
+                                          <div className="grid grid-cols-5 gap-2">
+                                            {[1, 2, 3, 4, 5].map((value) => (
+                                                <button
+                                                    key={value}
+                                                    type="button"
+                                                    onClick={() => setEndorsementData(prev => ({ ...prev, growthRating: value }))}
+                                                    className={`
+                                                      relative p-3 rounded-xl border-2 transition-all duration-200
+                                                      flex flex-col items-center justify-center gap-1
+                                                      hover:scale-105
+                                                      ${endorsementData.growthRating === value
+                                                        ? "border-green-500 bg-green-500/10 text-green-600"
+                                                        : "border-[var(--experience-step-border)] hover:border-green-500/50"
+                                                      }
+                                                    `}
+                                                >
+                                                  <span className="text-lg font-bold">{value}</span>
+                                                  <span className="text-[10px] text-muted-foreground">
+                                                    {value === 1 && "Little"}
+                                                    {value === 2 && "Some"}
+                                                    {value === 3 && "Good"}
+                                                    {value === 4 && "Strong"}
+                                                    {value === 5 && "Rapid"}
+                                                  </span>
+                                                </button>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Recommendation */}
+                                        <div className="space-y-3">
+                                          <label className="text-sm font-semibold flex items-center gap-2">
+                                            <ThumbsUp className="h-4 w-4 text-purple-500" />
+                                            Would you recommend this student?
+                                          </label>
+                                          <div className="grid grid-cols-2 gap-3">
+                                            {[
+                                              { value: "highly_recommend", label: "Highly Recommend", emoji: "🌟", color: "emerald" },
+                                              { value: "recommend", label: "Recommend", emoji: "👍", color: "blue" },
+                                              { value: "neutral", label: "Neutral", emoji: "😐", color: "gray" },
+                                              { value: "not_recommend", label: "Not Recommend", emoji: "👎", color: "red" },
+                                            ].map((option) => (
+                                                <button
+                                                    key={option.value}
+                                                    type="button"
+                                                    onClick={() => setEndorsementData(prev => ({ ...prev, recommendation: option.value }))}
+                                                    className={`
+                                                      p-4 rounded-xl border-2 transition-all duration-200
+                                                      flex items-center gap-3
+                                                      hover:scale-[1.02]
+                                                      ${endorsementData.recommendation === option.value
+                                                        ? option.color === "emerald" ? "border-emerald-500 bg-emerald-500/10"
+                                                          : option.color === "blue" ? "border-blue-500 bg-blue-500/10"
+                                                          : option.color === "gray" ? "border-gray-500 bg-gray-500/10"
+                                                          : "border-red-500 bg-red-500/10"
+                                                        : "border-[var(--experience-step-border)] hover:border-purple-500/50"
+                                                      }
+                                                    `}
+                                                >
+                                                  <span className="text-2xl">{option.emoji}</span>
+                                                  <span className="font-medium text-sm">{option.label}</span>
+                                                </button>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Endorsement Note */}
+                                        <div className="space-y-3">
+                                          <label className="text-sm font-semibold flex items-center gap-2">
+                                            <MessageSquare className="h-4 w-4 text-[var(--experience-accent)]" />
+                                            Feedback Note (Optional)
+                                          </label>
+                                          <Textarea
+                                              placeholder="Share specific feedback about the student's performance, strengths, and areas for improvement..."
+                                              value={endorsementData.endorsementNote}
+                                              onChange={(e) => setEndorsementData(prev => ({ ...prev, endorsementNote: e.target.value }))}
+                                              className="rounded-xl border-2 border-[var(--experience-step-border)] resize-none min-h-[80px]"
+                                          />
+                                        </div>
+
+                                        {/* Summary Preview */}
+                                        {endorsementData.skillsRating && endorsementData.impactRating && endorsementData.growthRating && endorsementData.recommendation && (
+                                            <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--experience-hero-gradient-from)]/10 to-[var(--experience-hero-gradient-to)]/10 border border-[var(--experience-accent)]/20">
+                                              <p className="text-sm font-semibold text-[var(--experience-accent)] mb-2">Endorsement Summary</p>
+                                              <div className="grid grid-cols-4 gap-3 text-center">
+                                                <div>
+                                                  <p className="text-2xl font-bold">{endorsementData.skillsRating}/5</p>
+                                                  <p className="text-xs text-muted-foreground">Skills</p>
+                                                </div>
+                                                <div>
+                                                  <p className="text-2xl font-bold">{endorsementData.impactRating}/5</p>
+                                                  <p className="text-xs text-muted-foreground">Impact</p>
+                                                </div>
+                                                <div>
+                                                  <p className="text-2xl font-bold">{endorsementData.growthRating}/5</p>
+                                                  <p className="text-xs text-muted-foreground">Growth</p>
+                                                </div>
+                                                <div>
+                                                  <p className="text-xl">
+                                                    {endorsementData.recommendation === "highly_recommend" && "🌟"}
+                                                    {endorsementData.recommendation === "recommend" && "👍"}
+                                                    {endorsementData.recommendation === "neutral" && "😐"}
+                                                    {endorsementData.recommendation === "not_recommend" && "👎"}
+                                                  </p>
+                                                  <p className="text-xs text-muted-foreground">Rec.</p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                        )}
                                       </div>
 
                                       <DialogFooter className="flex gap-3 sm:gap-3">
@@ -1001,9 +1197,9 @@ export default function ExperienceTabContent() {
                                         </Button>
 
                                         <Button
-                                            disabled={selectedGrade == null || selectedGrade < 2 || selectedGrade > 6}
+                                            disabled={!endorsementData.skillsRating || !endorsementData.impactRating || !endorsementData.growthRating || !endorsementData.recommendation}
                                             onClick={async () => {
-                                              await handleAction(exp.id, "approve", selectedGrade!)
+                                              await handleAction(exp.id, "approve", endorsementData)
                                               // Close the dialog after successful approval
                                               const closeButton = document.querySelector<HTMLButtonElement>(
                                                   '[data-state="open"] button[aria-label="Close"]',
@@ -1013,7 +1209,7 @@ export default function ExperienceTabContent() {
                                             className="flex-1 rounded-2xl bg-gradient-to-r from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] hover:opacity-90 text-white font-semibold disabled:opacity-50"
                                         >
                                           <CheckCircle className="h-4 w-4 mr-2" />
-                                          Confirm Approval
+                                          Submit Endorsement
                                         </Button>
                                       </DialogFooter>
                                     </DialogContent>

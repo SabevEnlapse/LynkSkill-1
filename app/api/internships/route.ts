@@ -11,12 +11,14 @@ export const dynamic = "force-dynamic"; // Need dynamic for query params
 
 // ZOD schema
 const internshipSchema = z.object({
-    title: z.string().min(3),
-    description: z.string().min(10),
-    location: z.string().min(2),
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    description: z.string().min(10, "Description must be at least 10 characters"),
+    location: z.string().min(2, "Location must be at least 2 characters"),
     qualifications: z.string().optional().nullable(),
     paid: z.boolean(),
-    salary: z.union([z.number().positive(), z.null()]),
+    salary: z.union([z.number().positive(), z.null()]).optional(),
+    applicationStart: z.string().transform((val) => new Date(val)),
+    applicationEnd: z.string().transform((val) => new Date(val)),
     testAssignmentTitle: z.string().optional().nullable(),
     testAssignmentDescription: z.string().optional().nullable(),
     testAssignmentDueDate: z
@@ -30,6 +32,13 @@ const internshipSchema = z.object({
             code: "custom",
             path: ["salary"],
             message: "Salary is required if internship is paid",
+        });
+    }
+    if (data.applicationStart >= data.applicationEnd) {
+        ctx.addIssue({
+            code: "custom",
+            path: ["applicationEnd"],
+            message: "End date must be after start date",
         });
     }
 });
@@ -67,17 +76,15 @@ export async function POST(req: Request) {
             title: data.title,
             description: data.description,
             location: data.location,
-            qualifications: data.qualifications,
+            qualifications: data.qualifications ?? null,
             paid: data.paid,
-            salary: data.paid ? data.salary : null,
+            salary: data.paid ? (data.salary ?? null) : null,
             companyId: company.id,
-            applicationStart: new Date(body.applicationStart),
-            applicationEnd: new Date(body.applicationEnd),
-            startDate: body.startDate ? new Date(body.startDate) : null,
-            endDate: body.endDate ? new Date(body.endDate) : null,
+            applicationStart: data.applicationStart,
+            applicationEnd: data.applicationEnd,
             testAssignmentTitle: data.testAssignmentTitle ?? null,
             testAssignmentDescription: data.testAssignmentDescription ?? null,
-            testAssignmentDueDate: data.testAssignmentDueDate,
+            testAssignmentDueDate: data.testAssignmentDueDate ?? null,
         },
     });
 

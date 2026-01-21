@@ -270,7 +270,17 @@ model Experience {
 
   mediaUrls     String[]
   status        String   @default("pending")
+  
+  // Legacy grade field (kept for backward compatibility, derived from new ratings)
   grade         Int?
+  
+  // New Skill Endorsement System
+  skillsRating     Int?      // 1-5: Technical/practical skills demonstrated
+  impactRating     Int?      // 1-5: Contribution impact to the project/company
+  growthRating     Int?      // 1-5: Learning progress and adaptability
+  recommendation   String?   // "highly_recommend" | "recommend" | "neutral" | "not_recommend"
+  endorsementNote  String?   // Optional feedback from company
+  
   uploaderName  String?
   uploaderImage String?
 

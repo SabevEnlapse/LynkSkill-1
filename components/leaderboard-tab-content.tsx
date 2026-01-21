@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
-import { Trophy, Award, Medal, TrendingUp, Building2, GraduationCap, Sparkles } from "lucide-react"
+import { Trophy, Award, Medal, TrendingUp, Building2, Star, Sparkles, ThumbsUp } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 
 interface StudentRank {
@@ -13,9 +13,16 @@ interface StudentRank {
     name: string
     email: string
     imageUrl?: string
+    // New metrics
+    totalExperiences: number
+    avgSkillScore: number
+    uniqueCompanies: number
+    professionalScore: number
+    highlyRecommended: number
+    recommended: number
+    // Legacy fields
     totalPoints: number
     avgGrade: number
-    uniqueCompanies: number
     allRound: number
 }
 
@@ -194,10 +201,10 @@ export function LeaderboardTabContent() {
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground flex items-center gap-1.5 text-xs sm:text-sm">
-                                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                <span className="font-medium">{t('leaderboard.points')}</span>
+                                <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                <span className="font-medium">{t('leaderboard.skillScore')}</span>
                               </span>
-                                                            <span className="font-bold text-base sm:text-lg">{student.totalPoints}</span>
+                                                            <span className="font-bold text-base sm:text-lg">{student.avgSkillScore}%</span>
                                                         </div>
                                                         <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                                                             <div
@@ -209,7 +216,7 @@ export function LeaderboardTabContent() {
                                                                             : "bg-orange-500"
                                                                 } transition-all duration-500`}
                                                                 style={{
-                                                                    width: `${Math.min((student.totalPoints / (topThree[0]?.totalPoints || 1)) * 100, 100)}%`,
+                                                                    width: `${student.avgSkillScore}%`,
                                                                 }}
                                                             />
                                                         </div>
@@ -217,10 +224,10 @@ export function LeaderboardTabContent() {
 
                                                     <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground flex items-center gap-1.5 text-xs sm:text-sm">
-                              <GraduationCap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                              <span className="font-medium">{t('leaderboard.avgGrade')}</span>
+                              <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              <span className="font-medium">{t('leaderboard.experiences')}</span>
                             </span>
-                                                        <span className="font-semibold text-sm sm:text-base">{student.avgGrade}%</span>
+                                                        <span className="font-semibold text-sm sm:text-base">{student.totalExperiences}</span>
                                                     </div>
 
                                                     <div className="flex items-center justify-between text-sm">
@@ -230,11 +237,28 @@ export function LeaderboardTabContent() {
                             </span>
                                                         <span className="font-semibold text-sm sm:text-base">{student.uniqueCompanies}</span>
                                                     </div>
+                                                    
+                                                    {(student.highlyRecommended > 0 || student.recommended > 0) && (
+                                                        <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground flex items-center gap-1.5 text-xs sm:text-sm">
+                                <ThumbsUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                <span className="font-medium">Endorsed</span>
+                              </span>
+                                                            <div className="flex items-center gap-1">
+                                                                {student.highlyRecommended > 0 && (
+                                                                    <span className="text-xs bg-emerald-500/20 text-emerald-600 px-1.5 py-0.5 rounded">🌟 {student.highlyRecommended}</span>
+                                                                )}
+                                                                {student.recommended > 0 && (
+                                                                    <span className="text-xs bg-blue-500/20 text-blue-600 px-1.5 py-0.5 rounded">👍 {student.recommended}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div className="w-full pt-4 border-t border-border/50">
                                                     <div className="text-center space-y-1">
-                                                        <p className="text-xs text-muted-foreground font-medium">{t('leaderboard.allRoundScore')}</p>
+                                                        <p className="text-xs text-muted-foreground font-medium">{t('leaderboard.professionalScore')}</p>
                                                         <div className="flex items-center justify-center gap-2">
                                                             <p
                                                                 className={`${isFirst ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"} font-bold bg-gradient-to-r ${
@@ -245,7 +269,7 @@ export function LeaderboardTabContent() {
                                                                             : "from-orange-600 to-amber-700"
                                                                 } bg-clip-text text-transparent`}
                                                             >
-                                                                {student.allRound}
+                                                                {student.professionalScore}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -299,20 +323,20 @@ export function LeaderboardTabContent() {
 
                                                 <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm flex-1">
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
-                                                        <p className="text-muted-foreground text-xs font-medium">Points</p>
-                                                        <p className="font-bold text-sm sm:text-base">{student.totalPoints}</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">Skill Score</p>
+                                                        <p className="font-bold text-sm sm:text-base">{student.avgSkillScore}%</p>
                                                     </div>
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
-                                                        <p className="text-muted-foreground text-xs font-medium">Avg Grade</p>
-                                                        <p className="font-semibold text-sm sm:text-base">{student.avgGrade}%</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">Experiences</p>
+                                                        <p className="font-semibold text-sm sm:text-base">{student.totalExperiences}</p>
                                                     </div>
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
                                                         <p className="text-muted-foreground text-xs font-medium">Companies</p>
                                                         <p className="font-semibold text-sm sm:text-base">{student.uniqueCompanies}</p>
                                                     </div>
                                                     <div className="space-y-1 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
-                                                        <p className="text-muted-foreground text-xs font-medium">All-Round</p>
-                                                        <p className="font-bold text-primary text-sm sm:text-base">{student.allRound}</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">Pro Score</p>
+                                                        <p className="font-bold text-primary text-sm sm:text-base">{student.professionalScore}</p>
                                                     </div>
                                                 </div>
                                             </CardContent>

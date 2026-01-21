@@ -1,11 +1,16 @@
 "use client"
 
-import { Award, Star, Building2, Trophy } from "lucide-react"
+import { Award, Star, Building2, Trophy, TrendingUp, ThumbsUp } from "lucide-react"
 
 interface Summary {
+    totalExperiences?: number
+    avgSkillScore?: number
+    uniqueCompanies: number
+    professionalScore?: number
+    endorsements?: Record<string, number>
+    // Legacy fields
     totalPoints: number
     avgGrade: number
-    uniqueCompanies: number
     allRound: number
 }
 
@@ -17,15 +22,21 @@ function formatNumber(num: number) {
 export function StudentSummary({ summary }: { summary: Summary | null }) {
     if (!summary) return null
 
+    // Use new metrics if available, fallback to legacy
+    const skillScore = summary.avgSkillScore ?? Math.round((summary.avgGrade / 6) * 100)
+    const totalExp = summary.totalExperiences ?? Math.round(summary.totalPoints / 20)
+    const proScore = summary.professionalScore ?? summary.allRound
+    const highlyRecommended = summary.endorsements?.['highly_recommend'] ?? 0
+
     const stats = [
         {
-            label: "Points",
-            value: summary.totalPoints,
+            label: "Experiences",
+            value: totalExp,
             icon: Award,
         },
         {
-            label: "Avg Grade",
-            value: formatNumber(summary.avgGrade),
+            label: "Skill Score",
+            value: `${skillScore}%`,
             icon: Star,
         },
         {
@@ -33,21 +44,26 @@ export function StudentSummary({ summary }: { summary: Summary | null }) {
             value: summary.uniqueCompanies,
             icon: Building2,
         },
+        ...(highlyRecommended > 0 ? [{
+            label: "Top Endorsed",
+            value: highlyRecommended,
+            icon: ThumbsUp,
+        }] : []),
     ]
 
     return (
         <div className="flex items-center gap-8 text-white/90">
-            {/* All-Round Score - Compact inline version */}
+            {/* Professional Score - Compact inline version */}
             <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-white/10 backdrop-blur-sm">
                     <Trophy className="h-5 w-5 text-white" />
                 </div>
                 <div>
                     <div className="text-2xl font-bold text-white">
-                        {formatNumber(summary.allRound)}
+                        {formatNumber(proScore)}
 
                     </div>
-                    <div className="text-xs text-white/70">All-Round Score</div>
+                    <div className="text-xs text-white/70">Professional Score</div>
                 </div>
 
             </div>

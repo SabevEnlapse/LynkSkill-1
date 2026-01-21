@@ -128,16 +128,53 @@ export async function GET() {
             })
 
             const approved = experiences.filter((exp) => exp.status === "approved")
-            const totalPoints = approved.length * 20
-            const avgGrade =
-                approved.length > 0 ? approved.reduce((sum, exp) => sum + (exp.grade || 0), 0) / approved.length : 0
+            const totalExperiences = approved.length
+            
+            // Calculate new skill-based metrics
+            const avgSkillScore = approved.length > 0 
+                ? approved.reduce((sum, exp) => {
+                    const skills = exp.skillsRating || 0
+                    const impact = exp.impactRating || 0
+                    const growth = exp.growthRating || 0
+                    // Calculate skill score per experience (max 100)
+                    const score = skills && impact && growth 
+                        ? Math.round(((skills + impact + growth) / 15) * 100)
+                        : (exp.grade ? (exp.grade - 1) * 25 : 0) // Fallback for legacy grades
+                    return sum + score
+                }, 0) / approved.length 
+                : 0
+            
+            // Count endorsements by type
+            const endorsementCounts = approved.reduce((acc, exp) => {
+                if (exp.recommendation) {
+                    acc[exp.recommendation] = (acc[exp.recommendation] || 0) + 1
+                }
+                return acc
+            }, {} as Record<string, number>)
+            
             const uniqueCompanies = new Set(approved.map((exp) => exp.companyId)).size
+            
+            // Calculate professional score (weighted combination)
+            const professionalScore = Math.round(
+                (avgSkillScore * 0.6) + // 60% from skill ratings
+                (totalExperiences * 5) + // 5 points per experience
+                (uniqueCompanies * 8) + // 8 points per unique company
+                ((endorsementCounts['highly_recommend'] || 0) * 10) + // Bonus for high recommendations
+                ((endorsementCounts['recommend'] || 0) * 5)
+            )
 
             summary = {
-                totalPoints,
-                avgGrade: Math.round(avgGrade * 10) / 10,
+                totalExperiences,
+                avgSkillScore: Math.round(avgSkillScore),
                 uniqueCompanies,
-                allRound: totalPoints + avgGrade * 10 + uniqueCompanies * 5,
+                professionalScore,
+                endorsements: endorsementCounts,
+                // Legacy fields for backward compatibility
+                totalPoints: totalExperiences * 20,
+                avgGrade: approved.length > 0 
+                    ? Math.round((approved.reduce((sum, exp) => sum + (exp.grade || 0), 0) / approved.length) * 10) / 10 
+                    : 0,
+                allRound: professionalScore,
             }
         } else if (user.role === "COMPANY") {
             experiences = await prisma.experience.findMany({
