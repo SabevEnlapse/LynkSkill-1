@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://lynkskill.net'
     
     // Fetch dynamic data directly from database
-    const [internships, companies, projects] = await Promise.all([
+    const [internships, companies, projects, experiences, portfolios] = await Promise.all([
         // Get active internships
         prisma.internship.findMany({
             where: {
@@ -25,26 +25,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             },
             select: {
                 id: true,
-                updatedAt: true
+                updatedAt: true,
+                title: true
             }
         }),
-        // Get companies with active internships
+        // Get all approved companies
         prisma.company.findMany({
             where: {
-                internships: {
-                    some: {
-                        applicationStart: {
-                            lte: new Date()
-                        },
-                        applicationEnd: {
-                            gte: new Date()
+                OR: [
+                    {
+                        internships: {
+                            some: {
+                                applicationStart: {
+                                    lte: new Date()
+                                },
+                                applicationEnd: {
+                                    gte: new Date()
+                                }
+                            }
+                        }
+                    },
+                    {
+                        projects: {
+                            some: {
+                                application: {
+                                    status: "APPROVED"
+                                }
+                            }
                         }
                     }
-                }
+                ]
             },
             select: {
                 id: true,
-                updatedAt: true
+                updatedAt: true,
+                name: true
             }
         }),
         // Get approved projects
@@ -56,6 +71,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             },
             select: {
                 id: true,
+                updatedAt: true,
+                title: true
+            }
+        }),
+        // Get approved experiences
+        prisma.experience.findMany({
+            where: {
+                status: "approved"
+            },
+            select: {
+                id: true,
+                updatedAt: true,
+                studentId: true,
+                projectId: true,
+                companyId: true
+            }
+        }),
+        // Get approved portfolios
+        prisma.portfolio.findMany({
+            where: {
+                approvalStatus: "APPROVED"
+            },
+            select: {
+                studentId: true,
                 updatedAt: true
             }
         })
@@ -71,10 +110,54 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 1.0,
         },
         {
+            url: `${baseUrl}/internships`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/companies`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/projects`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
             url: `${baseUrl}/help`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
-            priority: 0.8,
+            priority: 0.7,
+        },
+        
+        // --- Authentication and Onboarding pages ---
+        {
+            url: `${baseUrl}/sign-in`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
+        },
+        {
+            url: `${baseUrl}/sign-up`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
+        },
+        {
+            url: `${baseUrl}/onboarding`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.5,
+        },
+        {
+            url: `${baseUrl}/redirect-after-signin`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.4,
         },
         
         // --- Legal pages (Lowest Priority) ---
@@ -89,12 +172,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(),
             changeFrequency: 'yearly',
             priority: 0.3,
-        },
-        {
-            url: `${baseUrl}/onboarding`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.5,
         }
     ]
 
@@ -122,11 +199,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
     }))
 
+    // Dynamic pages for experiences
+    const experiencePages = experiences.map((experience): SitemapEntry => ({
+        url: `${baseUrl}/experience/${experience.id}`,
+        lastModified: experience.updatedAt,
+        changeFrequency: 'monthly',
+        priority: 0.6,
+    }))
+
+    // Dynamic pages for portfolios
+    const portfolioPages = portfolios.map((portfolio): SitemapEntry => ({
+        url: `${baseUrl}/portfolio/${portfolio.studentId}`,
+        lastModified: portfolio.updatedAt,
+        changeFrequency: 'monthly',
+        priority: 0.6,
+    }))
+
+    // Dynamic pages for assignments
+    const assignmentPages = internships.map((internship): SitemapEntry => ({
+        url: `${baseUrl}/assignments/${internship.id}`,
+        lastModified: internship.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+    }))
+
     // Combine all pages
     return [
         ...staticPages,
         ...internshipPages,
         ...companyPages,
-        ...projectPages
+        ...projectPages,
+        ...experiencePages,
+        ...portfolioPages,
+        ...assignmentPages
     ]
 }
