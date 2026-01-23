@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://lynkskill.net'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://lynkskill.net'
 
   return {
     rules: [
@@ -9,10 +9,50 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
+          // API routes (except public ones)
           '/api/',
-          '/dashboard/student',
-          '/dashboard/company',
+          // Dashboard and authenticated areas
+          '/dashboard/',
+          '/assignments/',
+          // Onboarding and redirect flows
+          '/onboarding/',
+          '/redirect-after-signin/',
+          // Admin and sensitive areas
+          '/admin/',
+          '/settings/',
+          // User-specific routes
+          '/me/',
+          '/profile/',
+          // Internal routes
+          '/_next/',
+          '/favicon.ico',
+          '/robots.txt',
         ],
+        // Add crawl delay to be respectful to the server
+        crawlDelay: 1,
+      },
+      // Special rules for specific bots
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/dashboard/',
+          '/assignments/',
+          '/onboarding/',
+          '/redirect-after-signin/',
+          '/admin/',
+          '/settings/',
+          '/me/',
+          '/profile/',
+          '/_next/',
+        ],
+        crawlDelay: 0.5, // Google can crawl faster
+      },
+      // Allow public APIs for indexing
+      {
+        userAgent: '*',
+        allow: '/api/public/',
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

@@ -5,11 +5,19 @@ const isPublicRoute = createRouteMatcher([
     "/",
     "/terms",
     "/privacy",
+    "/help",
+    "/sitemap.xml",
+    "/robots.txt",
     "/api/validate-eik(.*)",
     "/api/company/accept-policies(.*)",
     "/api/student/accept-policies(.*)",
     "/api/upload-logo(.*)",
-    "/api/cleanup(.*)"
+    "/api/cleanup(.*)",
+    "/api/public/(.*)",
+    "/internships/(.*)",
+    "/companies/(.*)",
+    "/projects/(.*)",
+    "/assignments/(.*)"
 ]);
 
 const isOnboardingRoute = createRouteMatcher([
