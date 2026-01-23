@@ -131,7 +131,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                 salary: internship.salary?.toString() || "",
                 paid: internship.paid || false,
                 duration: internship.duration || "",
-                skills: typeof internship.skills === 'string' ? internship.skills : (Array.isArray(internship.skills) ? internship.skills.join(', ') : ""),
+                skills: internship.skills || "",
                 applicationStart: internship.applicationStart ? parseISO(internship.applicationStart) : undefined,
                 applicationEnd: internship.applicationEnd ? parseISO(internship.applicationEnd) : undefined,
             })

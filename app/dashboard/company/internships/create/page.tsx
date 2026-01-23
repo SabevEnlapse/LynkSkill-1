@@ -164,12 +164,6 @@ export default function CreateInternshipPage() {
                                                     <span className="text-muted-foreground">Unpaid</span>
                                                 )}
                                             </div>
-                                            {internship.applications && internship.applications.length > 0 && (
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Users className="h-4 w-4 flex-shrink-0" />
-                                                    <span>{internship.applications.length} application{internship.applications.length !== 1 ? 's' : ''}</span>
-                                                </div>
-                                            )}
                                             <div className="pt-2">
                                                 <Link href="/dashboard/company/internships">
                                                     <Button variant="ghost" size="sm" className="w-full group-hover:bg-purple-500/10 rounded-lg">

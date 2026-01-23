@@ -497,7 +497,7 @@ async function findMatchingStudents(requiredSkills: string[], field: string) {
                 id: student.id,
                 name: student.profile?.name || student.portfolio?.fullName || "Student",
                 email: student.email || "",
-                avatar: student.profile?.image || undefined,
+                avatar: undefined,
                 matchPercentage: score,
                 reasons: reasons.length > 0 ? reasons : ["Available candidate"],
                 skills: foundSkills.length > 0 ? foundSkills : studentSkillsArray.slice(0, 5),

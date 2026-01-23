@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
         // Save evaluation for each candidate
         const evaluations = await Promise.all(
             candidates.map(async (candidate: EvaluationInput) => {
-                // @ts-expect-error - Model may not exist until migration is run
                 return prisma.candidateEvaluation.create({
                     data: {
                         candidateId: candidate.id,
@@ -120,7 +119,6 @@ export async function GET(req: NextRequest) {
             whereClause.candidateId = candidateId
         }
 
-        // @ts-expect-error - Model may not exist until migration is run
         const evaluations = await prisma.candidateEvaluation.findMany({
             where: whereClause,
             include: {

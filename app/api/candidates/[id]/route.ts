@@ -147,7 +147,6 @@ export async function GET(
         let evaluationHistory: EvaluationRecord[] = []
         if (companyId) {
             try {
-                // @ts-expect-error - Model may not exist until migration is run
                 const evaluations = await prisma.candidateEvaluation.findMany({
                     where: { 
                         candidateId,
