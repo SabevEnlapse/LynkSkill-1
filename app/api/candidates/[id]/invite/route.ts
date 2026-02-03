@@ -67,7 +67,7 @@ export async function POST(
                 type: "INTERVIEW_SCHEDULED",
                 title: `Interview invitation from ${company.name}`,
                 message: `You've been invited for a ${duration}-minute ${type} interview for "${positionTitle || "a position"}" on ${formattedDate}. ${notes ? `Notes: ${notes}` : ''}`,
-                link: "/dashboard/student?tab=interviews"
+                link: "/dashboard/student/interviews"
             }
         })
 

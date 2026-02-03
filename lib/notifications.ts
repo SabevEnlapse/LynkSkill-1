@@ -55,7 +55,7 @@ export async function notifyApplicationStatusChange(
         message: isApproved 
             ? `Congratulations! Your application for "${internshipTitle}" at ${companyName} has been approved.`
             : `Your application for "${internshipTitle}" at ${companyName} was not selected. Keep applying!`,
-        link: "/dashboard/student?tab=applications"
+        link: "/dashboard/student/internships/applied"
     })
 }
 
@@ -72,7 +72,7 @@ export async function notifyNewApplication(
         type: "APPLICATION_SUBMITTED",
         title: "New Application Received",
         message: `${studentName} has applied for "${internshipTitle}"`,
-        link: "/dashboard/company?tab=applications"
+        link: "/dashboard/company/applications"
     })
 }
 
@@ -96,7 +96,7 @@ export async function notifyNewAssignment(
         type: "NEW_ASSIGNMENT",
         title: "New Assignment",
         message: `${companyName} has assigned you "${assignmentTitle}". Due: ${formattedDate}`,
-        link: "/dashboard/student?tab=experience"
+        link: "/dashboard/student/experience"
     })
 }
 
@@ -113,7 +113,7 @@ export async function notifyAssignmentSubmitted(
         type: "ASSIGNMENT_SUBMITTED",
         title: "Assignment Submitted",
         message: `${studentName} has submitted "${assignmentTitle}"`,
-        link: "/dashboard/company?tab=experience"
+        link: "/dashboard/company/experience"
     })
 }
 
@@ -130,7 +130,7 @@ export async function notifyExperienceGraded(
         type: "EXPERIENCE_GRADED",
         title: "Experience Graded",
         message: `${companyName} has graded your experience: ${grade}/10`,
-        link: "/dashboard/student?tab=experience"
+        link: "/dashboard/student/experience"
     })
 }
 
@@ -148,6 +148,54 @@ export async function notifyInternshipDeadline(
         type: "INTERNSHIP_DEADLINE",
         title: "Application Deadline Approaching",
         message: `Only ${daysRemaining} day${daysRemaining > 1 ? "s" : ""} left to apply for "${internshipTitle}" at ${companyName}`,
-        link: "/dashboard/student?tab=home"
+        link: "/dashboard/student/internships"
     })
+}
+/**
+ * Creates notification when a user is invited to join a company team
+ */
+export async function notifyTeamInvitation(
+    userId: string,
+    companyName: string,
+    role: string,
+    token: string
+) {
+    const roleDisplayName = getRoleDisplayName(role)
+    return createNotification({
+        userId,
+        type: "TEAM_INVITATION",
+        title: "Company Team Invitation",
+        message: `You've been invited to join ${companyName} as ${roleDisplayName}`,
+        link: `/dashboard/company/invitations?token=${token}`
+    })
+}
+
+/**
+ * Creates notification when a team invitation is accepted
+ */
+export async function notifyTeamInvitationAccepted(
+    inviterId: string,
+    memberName: string
+) {
+    return createNotification({
+        userId: inviterId,
+        type: "TEAM_INVITATION_ACCEPTED",
+        title: "Invitation Accepted",
+        message: `${memberName} has joined your team`,
+        link: "/dashboard/company/team"
+    })
+}
+
+/**
+ * Gets the human-readable role display name
+ */
+function getRoleDisplayName(role: string): string {
+    const roleMap: Record<string, string> = {
+        OWNER: "Owner",
+        ADMIN: "Administrator",
+        HR_MANAGER: "HR Manager",
+        HR_RECRUITER: "HR Recruiter",
+        VIEWER: "Viewer",
+    }
+    return roleMap[role] || role
 }

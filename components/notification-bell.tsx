@@ -116,6 +116,10 @@ export function NotificationBell() {
                 return "⭐"
             case "INTERNSHIP_DEADLINE":
                 return "⏰"
+            case "TEAM_INVITATION":
+                return "👥"
+            case "TEAM_INVITATION_ACCEPTED":
+                return "🤝"
             default:
                 return "🔔"
         }

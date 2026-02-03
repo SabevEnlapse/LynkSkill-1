@@ -246,7 +246,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 /**
  * DELETE /api/company/members/[memberId]
- * Remove a member from the company
+ * Remove a member from the company or cancel a pending invitation
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
@@ -270,7 +270,32 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const companyId = requester.companyMembership.companyId
 
-    // Get the target member
+    // First, check if this is a pending invitation
+    const pendingInvitation = await prisma.companyInvitation.findFirst({
+      where: {
+        id: memberId,
+        companyId,
+        acceptedAt: null,
+      },
+    })
+
+    if (pendingInvitation) {
+      // This is a pending invitation - cancel it
+      const hasInvitePermission = await checkPermissionByClerkId(clerkId, companyId, Permission.INVITE_MEMBERS)
+      if (!hasInvitePermission) {
+        return NextResponse.json({ error: "You don't have permission to cancel invitations" }, { status: 403 })
+      }
+
+      await prisma.companyInvitation.delete({
+        where: { id: pendingInvitation.id },
+      })
+
+      return NextResponse.json({
+        message: "Invitation cancelled successfully",
+      })
+    }
+
+    // Get the target member (active member)
     const targetMember = await prisma.companyMember.findFirst({
       where: {
         id: memberId,

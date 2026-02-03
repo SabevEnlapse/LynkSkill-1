@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
                 type: "INTERVIEW_SCHEDULED",
                 title: "Interview Scheduled",
                 message: `An interview has been scheduled for your application`,
-                link: `/dashboard/student?tab=interviews`
+                link: `/dashboard/student/interviews`
             }
         })
 

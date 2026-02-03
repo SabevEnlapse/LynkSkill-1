@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { checkPermissionByClerkId } from "@/lib/permissions"
 import { Permission, DefaultCompanyRole, MemberStatus } from "@prisma/client"
 import crypto from "crypto"
+import { sendInvitationEmail } from "@/lib/email"
 
 export const runtime = "nodejs"
 
@@ -75,7 +76,7 @@ export async function GET() {
       return NextResponse.json({ error: "Not a member of any company" }, { status: 404 })
     }
 
-    // Get all members of the company
+    // Get all active members of the company
     const members = await prisma.companyMember.findMany({
       where: { companyId },
       include: {
@@ -97,7 +98,37 @@ export async function GET() {
       ],
     })
 
-    // Format response
+    // Get pending invitations
+    const pendingInvitations = await prisma.companyInvitation.findMany({
+      where: {
+        companyId,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      include: {
+        invitedBy: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    })
+
+    // Fetch custom roles for invitations that have customRoleId
+    const customRoleIds = pendingInvitations
+      .map(inv => inv.customRoleId)
+      .filter((id): id is string => id !== null)
+    
+    const customRoles = customRoleIds.length > 0 
+      ? await prisma.companyCustomRole.findMany({
+          where: { id: { in: customRoleIds } },
+        })
+      : []
+    
+    const customRoleMap = new Map(customRoles.map(r => [r.id, r]))
+
+    // Format active members
     const formattedMembers = members.map(member => ({
       id: member.id,
       userId: member.userId,
@@ -118,8 +149,32 @@ export async function GET() {
       } : null,
     }))
 
+    // Format pending invitations as members with PENDING status
+    const formattedInvitations = pendingInvitations.map(invitation => {
+      const customRole = invitation.customRoleId ? customRoleMap.get(invitation.customRoleId) : null
+      return {
+        id: invitation.id,
+        userId: "",
+        name: invitation.email,
+        email: invitation.email,
+        defaultRole: invitation.role,
+        customRole: customRole ? {
+          id: customRole.id,
+          name: customRole.name,
+          color: customRole.color,
+        } : null,
+        extraPermissions: [],
+        status: "PENDING",
+        invitedAt: invitation.createdAt,
+        joinedAt: null,
+        invitedBy: invitation.invitedBy ? {
+          name: invitation.invitedBy.profile?.name || invitation.invitedBy.email,
+        } : null,
+      }
+    })
+
     return NextResponse.json({
-      members: formattedMembers,
+      members: [...formattedMembers, ...formattedInvitations],
       companyId,
     })
   } catch (error) {
@@ -252,15 +307,25 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // TODO: Send email invitation using your email service
-    // await sendInvitationEmail({
-    //   to: email,
-    //   companyName: invitation.company.name,
-    //   inviterName: inviter.profile?.name || inviter.email,
-    //   role: selectedRole || DefaultCompanyRole.VIEWER,
-    //   token,
-    //   expiresAt,
-    // })
+    // Get inviter profile for email
+    const inviterProfile = await prisma.profile.findUnique({
+      where: { userId: inviter.id },
+    })
+
+    // Send invitation email
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      companyName: invitation.company.name,
+      inviterName: inviterProfile?.name || inviter.email,
+      role: selectedRole || DefaultCompanyRole.VIEWER,
+      token,
+      expiresAt,
+    })
+
+    if (!emailResult.success) {
+      console.error("Failed to send invitation email, but invitation was created:", emailResult.error)
+      // Don't fail the request - invitation is created, email just didn't send
+    }
 
     return NextResponse.json({
       message: "Invitation sent successfully",

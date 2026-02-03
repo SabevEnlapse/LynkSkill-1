@@ -49,7 +49,7 @@ export async function POST(
                 type: "NEW_MESSAGE",
                 title: subject || `Message from ${company.name}`,
                 message: message.substring(0, 200) + (message.length > 200 ? "..." : ""),
-                link: "/dashboard/student?tab=messages"
+                link: "/dashboard/student/messages"
             }
         })
 

@@ -58,6 +58,30 @@ export function PendingInvitations({
 }: PendingInvitationsProps) {
   const [cancelMember, setCancelMember] = React.useState<Member | null>(null)
   const [loading, setLoading] = React.useState(false)
+  const [resendingId, setResendingId] = React.useState<string | null>(null)
+
+  const handleResendInvitation = async (memberId: string, email: string) => {
+    setResendingId(memberId)
+    try {
+      const res = await fetch(`/api/company/members/${memberId}/resend`, {
+        method: "POST",
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to resend invitation")
+      }
+
+      toast.success("Invitation resent!", {
+        description: `A new invitation email has been sent to ${email}`,
+      })
+      onUpdate()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend invitation")
+    } finally {
+      setResendingId(null)
+    }
+  }
 
   const handleCancelInvitation = async () => {
     if (!cancelMember) return
@@ -145,12 +169,14 @@ export function PendingInvitations({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      // TODO: Implement resend invitation
-                      toast.info("Resend functionality coming soon")
-                    }}
+                    onClick={() => handleResendInvitation(member.id, member.email)}
+                    disabled={resendingId === member.id}
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    {resendingId === member.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
                     Resend
                   </Button>
 
