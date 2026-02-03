@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { addMonths } from "date-fns"
+import { Permission } from "@prisma/client"
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions"
 
 // Zod schema for updating interview
 const updateInterviewSchema = z.object({
@@ -83,11 +85,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         }
 
         const { id } = await params
+        
+        // First get the user to determine if they're a student
         const user = await prisma.user.findUnique({
             where: { clerkId },
-            include: {
-                companies: { select: { id: true } }
-            }
+            select: { id: true, role: true }
         })
 
         if (!user) {
@@ -116,11 +118,24 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Interview not found" }, { status: 404 })
         }
 
-        // Check authorization
+        // Check authorization - student or company member with permission
         const isStudent = interview.application.student.id === user.id
-        const isCompany = user.companies.some(c => c.id === interview.application.internship.companyId)
+        let isCompanyMember = false
+        let hasInterviewPermission = false
 
-        if (!isStudent && !isCompany) {
+        if (!isStudent) {
+            const membership = await getUserCompanyByClerkId(clerkId)
+            if (membership && membership.companyId === interview.application.internship.companyId) {
+                isCompanyMember = true
+                hasInterviewPermission = await checkPermission(
+                    membership.userId,
+                    membership.companyId,
+                    Permission.SCHEDULE_INTERVIEWS
+                )
+            }
+        }
+
+        if (!isStudent && !isCompanyMember) {
             return NextResponse.json({ error: "Not authorized to modify this interview" }, { status: 403 })
         }
 
@@ -141,11 +156,16 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Students can only confirm or request reschedule" }, { status: 403 })
         }
 
+        // Company members need permission to modify interviews
+        if (isCompanyMember && !hasInterviewPermission) {
+            return NextResponse.json({ error: "You don't have permission to modify interviews" }, { status: 403 })
+        }
+
         const updateData: Record<string, unknown> = {}
 
         if (status) updateData.status = status
-        if (scheduledAt && isCompany) updateData.scheduledAt = new Date(scheduledAt)
-        if (location !== undefined && isCompany) updateData.location = location
+        if (scheduledAt && isCompanyMember) updateData.scheduledAt = new Date(scheduledAt)
+        if (location !== undefined && isCompanyMember) updateData.location = location
         if (notes !== undefined) updateData.notes = notes
 
         const updatedInterview = await prisma.interview.update({
@@ -223,15 +243,20 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         }
 
         const { id } = await params
-        const user = await prisma.user.findUnique({
-            where: { clerkId },
-            include: {
-                companies: { select: { id: true } }
-            }
-        })
 
-        if (!user || user.role !== "COMPANY") {
-            return NextResponse.json({ error: "Only companies can delete interviews" }, { status: 403 })
+        // Get membership and check permissions
+        const membership = await getUserCompanyByClerkId(clerkId)
+        if (!membership) {
+            return NextResponse.json({ error: "Only company members can delete interviews" }, { status: 403 })
+        }
+
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.SCHEDULE_INTERVIEWS
+        )
+        if (!hasPermission) {
+            return NextResponse.json({ error: "You don't have permission to delete interviews" }, { status: 403 })
         }
 
         const interview = await prisma.interview.findUnique({
@@ -250,8 +275,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Interview not found" }, { status: 404 })
         }
 
-        const companyIds = user.companies.map(c => c.id)
-        if (!companyIds.includes(interview.application.internship.companyId)) {
+        if (interview.application.internship.companyId !== membership.companyId) {
             return NextResponse.json({ error: "Not authorized to delete this interview" }, { status: 403 })
         }
 

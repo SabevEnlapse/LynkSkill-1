@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { cache } from "react"
+import { getUserCompanyByClerkId } from "@/lib/permissions"
 
 // ============ Types ============
 export interface DashboardInitialData {
@@ -109,10 +110,10 @@ export const getUser = cache(async () => {
     return user
 })
 
-// Fetch company data
-export const getCompanyData = cache(async (ownerId: string) => {
-    const company = await prisma.company.findFirst({
-        where: { ownerId },
+// Fetch company data by company ID
+export const getCompanyData = cache(async (companyId: string) => {
+    const company = await prisma.company.findUnique({
+        where: { id: companyId },
         select: { id: true, name: true, logo: true }
     })
     return company
@@ -302,17 +303,19 @@ export async function getDashboardData(userType: "Student" | "Company"): Promise
         }
     }
 
-    const companyIds = user.companies?.map((c: { id: string }) => c.id) || []
+    // For company users, use membership-based access
+    if (userType === "Company") {
+        const membership = await getUserCompanyByClerkId(user.clerkId)
+        const companyId = membership?.companyId
 
-    // Parallel fetching for maximum speed
-    if (userType === "Company" && companyIds.length > 0) {
-        const [company, internships, applications, projects, recentExperiences] = await Promise.all([
-            getCompanyData(user.id),
-            getCompanyInternships(companyIds[0]),
-            getCompanyApplications(companyIds[0]),
-            getProjects(user.id, "COMPANY"),
-            getRecentExperiences(user.id, "COMPANY", companyIds)
-        ])
+        if (companyId) {
+            const [company, internships, applications, projects, recentExperiences] = await Promise.all([
+                getCompanyData(companyId),
+                getCompanyInternships(companyId),
+                getCompanyApplications(companyId),
+                getProjects(user.id, "COMPANY"),
+                getRecentExperiences(user.id, "COMPANY", [companyId])
+            ])
 
         return {
             user: {
@@ -334,6 +337,7 @@ export async function getDashboardData(userType: "Student" | "Company"): Promise
             })),
             projects,
             recentExperiences
+        }
         }
     }
 

@@ -1,31 +1,31 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { Permission } from "@prisma/client"
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions"
 
 export async function GET() {
     try {
-        const { userId } = await auth()
-        if (!userId)
+        const { userId: clerkId } = await auth()
+        if (!clerkId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        // 1) Get company user
-        const companyUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { id: true },
-        })
-        if (!companyUser)
-            return NextResponse.json({ error: "Company user not found" }, { status: 404 })
+        // Get membership and check permissions
+        const membership = await getUserCompanyByClerkId(clerkId)
+        if (!membership)
+            return NextResponse.json({ error: "Company membership not found" }, { status: 404 })
 
-        const company = await prisma.company.findFirst({
-            where: { ownerId: companyUser.id },
-            select: { id: true },
-        })
-        if (!company)
-            return NextResponse.json({ error: "Company not found" }, { status: 404 })
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.CREATE_ASSIGNMENTS
+        )
+        if (!hasPermission)
+            return NextResponse.json({ error: "You don't have permission to view assignments" }, { status: 403 })
 
-        // 2) Fetch internships + grouped assignments
+        // Fetch internships + grouped assignments for this company
         const internships = await prisma.internship.findMany({
-            where: { companyId: company.id },
+            where: { companyId: membership.companyId },
             select: {
                 id: true,
                 title: true,

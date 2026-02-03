@@ -1,9 +1,11 @@
+"use client"
 
+import { ErrorBoundary } from "@/components/error-boundary"
 
-export default function OnboardingLayout({children}: { children: React.ReactNode }) {
+export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
     return (
-        <>
-                {children}
-        </>
+        <ErrorBoundary>
+            {children}
+        </ErrorBoundary>
     )
 }

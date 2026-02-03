@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { addMonths, addDays, startOfDay } from "date-fns"
+import { Permission } from "@prisma/client"
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions"
 
 // Zod schema for interview scheduling with practical date validation
 const scheduleInterviewSchema = z.object({
@@ -38,9 +40,7 @@ export async function GET(req: NextRequest) {
 
         const user = await prisma.user.findUnique({
             where: { clerkId },
-            include: {
-                companies: { select: { id: true } }
-            }
+            select: { id: true, role: true }
         })
 
         if (!user) {
@@ -61,12 +61,15 @@ export async function GET(req: NextRequest) {
                 }
             }
         } else {
-            // Get interviews for company's internships
-            const companyIds = user.companies.map(c => c.id)
+            // Get interviews for company's internships using membership
+            const membership = await getUserCompanyByClerkId(clerkId)
+            if (!membership) {
+                return NextResponse.json({ error: "Company membership not found" }, { status: 404 })
+            }
             whereClause = {
                 application: {
                     internship: {
-                        companyId: { in: companyIds }
+                        companyId: membership.companyId
                     }
                 }
             }
@@ -123,15 +126,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        const user = await prisma.user.findUnique({
-            where: { clerkId },
-            include: {
-                companies: { select: { id: true } }
-            }
-        })
+        // Get membership and check permissions
+        const membership = await getUserCompanyByClerkId(clerkId)
+        if (!membership) {
+            return NextResponse.json({ error: "Company membership not found" }, { status: 404 })
+        }
 
-        if (!user || user.role !== "COMPANY") {
-            return NextResponse.json({ error: "Only companies can schedule interviews" }, { status: 403 })
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.SCHEDULE_INTERVIEWS
+        )
+        if (!hasPermission) {
+            return NextResponse.json({ error: "You don't have permission to schedule interviews" }, { status: 403 })
         }
 
         const body = await req.json()
@@ -146,7 +153,7 @@ export async function POST(req: NextRequest) {
 
         const { applicationId, scheduledAt, location, notes } = validation.data
 
-        // Verify the application belongs to one of the user's companies
+        // Verify the application belongs to the user's company
         const application = await prisma.application.findUnique({
             where: { id: applicationId },
             include: {
@@ -163,8 +170,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Application not found" }, { status: 404 })
         }
 
-        const companyIds = user.companies.map(c => c.id)
-        if (!companyIds.includes(application.internship.companyId)) {
+        if (application.internship.companyId !== membership.companyId) {
             return NextResponse.json({ error: "You can only schedule interviews for your own company's applications" }, { status: 403 })
         }
 

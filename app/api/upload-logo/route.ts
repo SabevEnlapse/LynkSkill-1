@@ -4,13 +4,42 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp, rateLimitHeaders, RATE_LIMITS } from "@/lib/rate-limit";
+import { Permission } from "@prisma/client";
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions";
 
 // ✅ Ensure this is a route handler, not a Server Action
 export async function POST(req: Request) {
+    // Apply rate limiting
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(`upload-logo:${clientIp}`, RATE_LIMITS.sensitive);
+    
+    if (!rateLimit.success) {
+        return NextResponse.json(
+            { error: "Too many upload requests. Please try again later." },
+            { status: 429, headers: rateLimitHeaders(rateLimit) }
+        );
+    }
+
     try {
-        const { userId } = await auth();
-        if (!userId)
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const { userId: clerkId } = await auth();
+        if (!clerkId)
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: rateLimitHeaders(rateLimit) });
+
+        // Check membership and EDIT_COMPANY permission
+        const membership = await getUserCompanyByClerkId(clerkId);
+        if (!membership) {
+            return NextResponse.json({ error: "Company membership not found" }, { status: 404 });
+        }
+
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.EDIT_COMPANY
+        );
+        if (!hasPermission) {
+            return NextResponse.json({ error: "You don't have permission to update company logo" }, { status: 403 });
+        }
 
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
@@ -27,7 +56,7 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(await file.arrayBuffer());
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const filePath = `company/${userId}/${timestamp}-${safeName}`;
+        const filePath = `company/${clerkId}/${timestamp}-${safeName}`;
 
         // ✅ Initialize Supabase client (service key required)
         const supabase = createClient(
@@ -63,22 +92,14 @@ export async function POST(req: Request) {
                 { status: 500 }
             );
 
-        // ✅ Optional: update Prisma (if user has a company)
+        // ✅ Update company logo
         try {
-            const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-            if (user) {
-                const company = await prisma.company.findFirst({
-                    where: { ownerId: user.id },
-                });
-                if (company) {
-                    await prisma.company.update({
-                        where: { id: company.id },
-                        data: { logo: logoUrl },
-                    });
-                }
-            }
+            await prisma.company.update({
+                where: { id: membership.companyId },
+                data: { logo: logoUrl },
+            });
         } catch (dbErr) {
-            console.warn("Prisma update skipped:", dbErr);
+            console.warn("Prisma update failed:", dbErr);
         }
 
         return NextResponse.json({ success: true, logoUrl });

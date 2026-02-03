@@ -2,32 +2,34 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { Permission } from "@prisma/client"
+import { getUserCompanyByClerkId, checkPermission } from "@/lib/permissions"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic" // Auth requires dynamic rendering
 
 export async function GET() {
     try {
-        const { userId } = await auth()
-        if (!userId)
+        const { userId: clerkId } = await auth()
+        if (!clerkId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        const companyUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { id: true },
-        })
-        if (!companyUser)
-            return NextResponse.json({ error: "Company user not found" }, { status: 404 })
-
-        const company = await prisma.company.findFirst({
-            where: { ownerId: companyUser.id },
-            select: { id: true },
-        })
-        if (!company)
+        // Get user's company membership
+        const membership = await getUserCompanyByClerkId(clerkId)
+        if (!membership)
             return NextResponse.json({ error: "Company not found" }, { status: 404 })
 
+        // Check VIEW_APPLICATIONS permission
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.VIEW_APPLICATIONS
+        )
+        if (!hasPermission)
+            return NextResponse.json({ error: "You don't have permission to view applications" }, { status: 403 })
+
         const applications = await prisma.application.findMany({
-            where: { internship: { companyId: company.id } },
+            where: { internship: { companyId: membership.companyId } },
             include: {
                 internship: {
                     include: {

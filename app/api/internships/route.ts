@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import { Permission } from "@prisma/client";
+import { getUserCompanyByClerkId, checkPermission } from "@/lib/permissions";
 
 // Prisma + Supabase pgBouncer optimisation
 export const runtime = "nodejs";
@@ -45,19 +47,24 @@ const internshipSchema = z.object({
 
 // ------------------- CREATE -------------------
 export async function POST(req: Request) {
-    const { userId } = await auth();
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    const { userId: clerkId } = await auth();
+    if (!clerkId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const user = await prisma.user.findUnique({
-        where: { clerkId: userId },
-        select: { id: true, role: true, companies: true }
-    });
+    // Get user's company membership
+    const membership = await getUserCompanyByClerkId(clerkId);
+    if (!membership) {
+        return new NextResponse("Company not found", { status: 404 });
+    }
 
-    if (!user || user.role !== "COMPANY")
-        return new NextResponse("Forbidden", { status: 403 });
-
-    const company = user.companies[0];
-    if (!company) return new NextResponse("Company not found", { status: 404 });
+    // Check CREATE_INTERNSHIP permission
+    const hasPermission = await checkPermission(
+        membership.userId,
+        membership.companyId,
+        Permission.CREATE_INTERNSHIPS
+    );
+    if (!hasPermission) {
+        return new NextResponse("You don't have permission to create internships", { status: 403 });
+    }
 
     const body = await req.json();
     const parsed = internshipSchema.safeParse(body);
@@ -79,7 +86,7 @@ export async function POST(req: Request) {
             qualifications: data.qualifications ?? null,
             paid: data.paid,
             salary: data.paid ? (data.salary ?? null) : null,
-            companyId: company.id,
+            companyId: membership.companyId,
             applicationStart: data.applicationStart,
             applicationEnd: data.applicationEnd,
             testAssignmentTitle: data.testAssignmentTitle ?? null,
@@ -150,10 +157,10 @@ export async function GET(req: NextRequest) {
 
         if (!internship) return new NextResponse("Not found", { status: 404 });
 
-        // Company → full info
+        // Company → full info (use membership-based access)
         if (user.role === "COMPANY") {
-            const company = user.companies[0];
-            if (!company || internship.companyId !== company.id)
+            const membership = await getUserCompanyByClerkId(userId);
+            if (!membership || internship.companyId !== membership.companyId)
                 return new NextResponse("Forbidden", { status: 403 });
 
             return NextResponse.json(internship);
@@ -171,7 +178,8 @@ export async function GET(req: NextRequest) {
     // ------------------- MULTIPLE INTERNSHIPS -------------------
 
     if (user.role === "COMPANY") {
-        const companyId = user.companies[0]?.id;
+        const membership = await getUserCompanyByClerkId(userId);
+        const companyId = membership?.companyId;
 
         const internships = await prisma.internship.findMany({
             where: { companyId },

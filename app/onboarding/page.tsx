@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
+import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { completeOnboarding } from "./_actions"
@@ -20,13 +22,22 @@ import {
     Globe,
     FileText,
     Calendar,
+    Loader2,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { StudentPolicyModal } from "@/components/student-policy-modal"
-import { CompanyPolicyModal } from "@/components/company-policy-modal"
 import { z } from "zod"
+
+// Dynamically import heavy modal components for better initial load performance
+const StudentPolicyModal = dynamic(
+    () => import("@/components/student-policy-modal").then((mod) => mod.StudentPolicyModal),
+    { loading: () => null }
+)
+const CompanyPolicyModal = dynamic(
+    () => import("@/components/company-policy-modal").then((mod) => mod.CompanyPolicyModal),
+    { loading: () => null }
+)
 
 const companySchema = z.object({
     companyEik: z
@@ -38,6 +49,22 @@ const companySchema = z.object({
     companyDescription: z.string().min(10, "Description too short"),
     companyLocation: z.string().min(2, "Location required"),
 })
+
+// Move static data outside component to prevent recreation on each render
+const ROLE_OPTIONS = [
+    {
+        value: "student" as const,
+        title: "Student",
+        description: "Access learning resources, track progress, and connect with peers",
+        icon: GraduationCap,
+    },
+    {
+        value: "company" as const,
+        title: "Company",
+        description: "Manage teams and post internships",
+        icon: Building2,
+    },
+] as const
 
 export default function OnboardingPage() {
     const { user, isLoaded } = useUser()
@@ -61,8 +88,55 @@ export default function OnboardingPage() {
     const [eik, setEik] = React.useState("")
     const [companyValid, setCompanyValid] = React.useState<boolean | null>(null)
     const [companyName, setCompanyName] = React.useState("")
+    const [companyDescription, setCompanyDescription] = React.useState("")
+    const [companyLocation, setCompanyLocation] = React.useState("")
     const [logoPreview, setLogoPreview] = React.useState<string | null>(null)
+    const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
     const [isUploadingLogo, setIsUploadingLogo] = React.useState(false)
+    const eikDebounceRef = React.useRef<NodeJS.Timeout | null>(null)
+
+    // Field-level validation errors
+    const [fieldErrors, setFieldErrors] = React.useState<{
+        companyName?: string
+        companyDescription?: string
+        companyLocation?: string
+        logoUrl?: string
+    }>({})
+
+    // Real-time field validation
+    const validateField = React.useCallback((field: string, value: string) => {
+        const newErrors = { ...fieldErrors }
+        
+        switch (field) {
+            case "companyName":
+                if (value.length > 0 && value.length < 2) {
+                    newErrors.companyName = "Company name must be at least 2 characters"
+                } else if (value.length > 100) {
+                    newErrors.companyName = "Company name is too long"
+                } else {
+                    delete newErrors.companyName
+                }
+                break
+            case "companyDescription":
+                if (value.length > 0 && value.length < 10) {
+                    newErrors.companyDescription = "Description must be at least 10 characters"
+                } else if (value.length > 2000) {
+                    newErrors.companyDescription = "Description is too long"
+                } else {
+                    delete newErrors.companyDescription
+                }
+                break
+            case "companyLocation":
+                if (value.length > 0 && value.length < 2) {
+                    newErrors.companyLocation = "Location must be at least 2 characters"
+                } else {
+                    delete newErrors.companyLocation
+                }
+                break
+        }
+        
+        setFieldErrors(newErrors)
+    }, [fieldErrors])
 
     const [dob, setDob] = React.useState("")
     const [ageValid, setAgeValid] = React.useState<boolean | null>(null)
@@ -70,24 +144,23 @@ export default function OnboardingPage() {
 
     React.useEffect(() => {
         if (!isLoaded || !user) return
-            ;(async () => {
-            try {
-                const res = await fetch("/api/get-role", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ clerkId: user.id }),
-                })
-                const data = await res.json()
-                if (data?.onboardingComplete) {
-                    // already finished onboarding: navigate to their dashboard
-                    const dest = data.role === "COMPANY" ? "/dashboard/company" : "/dashboard/student"
-                    router.replace(dest)
-                }
-            } catch (err) {
-                console.error(err)
-            }
-        })()
+        
+        // Use Clerk's publicMetadata instead of API call
+        const metadata = user.publicMetadata as { role?: string; onboardingComplete?: boolean } | undefined
+        if (metadata?.onboardingComplete) {
+            const dest = metadata.role === "COMPANY" ? "/dashboard/company" : "/dashboard/student"
+            router.replace(dest)
+        }
     }, [isLoaded, user, router])
+
+    // Cleanup ObjectURL on unmount or when logoPreview changes
+    React.useEffect(() => {
+        return () => {
+            if (logoPreview) {
+                URL.revokeObjectURL(logoPreview)
+            }
+        }
+    }, [logoPreview])
 
     const calculateAge = (birthDate: Date): number => {
         const diff = Date.now() - birthDate.getTime()
@@ -146,52 +219,65 @@ export default function OnboardingPage() {
         }
     }
 
-    const handleEikChange = async (value: string) => {
+    const handleEikChange = (value: string) => {
         setEik(value)
         setCompanyValid(null)
         setError("")
 
+        // Clear any pending debounce
+        if (eikDebounceRef.current) {
+            clearTimeout(eikDebounceRef.current)
+        }
+
         if (value.length < 9) return
 
-        try {
-            const res = await fetch(`/api/validate-eik?eik=${value}`, { cache: "no-store" })
-
-            // Read body once, as text
-            const raw = await res.text()
-
-            interface EikValidationResponse {
-                valid: boolean | "true" | "false"
-                error?: string
-            }
-            let data: EikValidationResponse | null = null
+        // Debounce the API call by 500ms
+        eikDebounceRef.current = setTimeout(async () => {
             try {
-                data = JSON.parse(raw)
-            } catch {
-                console.error("EIK API returned non-JSON response:", raw.slice(0, 200))
-                setCompanyValid(false)
-                setError("Server returned invalid response")
-                return
-            }
+                const res = await fetch(`/api/validate-eik?eik=${value}`, { cache: "no-store" })
 
-            console.log("EIK API Response:", { ok: res.ok, data })
+                // Read body once, as text
+                const raw = await res.text()
 
-            if (res.ok && data && (data.valid === true || data.valid === "true")) {
-                setCompanyValid(true)
-                setError("")
-            } else {
+                interface EikValidationResponse {
+                    valid: boolean | "true" | "false"
+                    error?: string
+                }
+                let data: EikValidationResponse | null = null
+                try {
+                    data = JSON.parse(raw)
+                } catch {
+                    console.error("EIK API returned non-JSON response:", raw.slice(0, 200))
+                    setCompanyValid(false)
+                    setError("Server returned invalid response")
+                    return
+                }
+
+                console.log("EIK API Response:", { ok: res.ok, data })
+
+                if (res.ok && data && (data.valid === true || data.valid === "true")) {
+                    setCompanyValid(true)
+                    setError("")
+                } else {
+                    setCompanyValid(false)
+                    setError(data?.error || "EIK not found")
+                }
+            } catch (err) {
+                console.error("EIK validation error:", err)
                 setCompanyValid(false)
-                setError(data?.error || "EIK not found")
+                setError("Unexpected error")
             }
-        } catch (err) {
-            console.error("EIK validation error:", err)
-            setCompanyValid(false)
-            setError("Unexpected error")
-        }
+        }, 500)
     }
 
     const handleLogoUpload = async (file: File) => {
         setIsUploadingLogo(true)
         setError("")
+
+        // Revoke previous preview URL to prevent memory leak
+        if (logoPreview) {
+            URL.revokeObjectURL(logoPreview)
+        }
 
         try {
             const previewUrl = URL.createObjectURL(file)
@@ -219,16 +305,14 @@ export default function OnboardingPage() {
                 throw new Error(data.error || "Failed to upload logo")
             }
 
-            const uploadedUrl = data.logoUrl
-
-            const input = document.querySelector<HTMLInputElement>('[name="companyLogoHidden"]')
-            if (input) input.value = uploadedUrl
-
-            console.log("✅ Logo uploaded successfully:", uploadedUrl)
+            // Store logo URL in state instead of DOM
+            setLogoUrl(data.logoUrl)
+            console.log("✅ Logo uploaded successfully:", data.logoUrl)
         } catch (error) {
             console.error("Logo upload failed:", error)
             setError(error instanceof Error ? error.message : "Logo upload failed. Please try again.")
             setLogoPreview(null)
+            setLogoUrl(null)
         } finally {
             setIsUploadingLogo(false)
         }
@@ -309,11 +393,12 @@ export default function OnboardingPage() {
 
         if (selectedRole !== "company") return
 
+        // Use controlled state values instead of DOM queries
         const result = companySchema.safeParse({
             companyEik: eik,
             companyName,
-            companyDescription: document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value,
-            companyLocation: document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value,
+            companyDescription,
+            companyLocation,
         })
 
         if (!result.success) {
@@ -331,14 +416,11 @@ export default function OnboardingPage() {
             formData.append("role", "company")
             formData.append("companyEik", eik)
             formData.append("companyName", companyName)
-            formData.append(
-                "companyDescription",
-                document.querySelector<HTMLTextAreaElement>('[name="companyDescription"]')?.value || "",
-            )
-            formData.append(
-                "companyLocation",
-                document.querySelector<HTMLInputElement>('[name="companyLocation"]')?.value || "",
-            )
+            formData.append("companyDescription", companyDescription)
+            formData.append("companyLocation", companyLocation)
+            if (logoUrl) {
+                formData.append("companyLogoHidden", logoUrl)
+            }
 
             const res = await completeOnboarding(formData)
 
@@ -371,16 +453,23 @@ export default function OnboardingPage() {
                 }),
             })
 
+            let data: { error?: string } | null = null
+            try {
+                data = await res.json()
+            } catch {
+                console.warn("⚠️ API returned non-JSON or empty response")
+            }
+
             if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.error || "Failed to accept policies")
+                const msg = data?.error || `Request failed with status ${res.status}`
+                throw new Error(msg)
             }
 
             setPolicyAccepted(true)
             setShowPolicyModal(false)
         } catch (err) {
-            console.error(err)
-            setError("Failed to accept policies")
+            console.error("❌ handleAcceptPolicies error:", err)
+            setError(err instanceof Error ? err.message : "Failed to accept policies")
         }
     }
 
@@ -437,62 +526,129 @@ export default function OnboardingPage() {
     const progressStep = getProgressStep()
     const totalSteps = selectedRole === "student" ? 3 : selectedRole === "company" ? 3 : 2
 
-    const roles = [
-        {
-            value: "student",
-            title: "Student",
-            description: "Access learning resources, track progress, and connect with peers",
-            icon: GraduationCap,
-        },
-        {
-            value: "company",
-            title: "Company",
-            description: "Manage teams and post internships",
-            icon: Building2,
-        },
-    ]
+    // Show loading state while Clerk is loading
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
+                {/* Animated background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+                </div>
+
+                <div className="relative flex flex-col items-center gap-8 max-w-md text-center px-6">
+                    {/* Animated logo */}
+                    <div className="relative">
+                        <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping" style={{ animationDuration: "2s" }} />
+                        <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 backdrop-blur-sm flex items-center justify-center border border-primary/30 shadow-xl shadow-primary/20">
+                            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                        </div>
+                        <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-primary animate-pulse" />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h2 className="text-3xl font-bold text-foreground">Preparing your journey</h2>
+                        <p className="text-muted-foreground text-balance leading-relaxed">
+                            Setting up your personalized onboarding experience...
+                        </p>
+                    </div>
+
+                    {/* Loading bar */}
+                    <div className="w-full max-w-xs">
+                        <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
+                            <div className="h-full w-2/3 bg-gradient-to-r from-primary to-purple-500 rounded-full animate-pulse" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
-        <div className="min-h-screen relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--experience-hero-gradient-from)] via-background to-[var(--experience-hero-gradient-to)] opacity-[0.03]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--experience-accent)_0%,transparent_50%)] opacity-[0.05]" />
+        <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background to-background">
+            {/* Background matching landing page style */}
+            <div className="absolute inset-0 overflow-hidden">
+                {/* Animated Grid */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+                
+                {/* Dynamic Gradient Overlay - purple/blue theme */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        background: `
+                            radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+                            radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%)
+                        `,
+                    }}
+                />
+            </div>
+            
+            {/* Floating dots - matching landing page */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {[...Array(12)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute w-1.5 h-1.5 bg-gradient-to-r from-purple-400/60 to-blue-400/60 rounded-full animate-pulse"
+                        style={{
+                            left: `${10 + (i * 8) % 80}%`,
+                            top: `${15 + (i * 7) % 70}%`,
+                            animationDelay: `${i * 0.4}s`,
+                            animationDuration: `${3 + i * 0.3}s`,
+                        }}
+                    />
+                ))}
+            </div>
+            
             <div className="relative z-10 p-6 md:p-8 lg:p-12">
-                <div className="max-w-5xl mx-auto mb-16 text-center space-y-6">
-                    <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--experience-accent)]/10 to-primary/10 border border-[var(--experience-accent)]/20 rounded-full mb-6 shadow-sm">
-                        <Sparkles className="w-4 h-4 text-[var(--experience-accent)]" />
-                        <span className="text-sm font-semibold text-[var(--experience-accent)]">Welcome aboard</span>
+                <div className="max-w-5xl mx-auto mb-12 text-center space-y-6">
+    
+                    
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-700">
+                        <Sparkles className="w-4 h-4 text-purple-400" />
+                        <span className="text-sm font-semibold bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+                            Let&apos;s get you started
+                        </span>
                     </div>
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground text-balance leading-[1.1] tracking-tight">
-                        Welcome to LynkSkill
-                    </h1>
-                    <p className="text-muted-foreground text-lg md:text-xl leading-relaxed max-w-2xl mx-auto text-pretty">
-                        Choose your role to get started and unlock your potential in our community
-                    </p>
+                    
+                    {/* Main heading with gradient */}
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '100ms' }}>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95]">
+                            <span className="block text-foreground">Welcome to</span>
+                            <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+                                LynkSkill
+                            </span>
+                        </h1>
+                        <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                            Choose your role to get started and unlock your potential in our community
+                        </p>
+                    </div>
 
                     {selectedRole && (
-                        <div className="flex items-center justify-center gap-3 pt-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                            {Array.from({ length: totalSteps }).map((_, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <div
-                                        className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold text-sm transition-all duration-500 ${
-                                            i < progressStep
-                                                ? "bg-[var(--experience-accent)] text-[var(--experience-accent-foreground)] shadow-lg shadow-[var(--experience-accent)]/30 scale-110"
-                                                : i === progressStep
-                                                    ? "bg-[var(--experience-accent)]/20 text-[var(--experience-accent)] ring-2 ring-[var(--experience-accent)]/50 scale-105"
-                                                    : "bg-muted text-muted-foreground"
-                                        }`}
-                                    >
-                                        {i < progressStep ? <CheckCircle className="w-5 h-5" /> : i + 1}
-                                    </div>
-                                    {i < totalSteps - 1 && (
+                        <div className="flex items-center justify-center gap-3 pt-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex items-center gap-3 px-5 py-3 bg-background/80 backdrop-blur-sm border border-border/50 rounded-full">
+                                {Array.from({ length: totalSteps }).map((_, i) => (
+                                    <div key={i} className="flex items-center gap-3">
                                         <div
-                                            className={`h-1 w-16 rounded-full transition-all duration-500 ${
-                                                i < progressStep ? "bg-[var(--experience-accent)]" : "bg-muted"
+                                            className={`flex items-center justify-center w-9 h-9 rounded-full font-semibold text-sm transition-all duration-500 ${
+                                                i < progressStep
+                                                    ? "bg-gradient-to-br from-purple-500 to-blue-500 text-white"
+                                                    : i === progressStep
+                                                        ? "bg-purple-500/20 text-purple-400 ring-2 ring-purple-500/40"
+                                                        : "bg-muted/50 text-muted-foreground"
                                             }`}
-                                        />
-                                    )}
-                                </div>
-                            ))}
+                                        >
+                                            {i < progressStep ? <CheckCircle className="w-5 h-5" /> : i + 1}
+                                        </div>
+                                        {i < totalSteps - 1 && (
+                                            <div className={`h-0.5 w-8 md:w-12 rounded-full transition-all duration-500 ${
+                                                i < progressStep ? "bg-gradient-to-r from-purple-500 to-blue-500" : "bg-muted/50"
+                                            }`} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -501,49 +657,57 @@ export default function OnboardingPage() {
                     <input type="hidden" name="role" value={selectedRole ?? ""} />
                     <input type="hidden" name="dob" value={dob} />
 
-                    <div className="space-y-4">
-                        <div className="text-center space-y-2 mb-8">
-                            <h2 className="text-2xl font-bold text-foreground">Select Your Role</h2>
-                            <p className="text-muted-foreground">Choose the option that best describes you</p>
+                    <div className="space-y-6">
+                        <div className="text-center space-y-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '300ms' }}>
+                            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Select Your Role</h2>
+                            <p className="text-muted-foreground text-lg">Choose the option that best describes you</p>
                         </div>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {roles.map((r) => {
+                        <div className="grid md:grid-cols-2 gap-8">
+                            {ROLE_OPTIONS.map((r, index) => {
                                 const Icon = r.icon
                                 const isSelected = selectedRole === r.value
                                 return (
                                     <Card
                                         key={r.value}
-                                        onClick={() => setSelectedRole(r.value as "student" | "company")}
-                                        className={`cursor-pointer transition-all duration-500 group relative overflow-hidden ${
+                                        onClick={() => setSelectedRole(r.value)}
+                                        className={`cursor-pointer transition-all duration-300 group relative overflow-hidden border animate-in fade-in slide-in-from-bottom-4 ${
                                             isSelected
-                                                ? "ring-2 ring-[var(--experience-accent)] shadow-2xl shadow-[var(--experience-accent)]/20 scale-[1.02]"
-                                                : "hover:ring-2 hover:ring-[var(--experience-accent)]/50 hover:shadow-xl hover:-translate-y-1"
+                                                ? "ring-2 ring-purple-500 shadow-lg border-purple-500/50 bg-gradient-to-br from-purple-500/5 to-blue-500/5"
+                                                : "hover:ring-1 hover:ring-purple-400/50 hover:shadow-md hover:-translate-y-1 border-border/50 bg-background/80"
                                         }`}
+                                        style={{ animationDelay: `${200 + index * 100}ms` }}
                                     >
-                                        <div
-                                            className={`absolute inset-0 bg-gradient-to-br from-[var(--experience-card-hover-from)] to-[var(--experience-card-hover-to)] opacity-0 transition-opacity duration-500 ${isSelected ? "opacity-5" : "group-hover:opacity-5"}`}
-                                        />
-
-                                        <CardHeader className="space-y-5 relative z-10">
+                                        <CardHeader className="space-y-5 relative z-10 p-6">
                                             <div className="flex justify-between items-start">
                                                 <div
-                                                    className={`p-5 rounded-2xl transition-all duration-500 ${
+                                                    className={`p-4 rounded-xl transition-all duration-300 ${
                                                         isSelected
-                                                            ? "bg-gradient-to-br from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] text-[var(--experience-accent-foreground)] shadow-xl shadow-[var(--experience-accent)]/40 scale-110"
-                                                            : "bg-[var(--experience-step-background)] group-hover:bg-[var(--experience-accent)]/10 group-hover:scale-105"
+                                                            ? "bg-gradient-to-br from-purple-500 to-blue-500 text-white"
+                                                            : "bg-muted/50 group-hover:bg-purple-500/10"
                                                     }`}
                                                 >
                                                     <Icon className="w-8 h-8" />
                                                 </div>
                                                 {isSelected && (
-                                                    <Badge className="bg-[var(--experience-accent)] text-[var(--experience-accent-foreground)] shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 px-3 py-1">
+                                                        <CheckCircle className="w-3.5 h-3.5 mr-1" />
                                                         Selected
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <div className="space-y-3">
-                                                <CardTitle className="text-3xl font-bold">{r.title}</CardTitle>
-                                                <CardDescription className="leading-relaxed text-base">{r.description}</CardDescription>
+                                            <div className="space-y-2">
+                                                <CardTitle className={`text-2xl font-bold transition-colors duration-300 ${isSelected ? "bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent" : ""}`}>
+                                                    {r.title}
+                                                </CardTitle>
+                                                <CardDescription className="leading-relaxed text-sm text-muted-foreground">
+                                                    {r.description}
+                                                </CardDescription>
+                                            </div>
+                                            
+                                            {/* Arrow indicator */}
+                                            <div className={`flex items-center gap-2 text-sm font-medium transition-all duration-300 ${isSelected ? "text-purple-400 translate-x-1" : "text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1"}`}>
+                                                <span>Get started</span>
+                                                <ArrowRight className="w-4 h-4" />
                                             </div>
                                         </CardHeader>
                                     </Card>
@@ -553,33 +717,37 @@ export default function OnboardingPage() {
                     </div>
 
                     {selectedRole === "student" && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                            <div className="text-center space-y-2 mb-8">
-                                <h2 className="text-2xl font-bold text-foreground">Student Information</h2>
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <div className="text-center space-y-3 mb-10">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
+                                    <GraduationCap className="w-4 h-4 text-purple-400" />
+                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Step 2 of 3</span>
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Student Information</h2>
                                 <p className="text-muted-foreground">Provide your details to create your portfolio</p>
                             </div>
 
-                            <Card className="shadow-2xl border-2 border-[var(--experience-step-border)] overflow-hidden">
-                                <CardHeader className="space-y-2 border-b border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-step-background)] to-transparent py-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-gradient-to-br from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] rounded-xl shadow-lg">
-                                            <GraduationCap className="w-6 h-6 text-[var(--experience-accent-foreground)]" />
+                            <Card className="border border-border/50 overflow-hidden bg-background/80">
+                                <CardHeader className="space-y-2 border-b border-border/50 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-transparent py-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                                            <GraduationCap className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-2xl">Personal Details</CardTitle>
-                                            <CardDescription className="text-base">
-                                                All fields marked with <span className="text-purple-500"> * </span> are required
+                                            <CardTitle className="text-xl">Personal Details</CardTitle>
+                                            <CardDescription>
+                                                All fields marked with <span className="text-purple-400 font-semibold"> * </span> are required
                                             </CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="space-y-8 pt-8 pb-8">
-                                    <div className="space-y-4">
+                                <CardContent className="space-y-6 pt-6 pb-6">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="dob" className="text-lg font-bold flex items-center gap-2">
-                                                Date of Birth <span className="text-[var(--experience-error)]">*</span>
+                                            <Calendar className="w-5 h-5 text-purple-400" />
+                                            <Label htmlFor="dob" className="font-semibold flex items-center gap-2">
+                                                Date of Birth <span className="text-destructive">*</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -590,31 +758,26 @@ export default function OnboardingPage() {
                                             required
                                             min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split("T")[0]}
                                             max={new Date().toISOString().split("T")[0]}
-                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                            className="h-12 border focus:border-purple-500 focus:ring-purple-500/20 transition-all"
                                         />
                                         {ageValid === true && calculatedAge !== null && (
-                                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--experience-success)]/10 to-green-50 dark:to-green-950/20 border-2 border-[var(--experience-success)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
-                                                <div className="p-2 bg-[var(--experience-success)]/20 rounded-full">
-                                                    <CheckCircle className="w-6 h-6 text-[var(--experience-success)] flex-shrink-0" />
-                                                </div>
+                                            <div className="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                                                <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                                                 <div>
-                                                    <p className="text-sm font-bold text-[var(--experience-success)]">
+                                                    <p className="text-sm font-semibold text-emerald-500">
                                                         Age Verified: {calculatedAge} years old
-                                                    </p>
-                                                    <p className="text-xs text-[var(--experience-success)]/80">
-                                                        You meet the minimum age requirement
                                                     </p>
                                                 </div>
                                             </div>
                                         )}
                                         {ageValid === false && (
-                                            <div className="flex items-center gap-3 p-4 bg-[var(--experience-error)]/10 border-2 border-[var(--experience-error)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
-                                                <div className="p-2 bg-[var(--experience-error)]/20 rounded-full">
-                                                    <XCircle className="w-6 h-6 text-[var(--experience-error)] flex-shrink-0" />
+                                            <div className="flex items-center gap-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                                                <div className="p-2 bg-destructive/20 rounded-full">
+                                                    <XCircle className="w-6 h-6 text-destructive flex-shrink-0" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-[var(--experience-error)]">Age Requirement Not Met</p>
-                                                    <p className="text-xs text-[var(--experience-error)]/80">
+                                                    <p className="text-sm font-bold text-red-400">Age Requirement Not Met</p>
+                                                    <p className="text-xs text-red-400/80">
                                                         According to Bulgarian law, you must be at least 16 years old to use this platform
                                                     </p>
                                                 </div>
@@ -625,29 +788,29 @@ export default function OnboardingPage() {
                                         </p>
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
                                     {!studentPolicyAccepted && (
                                         <Button
                                             type="button"
                                             onClick={handleStudentProceedClick}
                                             disabled={!ageValid}
-                                            className="w-full h-14 text-base font-semibold bg-gradient-to-r from-[var(--experience-button-secondary)] to-[var(--experience-button-secondary-hover)] hover:from-[var(--experience-button-secondary-hover)] hover:to-[var(--experience-button-secondary)] shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            variant="secondary"
+                                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
                                         >
                                             <Shield className="mr-2 w-5 h-5" />
                                             Proceed to Policy Agreement
+                                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     )}
 
                                     {studentPolicyAccepted && (
-                                        <div className="flex items-center gap-4 p-5 bg-gradient-to-br from-[var(--experience-success)]/10 via-green-50 to-emerald-50 dark:from-[var(--experience-success)]/20 dark:via-green-950/20 dark:to-emerald-950/20 border-2 border-[var(--experience-success)]/30 rounded-2xl shadow-lg animate-in fade-in zoom-in duration-500">
-                                            <div className="p-3 bg-gradient-to-br from-[var(--experience-success)] to-green-600 rounded-xl shadow-lg">
-                                                <CheckCircle className="w-7 h-7 text-white" />
+                                        <div className="flex items-center gap-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl animate-in fade-in zoom-in duration-500">
+                                            <div className="p-2.5 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg">
+                                                <CheckCircle className="w-5 h-5 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-base text-[var(--experience-success)] font-bold">Policy Accepted</p>
-                                                <p className="text-sm text-[var(--experience-success)]/80">
+                                                <p className="text-sm text-purple-400 font-semibold">Policy Accepted</p>
+                                                <p className="text-xs text-muted-foreground">
                                                     You&apos;re ready to complete your registration
                                                 </p>
                                             </div>
@@ -659,83 +822,88 @@ export default function OnboardingPage() {
                     )}
 
                     {selectedRole === "company" && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                            <div className="text-center space-y-2 mb-8">
-                                <h2 className="text-2xl font-bold text-foreground">Company Information</h2>
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <div className="text-center space-y-3 mb-8">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
+                                    <Building2 className="w-4 h-4 text-purple-400" />
+                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Step 2 of 3</span>
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Company Information</h2>
                                 <p className="text-muted-foreground">Provide your company details for verification</p>
                             </div>
 
-                            <Card className="shadow-2xl border-2 border-[var(--experience-step-border)] overflow-hidden">
-                                <CardHeader className="space-y-2 border-b border-[var(--experience-step-border)] bg-gradient-to-br from-[var(--experience-step-background)] to-transparent py-6">
+                            <Card className="border border-white/10 overflow-hidden bg-background/80 backdrop-blur-sm">
+                                <CardHeader className="space-y-2 border-b border-white/10 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-transparent py-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-gradient-to-br from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] rounded-xl shadow-lg">
-                                            <Building2 className="w-6 h-6 text-[var(--experience-accent-foreground)]" />
+                                        <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                                            <Building2 className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-2xl">Company Details</CardTitle>
-                                            <CardDescription className="text-base">
-                                                All fields marked with <span className={"text-purple-500"}> * </span> are required
+                                            <CardTitle className="text-xl">Company Details</CardTitle>
+                                            <CardDescription className="text-sm">
+                                                All fields marked with <span className="text-purple-400 font-semibold"> * </span> are required
                                             </CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="space-y-8 pt-8 pb-8">
-                                    <div className="space-y-4">
+                                <CardContent className="space-y-6 pt-6 pb-6">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Upload className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="companyLogo" className="text-lg font-bold flex items-center gap-2">
-                                                Company Logo <span className="text-[var(--experience-error)]">*</span>
+                                            <Upload className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyLogo" className="text-base font-semibold flex items-center gap-2">
+                                                Company Logo <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
-                                        <div className="flex flex-col md:flex-row items-start gap-6">
+                                        <div className="flex flex-col md:flex-row items-start gap-4">
                                             <div className="flex-1 w-full">
-                                                <div className="relative group">
-                                                    <div
-                                                        className={`border-2 border-dashed rounded-xl p-6 transition-all duration-300 ${
-                                                            isUploadingLogo
-                                                                ? "border-[var(--experience-accent)] bg-[var(--experience-accent)]/5"
-                                                                : "border-[var(--experience-step-border)] hover:border-[var(--experience-accent)]/50 hover:bg-[var(--experience-upload-zone-hover)]"
-                                                        }`}
-                                                    >
-                                                        <Input
-                                                            id="companyLogo"
-                                                            name="companyLogo"
-                                                            type="file"
-                                                            accept="image/*"
-                                                            required
-                                                            disabled={isUploadingLogo}
-                                                            onChange={(e) => {
-                                                                const file = e.target.files?.[0]
-                                                                if (file) handleLogoUpload(file)
-                                                            }}
-                                                            className="file:mr-4 5 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-[var(--experience-accent)] file:to-[var(--experience-button-primary-hover)] file:text-[var(--experience-accent-foreground)] file:font-semibold file:shadow-md hover:file:shadow-lg file:transition-all"
-                                                        />
-                                                    </div>
+                                                <div
+                                                    className={`border-2 border-dashed rounded-xl p-6 transition-all duration-300 bg-background/50 ${
+                                                        isUploadingLogo
+                                                            ? "border-purple-500 bg-purple-500/5"
+                                                            : "border-white/20 hover:border-purple-500/50 hover:bg-purple-500/5"
+                                                    }`}
+                                                >
+                                                    <Input
+                                                        id="companyLogo"
+                                                        name="companyLogo"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        required
+                                                        disabled={isUploadingLogo}
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0]
+                                                            if (file) handleLogoUpload(file)
+                                                        }}
+                                                        className="file:mr-4 file:px-4 file:py-1.5 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-purple-500 file:to-blue-500 file:text-white file:text-sm file:font-medium file:cursor-pointer"
+                                                    />
                                                 </div>
-                                                <input type="hidden" name="companyLogoHidden" />
                                                 {isUploadingLogo && (
-                                                    <div className="flex items-center gap-3 mt-4 p-3 bg-[var(--experience-accent)]/10 rounded-lg animate-pulse">
-                                                        <div className="w-5 h-5 border-3 border-[var(--experience-accent)]/30 border-t-[var(--experience-accent)] rounded-full animate-spin mr-3" />
-                                                        <span className="text-sm font-medium text-[var(--experience-accent)]">
-                              Uploading your logo...
-                            </span>
+                                                    <div className="flex items-center gap-2 mt-3 p-2 bg-purple-500/10 rounded-lg animate-pulse">
+                                                        <div className="w-4 h-4 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                                                        <span className="text-sm text-purple-400">
+                                                            Uploading your logo...
+                                                        </span>
                                                     </div>
                                                 )}
-                                                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                                                <p className="text-sm text-muted-foreground mt-2">
                                                     Upload your company logo in PNG or JPG format (maximum 5MB)
                                                 </p>
                                             </div>
                                             {logoPreview && !isUploadingLogo && (
                                                 <div className="flex-shrink-0 animate-in fade-in zoom-in duration-500">
-                                                    <div className="relative p-4 bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)] rounded-2xl border-2 border-[var(--experience-accent)]/30 shadow-xl">
-                                                        <img
-                                                            src={logoPreview || "/placeholder.svg"}
-                                                            alt="Logo preview"
-                                                            className="h-24 w-24 object-contain rounded-xl"
-                                                        />
-                                                        <div className="absolute -top-3 -right-3 p-2 bg-gradient-to-br from-[var(--experience-success)] to-green-600 rounded-full shadow-lg">
-                                                            <CheckCircle className="w-5 h-5 text-white" />
+                                                    <div className="relative p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                                                        <div className="relative h-20 w-20 rounded-lg overflow-hidden">
+                                                            <Image
+                                                                src={logoPreview}
+                                                                alt="Logo preview"
+                                                                fill
+                                                                className="object-contain"
+                                                                unoptimized
+                                                            />
+                                                        </div>
+                                                        <div className="absolute -top-2 -right-2 p-1.5 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full">
+                                                            <CheckCircle className="w-4 h-4 text-white" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -743,13 +911,13 @@ export default function OnboardingPage() {
                                         </div>
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Shield className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="companyEik" className="text-lg font-bold flex items-center gap-2">
-                                                EIK (BULSTAT) <span className="text-[var(--experience-error)]">*</span>
+                                            <Shield className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyEik" className="text-base font-semibold flex items-center gap-2">
+                                                EIK (BULSTAT) <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -758,109 +926,175 @@ export default function OnboardingPage() {
                                             value={eik}
                                             onChange={(e) => handleEikChange(e.target.value)}
                                             required
-                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                            className="text-base h-12 border border-white/20 focus:border-purple-500 bg-background/50 transition-all duration-300 rounded-lg"
                                             placeholder="Enter your company EIK number"
                                         />
                                         {companyValid === true && (
-                                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--experience-success)]/10 to-green-50 dark:to-green-950/20 border-2 border-[var(--experience-success)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
-                                                <div className="p-2 bg-[var(--experience-success)]/20 rounded-full">
-                                                    <CheckCircle className="w-6 h-6 text-[var(--experience-success)] flex-shrink-0" />
-                                                </div>
+                                            <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg animate-in fade-in slide-in-from-top-3 duration-500">
+                                                <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
                                                 <div>
-                                                    <p className="text-sm font-bold text-[var(--experience-success)]">
+                                                    <p className="text-sm font-medium text-purple-400">
                                                         EIK Verified Successfully
                                                     </p>
-                                                    <p className="text-xs text-[var(--experience-success)]/80">Company found in the registry</p>
                                                 </div>
                                             </div>
                                         )}
                                         {companyValid === false && (
-                                            <div className="flex items-center gap-3 p-4 bg-[var(--experience-error)]/10 border-2 border-[var(--experience-error)]/30 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-3 duration-500">
-                                                <div className="p-2 bg-[var(--experience-error)]/20 rounded-full">
-                                                    <XCircle className="w-6 h-6 text-[var(--experience-error)] flex-shrink-0" />
-                                                </div>
+                                            <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-in fade-in slide-in-from-top-3 duration-500">
+                                                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                                                 <div>
-                                                    <p className="text-sm font-bold text-[var(--experience-error)]">EIK Not Found</p>
-                                                    <p className="text-xs text-[var(--experience-error)]/80">Please verify your EIK number</p>
+                                                    <p className="text-sm font-medium text-red-400">EIK Not Found</p>
                                                 </div>
                                             </div>
                                         )}
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                        <p className="text-sm text-muted-foreground">
                                             Enter your 9-13 digit Bulgarian company identification number
                                         </p>
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Building2 className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="companyName" className="text-lg font-bold flex items-center gap-2">
-                                                Company Name <span className="text-[var(--experience-error)]">*</span>
+                                            <Building2 className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyName" className="text-base font-semibold flex items-center gap-2">
+                                                Company Name <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Input
                                             id="companyName"
                                             name="companyName"
                                             value={companyName}
-                                            onChange={(e) => setCompanyName(e.target.value)}
+                                            onChange={(e) => {
+                                                setCompanyName(e.target.value)
+                                                validateField("companyName", e.target.value)
+                                            }}
                                             required
-                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                            className={`text-base h-12 border bg-background/50 transition-all duration-300 rounded-lg ${
+                                                fieldErrors.companyName 
+                                                    ? "border-red-500 focus:border-red-500" 
+                                                    : companyName.length >= 2 
+                                                        ? "border-purple-500 focus:border-purple-500" 
+                                                        : "border-white/20 focus:border-purple-500"
+                                            }`}
                                             placeholder="Enter your company's official name"
                                         />
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Provide your company&apos;s full legal name as registered
-                                        </p>
+                                        {fieldErrors.companyName ? (
+                                            <p className="text-sm text-red-400 flex items-center gap-1">
+                                                <XCircle className="w-4 h-4" />
+                                                {fieldErrors.companyName}
+                                            </p>
+                                        ) : companyName.length >= 2 ? (
+                                            <p className="text-sm text-purple-400 flex items-center gap-1">
+                                                <CheckCircle className="w-4 h-4" />
+                                                Company name looks good
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                Provide your company&apos;s full legal name as registered
+                                            </p>
+                                        )}
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <FileText className="w-5 h-5 text-[var(--experience-accent)]" />
-                                            <Label htmlFor="companyDescription" className="text-lg font-bold flex items-center gap-2">
-                                                Company Description <span className="text-[var(--experience-error)]">*</span>
+                                            <FileText className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyDescription" className="text-base font-semibold flex items-center gap-2">
+                                                Company Description <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Textarea
                                             id="companyDescription"
                                             name="companyDescription"
+                                            value={companyDescription}
+                                            onChange={(e) => {
+                                                setCompanyDescription(e.target.value)
+                                                validateField("companyDescription", e.target.value)
+                                            }}
                                             required
                                             placeholder="Tell us about your company, what you do, and what makes you unique..."
-                                            className="min-h-36 text-base resize-none border-2 focus:border-[var(--experience-accent)] transition-colors leading-relaxed"
+                                            className={`min-h-28 text-base resize-none border bg-background/50 transition-all duration-300 rounded-lg ${
+                                                fieldErrors.companyDescription 
+                                                    ? "border-red-500 focus:border-red-500" 
+                                                    : companyDescription.length >= 10 
+                                                        ? "border-purple-500 focus:border-purple-500" 
+                                                        : "border-white/20 focus:border-purple-500"
+                                            }`}
                                         />
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Minimum 10 characters - help others understand your business
-                                        </p>
+                                        <div className="flex items-center justify-between">
+                                            {fieldErrors.companyDescription ? (
+                                                <p className="text-sm text-red-400 flex items-center gap-1">
+                                                    <XCircle className="w-4 h-4" />
+                                                    {fieldErrors.companyDescription}
+                                                </p>
+                                            ) : companyDescription.length >= 10 ? (
+                                                <p className="text-sm text-purple-400 flex items-center gap-1">
+                                                    <CheckCircle className="w-4 h-4" />
+                                                    Description looks good
+                                                </p>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    Minimum 10 characters - help others understand your business
+                                                </p>
+                                            )}
+                                            <span className={`text-sm font-medium ${companyDescription.length >= 10 ? "text-purple-400" : "text-muted-foreground"}`}>
+                                                {companyDescription.length}/10 min
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-5 h-5 text-muted-foreground" />
-                                            <Label htmlFor="companyLocation" className="text-lg font-bold">
-                                                Location
+                                            <MapPin className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyLocation" className="text-base font-semibold flex items-center gap-2">
+                                                Location <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Input
                                             id="companyLocation"
                                             name="companyLocation"
+                                            value={companyLocation}
+                                            onChange={(e) => {
+                                                setCompanyLocation(e.target.value)
+                                                validateField("companyLocation", e.target.value)
+                                            }}
                                             required
                                             placeholder="e.g., Sofia, Bulgaria"
-                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                            className={`text-base h-12 border bg-background/50 transition-all duration-300 rounded-lg ${
+                                                fieldErrors.companyLocation 
+                                                    ? "border-red-500 focus:border-red-500" 
+                                                    : companyLocation.length >= 2 
+                                                        ? "border-purple-500 focus:border-purple-500" 
+                                                        : "border-white/20 focus:border-purple-500"
+                                            }`}
                                         />
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Where is your company headquartered?
-                                        </p>
+                                        {fieldErrors.companyLocation ? (
+                                            <p className="text-sm text-red-400 flex items-center gap-1">
+                                                <XCircle className="w-4 h-4" />
+                                                {fieldErrors.companyLocation}
+                                            </p>
+                                        ) : companyLocation.length >= 2 ? (
+                                            <p className="text-sm text-purple-400 flex items-center gap-1">
+                                                <CheckCircle className="w-4 h-4" />
+                                                Location looks good
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                Where is your company headquartered?
+                                            </p>
+                                        )}
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Globe className="w-5 h-5 text-muted-foreground" />
-                                            <Label htmlFor="companyWebsite" className="text-lg font-bold">
+                                            <Globe className="w-4 h-4 text-purple-400" />
+                                            <Label htmlFor="companyWebsite" className="text-base font-semibold">
                                                 Website <span className="text-muted-foreground font-normal text-sm">(optional)</span>
                                             </Label>
                                         </div>
@@ -869,35 +1103,35 @@ export default function OnboardingPage() {
                                             name="companyWebsite"
                                             type="url"
                                             placeholder="https://www.yourcompany.com"
-                                            className="text-base h-12 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                                            className="text-base h-12 border border-white/20 focus:border-purple-500 bg-background/50 transition-all duration-300 rounded-lg"
                                         />
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                        <p className="text-sm text-muted-foreground">
                                             Share your company website if you have one
                                         </p>
                                     </div>
 
-                                    <div className="h-px bg-gradient-to-r from-transparent via-[var(--experience-step-border)] to-transparent" />
+                                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
                                     {!policyAccepted && (
                                         <Button
                                             type="button"
                                             onClick={handleProceedClick}
-                                            className="w-full h-14 text-base font-semibold bg-gradient-to-r from-[var(--experience-button-secondary)] to-[var(--experience-button-secondary-hover)] hover:from-[var(--experience-button-secondary-hover)] hover:to-[var(--experience-button-secondary)] shadow-lg hover:shadow-xl transition-all duration-300"
-                                            variant="secondary"
+                                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 transition-all duration-300 rounded-xl"
                                         >
                                             <Shield className="mr-2 w-5 h-5" />
                                             Proceed to Policy Agreement
+                                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     )}
 
                                     {policyAccepted && (
-                                        <div className="flex items-center gap-4 p-5 bg-gradient-to-br from-[var(--experience-success)]/10 via-green-50 to-emerald-50 dark:from-[var(--experience-success)]/20 dark:via-green-950/20 dark:to-emerald-950/20 border-2 border-[var(--experience-success)]/30 rounded-2xl shadow-lg animate-in fade-in zoom-in duration-500">
-                                            <div className="p-3 bg-gradient-to-br from-[var(--experience-success)] to-green-600 rounded-xl shadow-lg">
-                                                <CheckCircle className="w-7 h-7 text-white" />
+                                        <div className="flex items-center gap-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl animate-in fade-in zoom-in duration-500">
+                                            <div className="p-2.5 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg">
+                                                <CheckCircle className="w-5 h-5 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-base text-[var(--experience-success)] font-bold">Policy Accepted</p>
-                                                <p className="text-sm text-[var(--experience-success)]/80">
+                                                <p className="text-sm text-purple-400 font-semibold">Policy Accepted</p>
+                                                <p className="text-xs text-muted-foreground">
                                                     You&apos;re ready to complete your registration
                                                 </p>
                                             </div>
@@ -931,20 +1165,18 @@ export default function OnboardingPage() {
                     />
 
                     {error && (
-                        <div className="p-5 bg-[var(--experience-error)]/10 border-2 border-[var(--experience-error)]/30 rounded-2xl shadow-lg animate-in fade-in slide-in-from-top-3 duration-500">
-                            <div className="flex items-start gap-4">
-                                <div className="p-2 bg-[var(--experience-error)]/20 rounded-full flex-shrink-0">
-                                    <XCircle className="w-6 h-6 text-[var(--experience-error)]" />
-                                </div>
+                        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-3 duration-500">
+                            <div className="flex items-start gap-3">
+                                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-[var(--experience-error)] font-bold text-base">Error</p>
-                                    <p className="text-[var(--experience-error)]/90 text-sm leading-relaxed mt-1">{error}</p>
+                                    <p className="text-red-400 font-semibold text-sm">Error</p>
+                                    <p className="text-red-400/80 text-sm mt-0.5">{error}</p>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="flex justify-center">
+                    <div className="flex justify-center pt-6">
                         <Button
                             type="submit"
                             disabled={
@@ -954,17 +1186,18 @@ export default function OnboardingPage() {
                                 (selectedRole === "student" && !studentPolicyAccepted)
                             }
                             size="lg"
-                            className="min-w-72 h-16 text-foreground text-lg font-bold bg-gradient-to-r from-[var(--experience-accent)] to-[var(--experience-button-primary-hover)] hover:from-[var(--experience-button-primary-hover)] hover:to-[var(--experience-accent)] shadow-2xl hover:shadow-[var(--experience-accent)]/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="min-w-72 h-14 text-white text-base font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 bg-[size:200%] hover:bg-[position:100%_0] shadow-lg shadow-purple-500/20 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
                         >
                             {isPending ? (
                                 <>
-                                    <div className="w-6 h-6 border-3 border-[var(--experience-accent-foreground)]/30 border-t-[var(--experience-accent-foreground)] rounded-full animate-spin mr-3" />
+                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
                                     Processing...
                                 </>
                             ) : (
                                 <>
+                                    <Sparkles className="w-4 h-4 mr-2" />
                                     Complete Registration
-                                    <ArrowRight className="ml-3 w-6 h-6" />
+                                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
                         </Button>

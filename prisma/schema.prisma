@@ -38,6 +38,14 @@ model User {
   reviews            Review[]       @relation("StudentReviews")
   candidateEvaluations CandidateEvaluation[] @relation("CandidateEvaluations")
 
+  // Company Roles System
+  companyMembership     CompanyMember?         @relation("UserMembership")
+  invitedMembers        CompanyMember[]        @relation("MemberInviter")
+  createdCustomRoles    CompanyCustomRole[]    @relation("RoleCreator")
+  createdInvitations    CompanyInvitation[]    @relation("InvitationCreator")
+  transfersInitiated    OwnershipTransferRequest[] @relation("TransferFrom")
+  transfersReceived     OwnershipTransferRequest[] @relation("TransferTo")
+
   @@index([role])
 }
 
@@ -66,6 +74,12 @@ model Company {
 
   tosAccepted     Boolean  @default(false)
   privacyAccepted Boolean  @default(false)
+
+  // Company Roles System
+  members           CompanyMember[]
+  customRoles       CompanyCustomRole[]
+  invitations       CompanyInvitation[]
+  transferRequests  OwnershipTransferRequest[]
 }
 
 //
@@ -499,9 +513,181 @@ enum NotificationType {
   INTERVIEW_SCHEDULED
   INTERVIEW_REMINDER
   GENERAL
+  // Company Team Notifications
+  TEAM_INVITATION
+  TEAM_INVITATION_ACCEPTED
+  TEAM_MEMBER_REMOVED
+  TEAM_ROLE_CHANGED
+  OWNERSHIP_TRANSFER_REQUEST
+  OWNERSHIP_TRANSFER_COMPLETED
 }
 
 enum SenderType {
   STUDENT
   COMPANY
+}
+
+//
+// ---------------------
+// COMPANY ROLES SYSTEM - ENUMS
+// ---------------------
+
+// Default company roles (predefined)
+enum DefaultCompanyRole {
+  OWNER        // Full access, can transfer ownership, delete company
+  ADMIN        // Almost full access, can manage members
+  HR_MANAGER   // Manage internships, applications, interviews
+  HR_RECRUITER // View candidates, manage applications (limited)
+  VIEWER       // Read-only access
+}
+
+// Member status in company
+enum MemberStatus {
+  PENDING    // Invited but not yet accepted
+  ACTIVE     // Active member
+  SUSPENDED  // Temporarily suspended
+}
+
+// Permission types that can be assigned
+enum Permission {
+  // Company Management
+  DELETE_COMPANY
+  EDIT_COMPANY
+  TRANSFER_OWNERSHIP
+  
+  // Member Management
+  MANAGE_MEMBERS
+  INVITE_MEMBERS
+  REMOVE_MEMBERS
+  CHANGE_ROLES
+  DELEGATE_PERMISSIONS
+  
+  // Internship Management
+  CREATE_INTERNSHIPS
+  EDIT_INTERNSHIPS
+  DELETE_INTERNSHIPS
+  
+  // Application Management
+  VIEW_APPLICATIONS
+  MANAGE_APPLICATIONS
+  APPROVE_APPLICATIONS
+  REJECT_APPLICATIONS
+  
+  // Candidate Management
+  VIEW_CANDIDATES
+  SEARCH_CANDIDATES
+  
+  // Interview Management
+  SCHEDULE_INTERVIEWS
+  CONDUCT_INTERVIEWS
+  
+  // Messaging
+  SEND_MESSAGES
+  VIEW_MESSAGES
+  
+  // Experience & Assignments
+  CREATE_ASSIGNMENTS
+  GRADE_EXPERIENCES
+  
+  // Analytics
+  VIEW_ANALYTICS
+}
+
+//
+// ---------------------
+// COMPANY ROLES SYSTEM - MODELS
+// ---------------------
+
+// Custom roles defined by company
+model CompanyCustomRole {
+  id           String       @id @default(cuid())
+  companyId    String
+  name         String       // e.g., "Senior HR", "Intern Coordinator"
+  description  String?
+  permissions  Permission[] // Explicit permissions for this role
+  color        String?      // Badge color for UI
+  createdById  String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("RoleCreator", fields: [createdById], references: [id])
+  members      CompanyMember[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+// Links users to companies with their role
+model CompanyMember {
+  id              String              @id @default(cuid())
+  companyId       String
+  userId          String              @unique  // One user = one company only
+  
+  // Role assignment (either default OR custom, not both)
+  defaultRole     DefaultCompanyRole?
+  customRoleId    String?
+  
+  // Additional permissions granted by owner/admin
+  extraPermissions Permission[]       @default([])
+  
+  // Invitation tracking
+  invitedByEmail  String?             // Email used for invitation
+  invitedById     String?
+  status          MemberStatus        @default(PENDING)
+  invitedAt       DateTime            @default(now())
+  joinedAt        DateTime?
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  company         Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User                @relation("UserMembership", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy       User?               @relation("MemberInviter", fields: [invitedById], references: [id])
+  customRole      CompanyCustomRole?  @relation(fields: [customRoleId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+}
+
+// Ownership transfer requests (for secure transfer)
+model OwnershipTransferRequest {
+  id              String    @id @default(cuid())
+  companyId       String
+  fromUserId      String    // Current owner
+  toUserId        String    // New owner
+  confirmationCode String   // Random code they must type
+  confirmedOnce   Boolean   @default(false)
+  expiresAt       DateTime  // 24 hour expiry
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  fromUser        User      @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUser          User      @relation("TransferTo", fields: [toUserId], references: [id])
+
+  @@index([companyId])
+  @@index([toUserId])
+}
+
+// Invitation tokens for email invitations
+model CompanyInvitation {
+  id           String              @id @default(cuid())
+  companyId    String
+  email        String
+  role         DefaultCompanyRole  @default(VIEWER)
+  customRoleId String?
+  token        String              @unique
+  invitedById  String
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdAt    DateTime            @default(now())
+
+  company      Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invitedBy    User                @relation("InvitationCreator", fields: [invitedById], references: [id])
+
+  @@index([email])
+  @@index([companyId])
+  @@index([token])
 }

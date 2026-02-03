@@ -3,14 +3,16 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { notifyApplicationStatusChange } from "@/lib/notifications"
+import { Permission } from "@prisma/client"
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions"
 
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth()
-        if (!userId)
+        const { userId: clerkId } = await auth()
+        if (!clerkId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
         const { id } = await params
@@ -20,14 +22,25 @@ export async function PATCH(
             return NextResponse.json({ error: "Invalid status" }, { status: 400 })
         }
 
-        // Get the current user
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { id: true, role: true, companies: true }
-        })
+        // Get membership and check permissions
+        const membership = await getUserCompanyByClerkId(clerkId)
+        if (!membership) {
+            return NextResponse.json(
+                { error: "Company membership not found" },
+                { status: 404 }
+            )
+        }
 
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 })
+        const hasPermission = await checkPermission(
+            membership.userId,
+            membership.companyId,
+            Permission.MANAGE_APPLICATIONS
+        )
+        if (!hasPermission) {
+            return NextResponse.json(
+                { error: "You don't have permission to manage applications" },
+                { status: 403 }
+            )
         }
 
         // ======================================================
@@ -51,17 +64,9 @@ export async function PATCH(
             )
 
         // ======================================================
-        // 1.5) Verify the company user owns this internship
+        // 1.5) Verify application belongs to user's company
         // ======================================================
-        if (user.role !== "COMPANY") {
-            return NextResponse.json(
-                { error: "Only companies can approve/reject applications" },
-                { status: 403 }
-            )
-        }
-
-        const userCompanyId = user.companies[0]?.id
-        if (!userCompanyId || data.internship.companyId !== userCompanyId) {
+        if (data.internship.companyId !== membership.companyId) {
             return NextResponse.json(
                 { error: "You can only manage applications for your own internships" },
                 { status: 403 }

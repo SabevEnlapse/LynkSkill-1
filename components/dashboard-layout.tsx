@@ -29,6 +29,7 @@ import { InterviewsTabContent } from "@/components/interviews-tab-content"
 import { MascotScene } from "@/components/MascotScene"
 import { StudentAIChat } from "@/components/student-ai-chat"
 import { CompanyAIChat } from "@/components/company-ai-chat"
+import { TeamTabContent } from "@/components/team-tab-content"
 import { useDashboard } from "@/lib/dashboard-context"
 import { useAIMode } from "@/lib/ai-mode-context"
 import { useTranslation } from "@/lib/i18n"
@@ -531,6 +532,12 @@ export function DashboardLayout({ userType }: DashboardLayoutProps) {
                                     <TabsContent value="interviews" className="space-y-8 mt-0">
                                         <InterviewsTabContent userType={userType} />
                                     </TabsContent>
+
+                                    {userType === "Company" && (
+                                        <TabsContent value="team" className="space-y-8 mt-0">
+                                            <TeamTabContent />
+                                        </TabsContent>
+                                    )}
                                 </motion.div>
                             )}
                         </AnimatePresence>

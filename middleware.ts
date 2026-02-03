@@ -31,16 +31,21 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId, sessionClaims } = await auth();
     const url = req.nextUrl;
 
+    // Helper function to create SEO-friendly response
+    const createSEOResponse = (response: NextResponse) => {
+        // Remove any existing noindex headers
+        response.headers.delete('X-Robots-Tag');
+        
+        // Set proper SEO-friendly headers for all pages
+        response.headers.set('X-Robots-Tag', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
+        response.headers.set('X-Content-Type-Options', 'nosniff');
+        response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        
+        return response;
+    };
+
     // Create response with proper SEO headers (allowing indexing)
-    const response = NextResponse.next();
-    
-    // Remove any noindex headers and ensure proper indexing for SEO
-    response.headers.delete('X-Robots-Tag');
-    
-    // Set proper SEO-friendly headers
-    response.headers.set('X-Robots-Tag', 'index, follow');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    const response = createSEOResponse(NextResponse.next());
 
     // ✅ Allow Googlebot and other crawlers to access public pages without redirect
     const userAgent = req.headers.get("user-agent") || "";
@@ -60,22 +65,13 @@ export default clerkMiddleware(async (auth, req) => {
                 .toUpperCase();
 
             if (!onboardingComplete) {
-                const redirectResponse = NextResponse.redirect(new URL("/onboarding", req.url));
-                redirectResponse.headers.delete('X-Robots-Tag');
-                redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-                return redirectResponse;
+                return createSEOResponse(NextResponse.redirect(new URL("/onboarding", req.url)));
             }
 
             if (role === "COMPANY") {
-                const redirectResponse = NextResponse.redirect(new URL("/dashboard/company", req.url));
-                redirectResponse.headers.delete('X-Robots-Tag');
-                redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-                return redirectResponse;
+                return createSEOResponse(NextResponse.redirect(new URL("/dashboard/company", req.url)));
             }
-            const redirectResponse = NextResponse.redirect(new URL("/dashboard/student", req.url));
-            redirectResponse.headers.delete('X-Robots-Tag');
-            redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-            return redirectResponse;
+            return createSEOResponse(NextResponse.redirect(new URL("/dashboard/student", req.url)));
         }
 
         return response;
@@ -83,10 +79,7 @@ export default clerkMiddleware(async (auth, req) => {
 
     // ✅ Redirect guests to "/"
     if (!userId && !isPublicRoute(req)) {
-        const redirectResponse = NextResponse.redirect(new URL("/", req.url));
-        redirectResponse.headers.delete('X-Robots-Tag');
-        redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-        return redirectResponse;
+        return createSEOResponse(NextResponse.redirect(new URL("/", req.url)));
     }
 
     // ✅ Onboarding redirect
@@ -98,29 +91,18 @@ export default clerkMiddleware(async (auth, req) => {
         .toUpperCase();
 
     if (userId && !onboardingComplete && !isOnboardingRoute(req)) {
-        const redirectResponse = NextResponse.redirect(new URL("/onboarding", req.url));
-        redirectResponse.headers.delete('X-Robots-Tag');
-        redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-        return redirectResponse;
+        return createSEOResponse(NextResponse.redirect(new URL("/onboarding", req.url)));
     }
 
     // ✅ Role-based route protection
     if (url.pathname.startsWith("/dashboard/student") && role !== "STUDENT") {
-        const redirectResponse = NextResponse.redirect(new URL("/dashboard/company", req.url));
-        redirectResponse.headers.delete('X-Robots-Tag');
-        redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-        return redirectResponse;
+        return createSEOResponse(NextResponse.redirect(new URL("/dashboard/company", req.url)));
     }
     if (url.pathname.startsWith("/dashboard/company") && role !== "COMPANY") {
-        const redirectResponse = NextResponse.redirect(new URL("/dashboard/student", req.url));
-        redirectResponse.headers.delete('X-Robots-Tag');
-        redirectResponse.headers.set('X-Robots-Tag', 'index, follow');
-        return redirectResponse;
+        return createSEOResponse(NextResponse.redirect(new URL("/dashboard/student", req.url)));
     }
 
-    // Ensure final response has proper SEO headers
-    response.headers.delete('X-Robots-Tag');
-    response.headers.set('X-Robots-Tag', 'index, follow');
+    // Return final response with proper SEO headers
     return response;
 });
 

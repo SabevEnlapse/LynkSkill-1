@@ -1,6 +1,6 @@
 "use client"
 
-import {Settings, X, MessageSquare, Calendar, Bookmark} from "lucide-react"
+import {Settings, X, MessageSquare, Calendar, Bookmark, Users} from "lucide-react"
 import Image from "next/image"
 import {Button} from "@/components/ui/button"
 import {ScrollArea} from "@/components/ui/scroll-area"
@@ -105,6 +105,21 @@ export function DashboardSidebar({
                                 <div className="flex items-center gap-2">
                                     <UsersRound />
                                     <span>{t('navigation.leaderboard')}</span>
+                                </div>
+                            </button>
+                        </AnimateIcon>
+                    )}
+
+                    {/* Team Management - Only for Companies */}
+                    {userType === "Company" && (
+                        <AnimateIcon animateOnHover>
+                            <button
+                                onClick={() => setActiveTab("team")}
+                                className="flex w-full cursor-pointer items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted transition-colors"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-5 w-5" />
+                                    <span>{t('navigation.team') || 'Team'}</span>
                                 </div>
                             </button>
                         </AnimateIcon>

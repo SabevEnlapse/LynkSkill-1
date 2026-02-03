@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
+import { Permission } from "@prisma/client"
+import { checkPermission, getUserCompanyByClerkId } from "@/lib/permissions"
 
 export async function GET(
     request: Request,
@@ -48,15 +50,25 @@ export async function GET(
             }
         }
 
-        // COMPANY ACCESS
+        // COMPANY ACCESS - use membership-based permissions
         if (dbUser.role === "COMPANY") {
-            const company = await prisma.company.findFirst({
-                where: { ownerId: dbUser.id },
-            })
-
-            if (!company || assignment.internship.companyId !== company.id) {
+            const membership = await getUserCompanyByClerkId(clerkUser.id)
+            
+            if (!membership || assignment.internship.companyId !== membership.companyId) {
                 return NextResponse.json(
-                    { error: "Forbidden: this is not your internship" },
+                    { error: "Forbidden: this is not your company's internship" },
+                    { status: 403 }
+                )
+            }
+
+            const hasPermission = await checkPermission(
+                membership.userId,
+                membership.companyId,
+                Permission.CREATE_ASSIGNMENTS
+            )
+            if (!hasPermission) {
+                return NextResponse.json(
+                    { error: "You don't have permission to view assignments" },
                     { status: 403 }
                 )
             }

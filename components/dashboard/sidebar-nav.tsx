@@ -172,6 +172,11 @@ export function SidebarNav({
             icon: <Users className="h-5 w-5" />,
         },
         {
+            label: t('navigation.team'),
+            href: `${basePath}/team`,
+            icon: <Users className="h-5 w-5" />,
+        },
+        {
             label: t('navigation.myExperience'),
             href: `${basePath}/experience`,
             icon: <Award className="h-5 w-5" />,
