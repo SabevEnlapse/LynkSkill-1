@@ -76,6 +76,27 @@ export async function GET() {
       return NextResponse.json({ error: "Not a member of any company" }, { status: 404 })
     }
 
+    // Fetch the company invitation code for display
+    // Auto-generate one for existing companies that don't have a code yet
+    let companyData = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { invitationCode: true },
+    })
+
+    if (companyData && !companyData.invitationCode) {
+      const { generateUniqueCompanyCode } = await import("@/lib/company-code")
+      const newCode = await generateUniqueCompanyCode(prisma)
+      companyData = await prisma.company.update({
+        where: { id: companyId },
+        data: {
+          invitationCode: newCode,
+          codeEnabled: true,
+          codeUsageCount: 0,
+        },
+        select: { invitationCode: true },
+      })
+    }
+
     // Get all active members of the company
     const members = await prisma.companyMember.findMany({
       where: { companyId },
@@ -176,6 +197,7 @@ export async function GET() {
     return NextResponse.json({
       members: [...formattedMembers, ...formattedInvitations],
       companyId,
+      companyCode: companyData?.invitationCode ?? null,
     })
   } catch (error) {
     console.error("Error fetching company members:", error)

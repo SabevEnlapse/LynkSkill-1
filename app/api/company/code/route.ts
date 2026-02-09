@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { checkPermissionByClerkId } from "@/lib/permissions"
 import { Permission } from "@prisma/client"
-import { generateCompanyCode, maskCode, isCodeExpired, getTimeUntilExpiry } from "@/lib/company-code"
+import { generateUniqueCompanyCode, maskCode, isCodeExpired, getTimeUntilExpiry } from "@/lib/company-code"
 
 export const runtime = "nodejs"
 
@@ -50,13 +50,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
-    if (!company.invitationCode) {
-      return NextResponse.json({ error: "No invitation code generated" }, { status: 404 })
+    // Auto-generate a unique code for existing companies that don't have one yet
+    let invitationCode = company.invitationCode
+    if (!invitationCode) {
+      invitationCode = await generateUniqueCompanyCode(prisma)
+      await prisma.company.update({
+        where: { id: companyId },
+        data: {
+          invitationCode,
+          codeEnabled: true,
+          codeUsageCount: 0,
+        },
+      })
     }
 
     return NextResponse.json({
-      code: company.invitationCode,
-      maskedCode: maskCode(company.invitationCode),
+      code: invitationCode,
+      maskedCode: maskCode(invitationCode),
       enabled: company.codeEnabled,
       expiresAt: company.codeExpiresAt,
       isExpired: isCodeExpired(company.codeExpiresAt),
@@ -113,8 +123,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Generate new code
-    const newCode = generateCompanyCode()
+    // Generate new code with DB-checked uniqueness
+    const newCode = await generateUniqueCompanyCode(prisma)
 
     const updatedCompany = await prisma.company.update({
       where: { id: companyId },

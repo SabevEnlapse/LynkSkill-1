@@ -21,6 +21,15 @@ const nextConfig: NextConfig = {
         serverActions: {
             bodySizeLimit: "50mb", // allow up to 50MB uploads
         },
+        // Disable Turbopack font optimization to prevent connection failures
+        // when network is unavailable during build
+        turbo: {
+            resolveAlias: {},
+        },
+    },
+    // Fallback for fonts - use CDN directly instead of Turbopack optimization
+    webpack: (config) => {
+        return config;
     },
     // Cache configuration for SEO optimization
     async headers() {

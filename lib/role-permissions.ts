@@ -26,8 +26,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Application Management - Full access
     Permission.VIEW_APPLICATIONS,
     Permission.MANAGE_APPLICATIONS,
-    Permission.APPROVE_APPLICATIONS,
-    Permission.REJECT_APPLICATIONS,
     
     // Candidate Management - Full access
     Permission.VIEW_CANDIDATES,
@@ -44,9 +42,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Experience & Assignments - Full access
     Permission.CREATE_ASSIGNMENTS,
     Permission.GRADE_EXPERIENCES,
-    
-    // Analytics - Full access
-    Permission.VIEW_ANALYTICS,
   ],
 
   ADMIN: [
@@ -68,8 +63,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Application Management - Full access
     Permission.VIEW_APPLICATIONS,
     Permission.MANAGE_APPLICATIONS,
-    Permission.APPROVE_APPLICATIONS,
-    Permission.REJECT_APPLICATIONS,
     
     // Candidate Management - Full access
     Permission.VIEW_CANDIDATES,
@@ -86,9 +79,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Experience & Assignments - Full access
     Permission.CREATE_ASSIGNMENTS,
     Permission.GRADE_EXPERIENCES,
-    
-    // Analytics - Full access
-    Permission.VIEW_ANALYTICS,
   ],
 
   HR_MANAGER: [
@@ -103,8 +93,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Application Management - Full access
     Permission.VIEW_APPLICATIONS,
     Permission.MANAGE_APPLICATIONS,
-    Permission.APPROVE_APPLICATIONS,
-    Permission.REJECT_APPLICATIONS,
     
     // Candidate Management - Full access
     Permission.VIEW_CANDIDATES,
@@ -121,9 +109,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Experience & Assignments - Full access
     Permission.CREATE_ASSIGNMENTS,
     Permission.GRADE_EXPERIENCES,
-    
-    // Analytics - Full access
-    Permission.VIEW_ANALYTICS,
   ],
 
   HR_RECRUITER: [
@@ -142,9 +127,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Messaging - Full access
     Permission.SEND_MESSAGES,
     Permission.VIEW_MESSAGES,
-    
-    // Analytics - Read only
-    Permission.VIEW_ANALYTICS,
   ],
 
   VIEWER: [
@@ -153,9 +135,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     
     // Messaging - View only
     Permission.VIEW_MESSAGES,
-    
-    // Analytics - Read only
-    Permission.VIEW_ANALYTICS,
   ],
 
   MEMBER: [
@@ -166,9 +145,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<DefaultCompanyRole, Permission[]> 
     // Messaging - Can send and view
     Permission.SEND_MESSAGES,
     Permission.VIEW_MESSAGES,
-    
-    // Analytics - Read only
-    Permission.VIEW_ANALYTICS,
   ],
 }
 
@@ -299,16 +275,6 @@ export const PERMISSION_DISPLAY_INFO: Record<Permission, {
     description: "Manage application status and notes",
     category: "Application Management",
   },
-  APPROVE_APPLICATIONS: {
-    label: "Approve Applications",
-    description: "Approve internship applications",
-    category: "Application Management",
-  },
-  REJECT_APPLICATIONS: {
-    label: "Reject Applications",
-    description: "Reject internship applications",
-    category: "Application Management",
-  },
 
   // Candidate Management
   VIEW_CANDIDATES: {
@@ -356,13 +322,6 @@ export const PERMISSION_DISPLAY_INFO: Record<Permission, {
     label: "Grade Experiences",
     description: "Grade and endorse intern experiences",
     category: "Experience & Assignments",
-  },
-
-  // Analytics
-  VIEW_ANALYTICS: {
-    label: "View Analytics",
-    description: "View company analytics and reports",
-    category: "Analytics",
   },
 }
 

@@ -1338,7 +1338,7 @@ export default function OnboardingPage() {
                                                             <span>{companyPreview.memberCount} team members</span>
                                                         </div>
                                                         {companyPreview.description && (
-                                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3 break-all overflow-hidden whitespace-normal">
                                                                 {companyPreview.description}
                                                             </p>
                                                         )}

@@ -213,34 +213,37 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
     }
 
     return (
-        <Card className="border border-border/50">
+        <Card className="border-indigo-200/50 dark:border-indigo-800/30 overflow-hidden">
+            <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500" />
             <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-500/10 rounded-lg">
-                            <Users className="w-5 h-5 text-purple-500" />
+                        <div className="p-2.5 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-md shadow-indigo-500/20">
+                            <Users className="w-5 h-5 text-white" />
                         </div>
                         <div>
                             <CardTitle className="text-lg">Team Invitation Code</CardTitle>
                             <CardDescription>
-                                Share this code with team members to join your company
+                                Share this unique code with team members to join your company
                             </CardDescription>
                         </div>
                     </div>
                     <Badge 
                         variant={codeData.enabled ? "default" : "secondary"}
-                        className={codeData.enabled ? "bg-green-500/10 text-green-500 border-green-500/20" : ""}
+                        className={codeData.enabled 
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-medium" 
+                            : "bg-muted text-muted-foreground"}
                     >
-                        {codeData.enabled ? "Active" : "Disabled"}
+                        {codeData.enabled ? "✓ Active" : "Disabled"}
                     </Badge>
                 </div>
             </CardHeader>
 
             <CardContent className="space-y-6">
                 {/* Code Display */}
-                <div className="p-4 bg-muted/50 rounded-lg border border-border/50">
+                <div className="p-5 bg-gradient-to-r from-indigo-50/80 via-violet-50/50 to-blue-50/80 dark:from-indigo-950/30 dark:via-violet-950/20 dark:to-blue-950/30 rounded-xl border border-indigo-200/50 dark:border-indigo-700/30">
                     <div className="flex items-center justify-between gap-4">
-                        <div className="font-mono text-xl md:text-2xl font-bold tracking-wider select-all">
+                        <div className="font-mono text-xl md:text-2xl font-bold tracking-[0.15em] select-all text-indigo-700 dark:text-indigo-300">
                             {showCode ? codeData.code : codeData.maskedCode}
                         </div>
                         <div className="flex items-center gap-2">
@@ -281,47 +284,48 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Used</div>
-                        <div className="text-lg font-semibold">{codeData.usageCount} times</div>
+                    <div className="p-3.5 bg-violet-50/50 dark:bg-violet-950/20 rounded-xl border border-violet-200/30 dark:border-violet-800/20">
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Used</div>
+                        <div className="text-lg font-bold text-violet-700 dark:text-violet-300">{codeData.usageCount} times</div>
                     </div>
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Team Size</div>
-                        <div className="text-lg font-semibold">
+                    <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200/30 dark:border-blue-800/20">
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Team Size</div>
+                        <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
                             {codeData.currentMembers}
-                            {codeData.maxTeamMembers && ` / ${codeData.maxTeamMembers}`}
+                            {codeData.maxTeamMembers && <span className="text-muted-foreground font-normal"> / {codeData.maxTeamMembers}</span>}
                         </div>
                     </div>
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Status</div>
-                        <div className="text-lg font-semibold flex items-center gap-1.5">
+                    <div className="p-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/30 dark:border-emerald-800/20">
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Status</div>
+                        <div className="text-lg font-bold flex items-center gap-1.5">
                             {codeData.enabled ? (
                                 <>
-                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                    <span className="text-green-500">Active</span>
+                                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                    <span className="text-emerald-600 dark:text-emerald-400">Active</span>
                                 </>
                             ) : (
                                 <>
-                                    <AlertCircle className="w-4 h-4 text-yellow-500" />
-                                    <span className="text-yellow-500">Disabled</span>
+                                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                                    <span className="text-amber-600 dark:text-amber-400">Disabled</span>
                                 </>
                             )}
                         </div>
                     </div>
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Expiration</div>
-                        <div className="text-lg font-semibold">
+                    <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200/30 dark:border-indigo-800/20">
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Expiration</div>
+                        <div className="text-lg font-bold text-indigo-700 dark:text-indigo-300">
                             {codeData.timeUntilExpiry || "Never"}
                         </div>
                     </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 pt-2">
                     <Button
                         variant="outline"
                         onClick={regenerateCode}
                         disabled={regenerating}
+                        className="border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300"
                     >
                         {regenerating ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -436,11 +440,11 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
 
                 {/* Warning if code is disabled */}
                 {!codeData.enabled && (
-                    <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                        <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 rounded-xl">
+                        <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-sm font-medium text-yellow-500">Code Disabled</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Code Disabled</p>
+                            <p className="text-sm text-amber-600/80 dark:text-amber-500/80 mt-0.5">
                                 Team members cannot join using this code until it&apos;s enabled again.
                             </p>
                         </div>

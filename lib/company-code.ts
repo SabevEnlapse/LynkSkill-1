@@ -110,6 +110,39 @@ export function maskCode(code: string): string {
 }
 
 /**
+ * Generate a unique company invitation code guaranteed not to collide with existing codes.
+ * Uses Prisma to check uniqueness in the database. Retries up to maxAttempts times.
+ * 
+ * @param prismaClient - Prisma client instance
+ * @param maxAttempts - Max generation attempts (default 10)
+ * @returns {Promise<string>} A unique code in format XXXX-XXXX-XXXX-XXXX
+ * @throws {Error} If unable to generate unique code after max attempts
+ */
+export async function generateUniqueCompanyCode(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prismaClient: any,
+  maxAttempts: number = 10
+): Promise<string> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const code = generateCompanyCode();
+    
+    // Check if code already exists in the database
+    const existing = await prismaClient.company.findUnique({
+      where: { invitationCode: code },
+      select: { id: true },
+    });
+    
+    if (!existing) {
+      return code; // Code is unique
+    }
+  }
+  
+  throw new Error(
+    `Failed to generate a unique company code after ${maxAttempts} attempts. Please try again.`
+  );
+}
+
+/**
  * Check if a code has expired
  * 
  * @param expiresAt - Expiration date or null if no expiration

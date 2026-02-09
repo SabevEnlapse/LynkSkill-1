@@ -42,12 +42,13 @@ import {
 } from "@/components/ui/collapsible"
 
 interface SidebarNavProps {
-    userType: "Student" | "Company"
+    userType: "Student" | "Company" | "TeamMember"
     isOpen: boolean
     isMobile?: boolean
     onClose?: () => void
     companyName?: string | null
     companyLogo?: string | null
+    memberPermissions?: string[]
 }
 
 interface NavItem {
@@ -65,6 +66,7 @@ export function SidebarNav({
     onClose,
     companyName,
     companyLogo,
+    memberPermissions = [],
 }: SidebarNavProps) {
     const { t } = useTranslation()
     const pathname = usePathname()
@@ -73,7 +75,11 @@ export function SidebarNav({
     const { navigateTo } = useNavigation()
     const [openMenus, setOpenMenus] = useState<string[]>([])
 
-    const basePath = userType === "Student" ? "/dashboard/student" : "/dashboard/company"
+    const basePath = userType === "Student" 
+        ? "/dashboard/student" 
+        : userType === "TeamMember" 
+            ? "/dashboard/team-member" 
+            : "/dashboard/company"
 
     const toggleMenu = (label: string) => {
         setOpenMenus(prev =>
@@ -203,7 +209,81 @@ export function SidebarNav({
         },
     ]
 
-    const navItems = userType === "Student" ? studentNavItems : companyNavItems
+    // Team Member nav - permission-filtered version of company nav
+    const hasPerm = (perm: string) => memberPermissions.includes(perm)
+    
+    const teamMemberNavItems: NavItem[] = [
+        {
+            label: t('navigation.home'),
+            href: basePath,
+            icon: <Home className="h-5 w-5" />,
+        },
+        // Show internships if they can create/edit or view applications
+        ...(hasPerm("CREATE_INTERNSHIPS") || hasPerm("EDIT_INTERNSHIPS") || hasPerm("VIEW_APPLICATIONS") ? [{
+            label: t('navigation.internships'),
+            href: `${basePath}/internships`,
+            icon: <Briefcase className="h-5 w-5" />,
+            children: [
+                ...(hasPerm("CREATE_INTERNSHIPS") || hasPerm("EDIT_INTERNSHIPS") ? [{
+                    label: t('navigation.myInternships'),
+                    href: `${basePath}/internships`,
+                    icon: <Briefcase className="h-4 w-4" />,
+                }] : []),
+                ...(hasPerm("CREATE_INTERNSHIPS") ? [{
+                    label: t('navigation.createNew'),
+                    href: `${basePath}/internships/create`,
+                    icon: <FileText className="h-4 w-4" />,
+                }] : []),
+            ],
+        }] : []),
+        // Applications - if they can view
+        ...(hasPerm("VIEW_APPLICATIONS") || hasPerm("MANAGE_APPLICATIONS") ? [{
+            label: t('navigation.applications'),
+            href: `${basePath}/applications`,
+            icon: <FileText className="h-5 w-5" />,
+        }] : []),
+        // Candidates - if they can view
+        ...(hasPerm("VIEW_CANDIDATES") || hasPerm("SEARCH_CANDIDATES") ? [{
+            label: t('navigation.candidates'),
+            href: `${basePath}/candidates`,
+            icon: <Users className="h-5 w-5" />,
+        }] : []),
+        // Experience
+        ...(hasPerm("CREATE_ASSIGNMENTS") || hasPerm("GRADE_EXPERIENCES") ? [{
+            label: t('navigation.myExperience'),
+            href: `${basePath}/experience`,
+            icon: <Award className="h-5 w-5" />,
+        }] : []),
+        // Messages - if they can view
+        ...(hasPerm("VIEW_MESSAGES") || hasPerm("SEND_MESSAGES") ? [{
+            label: t('navigation.messages'),
+            href: `${basePath}/messages`,
+            icon: <MessageSquare className="h-5 w-5" />,
+        }] : []),
+        // Interviews - if they can schedule/conduct
+        ...(hasPerm("SCHEDULE_INTERVIEWS") || hasPerm("CONDUCT_INTERVIEWS") ? [{
+            label: t('navigation.interviews'),
+            href: `${basePath}/interviews`,
+            icon: <Calendar className="h-5 w-5" />,
+        }] : []),
+        // Team - always visible so members can see their team
+        {
+            label: t('navigation.team'),
+            href: `${basePath}/team`,
+            icon: <Users className="h-5 w-5" />,
+        },
+        {
+            label: t('navigation.help'),
+            href: `${basePath}/help`,
+            icon: <HelpCircle className="h-5 w-5" />,
+        },
+    ]
+
+    const navItems = userType === "Student" 
+        ? studentNavItems 
+        : userType === "TeamMember" 
+            ? teamMemberNavItems 
+            : companyNavItems
 
     const isActive = (href: string) => {
         if (!pathname) return false

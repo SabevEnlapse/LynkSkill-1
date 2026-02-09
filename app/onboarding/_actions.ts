@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server"
 import { clerkClient } from "@/lib/clerk"
 import { prisma } from "@/lib/prisma"
 import { sanitizeForDb, schemas } from "@/lib/security"
-import { generateCompanyCode, isValidCodeFormat, normalizeCode } from "@/lib/company-code"
+import { generateUniqueCompanyCode, isValidCodeFormat, normalizeCode } from "@/lib/company-code"
 import { z } from "zod"
 
 // Validation schemas for onboarding
@@ -141,8 +141,8 @@ export async function completeOnboarding(formData: FormData) {
             let createdCompany
 
             if (!existing) {
-                // Generate unique invitation code for the company
-                const invitationCode = generateCompanyCode()
+                // Generate unique invitation code for the company (DB-checked uniqueness)
+                const invitationCode = await generateUniqueCompanyCode(prisma)
                 
                 createdCompany = await prisma.company.create({
                     data: {
@@ -285,7 +285,7 @@ export async function completeOnboarding(formData: FormData) {
             return {
                 message: "Successfully joined company",
                 companyName: company.name,
-                dashboard: "/dashboard/company",
+                dashboard: "/dashboard/team-member",
             }
         }
 

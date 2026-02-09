@@ -59,6 +59,8 @@ export default function RedirectAfterSignIn() {
                     router.replace("/dashboard/student")
                 } else if (role === "COMPANY") {
                     router.replace("/dashboard/company")
+                } else if (role === "TEAM_MEMBER") {
+                    router.replace("/dashboard/team-member")
                 } else {
                     router.replace("/onboarding")
                 }

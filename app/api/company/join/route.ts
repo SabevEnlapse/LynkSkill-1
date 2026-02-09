@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     const normalizedCode = normalizeCode(code)
 
-    // Get user
+    // Get user (may not exist yet during onboarding)
     const user = await prisma.user.findUnique({
       where: { clerkId },
       include: {
@@ -41,32 +41,32 @@ export async function POST(request: Request) {
       }
     })
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
+    // During onboarding, user might not exist in DB yet — that's OK for validation
+    // We only need to check role restrictions if the user already exists
+    if (user) {
+      // Check if user is a STUDENT - they cannot join companies
+      if (user.role === "STUDENT") {
+        return NextResponse.json({ 
+          error: "Students cannot join companies. Please create a new account if you want to work for a company.",
+          valid: false 
+        }, { status: 403 })
+      }
 
-    // Check if user is a STUDENT - they cannot join companies
-    if (user.role === "STUDENT") {
-      return NextResponse.json({ 
-        error: "Students cannot join companies. Please create a new account if you want to work for a company.",
-        valid: false 
-      }, { status: 403 })
-    }
+      // Check if user is a COMPANY owner - they cannot join other companies
+      if (user.role === "COMPANY") {
+        return NextResponse.json({ 
+          error: "Company owners cannot join other companies.",
+          valid: false 
+        }, { status: 403 })
+      }
 
-    // Check if user is a COMPANY owner - they cannot join other companies
-    if (user.role === "COMPANY") {
-      return NextResponse.json({ 
-        error: "Company owners cannot join other companies.",
-        valid: false 
-      }, { status: 403 })
-    }
-
-    // Check if user is already a member of any company
-    if (user.companyMembership) {
-      return NextResponse.json({ 
-        error: "You are already a member of a company. You cannot join another.",
-        valid: false 
-      }, { status: 403 })
+      // Check if user is already a member of any company
+      if (user.companyMembership) {
+        return NextResponse.json({ 
+          error: "You are already a member of a company. You cannot join another.",
+          valid: false 
+        }, { status: 403 })
+      }
     }
 
     // Find company by invitation code

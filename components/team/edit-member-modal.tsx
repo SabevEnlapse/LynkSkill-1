@@ -69,8 +69,6 @@ const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; label: string }[]
   "Application Management": [
     { value: "VIEW_APPLICATIONS", label: "View Applications" },
     { value: "MANAGE_APPLICATIONS", label: "Manage Applications" },
-    { value: "APPROVE_APPLICATIONS", label: "Approve Applications" },
-    { value: "REJECT_APPLICATIONS", label: "Reject Applications" },
   ],
   "Candidate Management": [
     { value: "VIEW_CANDIDATES", label: "View Candidates" },
@@ -87,9 +85,6 @@ const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; label: string }[]
   "Experience & Assignments": [
     { value: "CREATE_ASSIGNMENTS", label: "Create Assignments" },
     { value: "GRADE_EXPERIENCES", label: "Grade Experiences" },
-  ],
-  "Analytics": [
-    { value: "VIEW_ANALYTICS", label: "View Analytics" },
   ],
 }
 

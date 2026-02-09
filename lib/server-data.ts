@@ -9,7 +9,7 @@ export interface DashboardInitialData {
         id: string
         clerkId: string
         email: string
-        role: "STUDENT" | "COMPANY"
+        role: "STUDENT" | "COMPANY" | "TEAM_MEMBER"
         introShown: boolean
         profile?: {
             name: string
@@ -289,7 +289,7 @@ export const getRecentExperiences = cache(async (userId: string, role: string, c
 })
 
 // ============ Main Dashboard Data Fetcher ============
-export async function getDashboardData(userType: "Student" | "Company"): Promise<DashboardInitialData> {
+export async function getDashboardData(userType: "Student" | "Company" | "TeamMember"): Promise<DashboardInitialData> {
     const user = await getUser()
     
     if (!user) {
@@ -303,8 +303,8 @@ export async function getDashboardData(userType: "Student" | "Company"): Promise
         }
     }
 
-    // For company users, use membership-based access
-    if (userType === "Company") {
+    // For company users and team members, use membership-based access
+    if (userType === "Company" || userType === "TeamMember") {
         const membership = await getUserCompanyByClerkId(user.clerkId)
         const companyId = membership?.companyId
 
@@ -322,7 +322,7 @@ export async function getDashboardData(userType: "Student" | "Company"): Promise
                 id: user.id,
                 clerkId: user.clerkId,
                 email: user.email,
-                role: user.role as "STUDENT" | "COMPANY",
+                role: user.role as "STUDENT" | "COMPANY" | "TEAM_MEMBER",
                 introShown: user.introShown,
                 profile: user.profile ?? undefined
             },
@@ -354,7 +354,7 @@ export async function getDashboardData(userType: "Student" | "Company"): Promise
             id: user.id,
             clerkId: user.clerkId,
             email: user.email,
-            role: user.role as "STUDENT" | "COMPANY",
+            role: user.role as "STUDENT" | "COMPANY" | "TEAM_MEMBER",
             introShown: user.introShown,
             profile: user.profile ?? undefined
         },

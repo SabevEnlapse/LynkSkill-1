@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "../lib/prisma"
-import { generateCompanyCode } from "../lib/company-code"
+import { generateUniqueCompanyCode } from "../lib/company-code"
 
 async function main() {
   console.log("🔄 Starting company code backfill...")
@@ -22,7 +22,7 @@ async function main() {
 
   for (const company of companiesWithoutCodes) {
     try {
-      const code = generateCompanyCode()
+      const code = await generateUniqueCompanyCode(prisma)
       
       await prisma.company.update({
         where: { id: company.id },

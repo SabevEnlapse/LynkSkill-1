@@ -42,10 +42,11 @@ const pageTransition = {
 
 interface DashboardShellProps {
     children: React.ReactNode
-    userType: "Student" | "Company"
+    userType: "Student" | "Company" | "TeamMember"
+    memberPermissions?: string[]
 }
 
-export function DashboardShell({ children, userType }: DashboardShellProps) {
+export function DashboardShell({ children, userType, memberPermissions = [] }: DashboardShellProps) {
     const { t } = useTranslation()
     const { isAIMode } = useAIMode()
     const pathname = usePathname()
@@ -169,6 +170,7 @@ export function DashboardShell({ children, userType }: DashboardShellProps) {
                 onClose={() => setMobileMenuOpen(false)}
                 companyName={companyName}
                 companyLogo={companyLogo}
+                memberPermissions={memberPermissions}
             />
 
             {/* Sidebar - Desktop */}
@@ -178,6 +180,7 @@ export function DashboardShell({ children, userType }: DashboardShellProps) {
                 isMobile={false}
                 companyName={companyName}
                 companyLogo={companyLogo}
+                memberPermissions={memberPermissions}
             />
 
             {/* Main Content */}
@@ -255,6 +258,8 @@ export function DashboardShell({ children, userType }: DashboardShellProps) {
                             >
                                 {userType === "Student" ? (
                                     <StudentAIChat />
+                                ) : userType === "Company" ? (
+                                    <CompanyAIChat />
                                 ) : (
                                     <CompanyAIChat />
                                 )}
@@ -290,6 +295,15 @@ export function DashboardShell({ children, userType }: DashboardShellProps) {
                                 `📚 Track your <strong>Experience</strong> and earn points for your achievements.`,
                                 `✨ Try <strong>AI Mode</strong> to get personalized recommendations!`,
                             ]
+                            : userType === "TeamMember"
+                            ? [
+                                `👋 Hi <strong>${userName || "Team Member"}</strong>, I am <strong>Linky</strong>, your guide in <em>LynkSkill</em>.`,
+                                `🏢 Welcome to <strong>${companyName || "your company"}</strong>'s team on LynkSkill!`,
+                                `🚀 Let me show you around!`,
+                                `🔑 Your dashboard shows only the tools your role has access to.`,
+                                `📋 Use the sidebar to navigate to your available features.`,
+                                `✨ Try <strong>AI Mode</strong> for smart assistance!`,
+                            ]
                             : [
                                 `👋 Hi <strong>${companyName || "Company"}</strong>, I am <strong>Linky</strong>, your guide in <em>LynkSkill</em>.`,
                                 `🏢 Welcome to LynkSkill for finding top talent!`,
@@ -304,7 +318,7 @@ export function DashboardShell({ children, userType }: DashboardShellProps) {
                         setShowMascot(false)
                         await fetch("/api/user/intro-shown", { method: "POST" })
                     }}
-                    userType={userType}
+                    userType={userType === "TeamMember" ? "Company" : userType}
                 />
             )}
         </div>

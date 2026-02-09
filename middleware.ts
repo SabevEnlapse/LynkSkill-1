@@ -31,7 +31,8 @@ const isPublicRoute = createRouteMatcher([
 
 const isOnboardingRoute = createRouteMatcher([
     "/onboarding",
-    "/redirect-after-signin"
+    "/redirect-after-signin",
+    "/api/company/join",
 ]);
 
 // Routes that require auth but no specific role (accessible to all authenticated users)
@@ -66,6 +67,9 @@ export default clerkMiddleware(async (auth, req) => {
             if (role === "COMPANY") {
                 return NextResponse.redirect(new URL("/dashboard/company", req.url));
             }
+            if (role === "TEAM_MEMBER") {
+                return NextResponse.redirect(new URL("/dashboard/team-member", req.url));
+            }
             return NextResponse.redirect(new URL("/dashboard/student", req.url));
         }
         // Ако е публична страница и не е хоумпейдж, просто го пускаме
@@ -95,9 +99,21 @@ export default clerkMiddleware(async (auth, req) => {
 
     // ✅ 6. Role-based защита
     if (url.pathname.startsWith("/dashboard/student") && role !== "STUDENT") {
+        if (role === "TEAM_MEMBER") {
+            return NextResponse.redirect(new URL("/dashboard/team-member", req.url));
+        }
         return NextResponse.redirect(new URL("/dashboard/company", req.url));
     }
     if (url.pathname.startsWith("/dashboard/company") && role !== "COMPANY") {
+        if (role === "TEAM_MEMBER") {
+            return NextResponse.redirect(new URL("/dashboard/team-member", req.url));
+        }
+        return NextResponse.redirect(new URL("/dashboard/student", req.url));
+    }
+    if (url.pathname.startsWith("/dashboard/team-member") && role !== "TEAM_MEMBER") {
+        if (role === "COMPANY") {
+            return NextResponse.redirect(new URL("/dashboard/company", req.url));
+        }
         return NextResponse.redirect(new URL("/dashboard/student", req.url));
     }
 

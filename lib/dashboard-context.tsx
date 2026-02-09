@@ -56,7 +56,7 @@ interface UserData {
     id: string
     clerkId: string
     email: string
-    role: "STUDENT" | "COMPANY"
+    role: "STUDENT" | "COMPANY" | "TEAM_MEMBER"
     introShown: boolean
     profile?: {
         name: string
@@ -135,7 +135,7 @@ const swrConfig: SWRConfiguration = {
 // ============ Provider Props ============
 interface DashboardProviderProps {
     children: React.ReactNode
-    userType: "Student" | "Company"
+    userType: "Student" | "Company" | "TeamMember"
     initialData?: {
         user?: UserData | null
         company?: CompanyData | null
@@ -173,7 +173,7 @@ export function DashboardProvider({
         isLoading: isLoadingCompany,
         mutate: mutateCompany 
     } = useSWR<CompanyData>(
-        userType === "Company" ? "/api/company/me" : null,
+        (userType === "Company" || userType === "TeamMember") ? "/api/company/me" : null,
         fetcher,
         { 
             ...swrConfig, 
@@ -198,7 +198,7 @@ export function DashboardProvider({
     // Applications
     const applicationsUrl = userType === "Student" 
         ? "/api/applications/me" 
-        : "/api/applications/company"
+        : "/api/applications/company" // Also used by TeamMember
     
     const { 
         data: applications, 
@@ -264,7 +264,7 @@ export function DashboardProvider({
     const refreshAll = useCallback(async () => {
         await Promise.all([
             mutateUser(),
-            userType === "Company" ? mutateCompany() : Promise.resolve(),
+            (userType === "Company" || userType === "TeamMember") ? mutateCompany() : Promise.resolve(),
             mutateInternships(),
             mutateApplications(),
             mutateProjects(),

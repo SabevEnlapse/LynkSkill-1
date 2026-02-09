@@ -589,8 +589,6 @@ enum Permission {
   // Application Management
   VIEW_APPLICATIONS
   MANAGE_APPLICATIONS
-  APPROVE_APPLICATIONS
-  REJECT_APPLICATIONS
   
   // Candidate Management
   VIEW_CANDIDATES
@@ -607,9 +605,6 @@ enum Permission {
   // Experience & Assignments
   CREATE_ASSIGNMENTS
   GRADE_EXPERIENCES
-  
-  // Analytics
-  VIEW_ANALYTICS
 }
 
 //
