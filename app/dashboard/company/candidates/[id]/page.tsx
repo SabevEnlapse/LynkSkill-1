@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface EvaluationSession {
     sessionId: string
@@ -56,6 +57,7 @@ interface CandidateProfile {
 export default function CandidateProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const router = useRouter()
+    const { t } = useTranslation()
     const [candidate, setCandidate] = useState<CandidateProfile | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [selectedSession, setSelectedSession] = useState<EvaluationSession | null>(null)
@@ -94,8 +96,8 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
     if (!candidate) {
         return (
             <div className="text-center py-20">
-                <h2 className="text-xl font-semibold mb-2">Candidate not found</h2>
-                <Button onClick={() => router.back()}>Go Back</Button>
+                <h2 className="text-xl font-semibold mb-2">{t('candidateProfile.candidateNotFound')}</h2>
+                <Button onClick={() => router.back()}>{t('candidateProfile.goBack')}</Button>
             </div>
         )
     }
@@ -116,7 +118,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                 className="rounded-xl"
             >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Candidates
+                {t('candidateProfile.backToCandidates')}
             </Button>
 
             {/* Profile Header */}
@@ -152,7 +154,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             {candidate.matchPercentage !== undefined && candidate.matchPercentage >= 60 && (
                                 <Badge className="bg-gradient-to-r from-violet-600 to-purple-600 text-white border-0">
                                     <Star className="h-3 w-3 mr-1 fill-current" />
-                                    Top Match
+                                    {t('candidateProfile.topMatch')}
                                 </Badge>
                             )}
                         </div>
@@ -167,7 +169,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             {candidate.matchPercentage !== undefined && candidate.matchPercentage > 0 && (
                                 <Badge variant="outline" className="text-violet-600 dark:text-violet-400 border-violet-500/30">
                                     <TrendingUp className="h-3 w-3 mr-1" />
-                                    Match Score: {candidate.matchPercentage}%
+                                    {t('candidateProfile.matchScore')}: {candidate.matchPercentage}%
                                 </Badge>
                             )}
                         </div>
@@ -179,7 +181,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             onClick={() => router.push(`/dashboard/company/candidates?message=${id}`)}
                         >
                             <Mail className="h-4 w-4 mr-2" />
-                            Send Message
+                            {t('candidateProfile.sendMessage')}
                         </Button>
                         <Button 
                             variant="outline"
@@ -187,7 +189,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             onClick={() => router.push(`/dashboard/company/candidates?interview=${id}`)}
                         >
                             <Calendar className="h-4 w-4 mr-2" />
-                            Schedule Interview
+                            {t('candidateProfile.scheduleInterview')}
                         </Button>
                     </div>
                 </div>
@@ -202,7 +204,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <User className="h-5 w-5 text-violet-500" />
-                                    About
+                                    {t('candidateProfile.about')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -217,7 +219,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <FolderOpen className="h-5 w-5 text-violet-500" />
-                                    Projects ({candidate.projects.length})
+                                    {t('candidateProfile.projects')} ({candidate.projects.length})
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -246,7 +248,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Briefcase className="h-5 w-5 text-violet-500" />
-                                    Experience ({candidate.experiences.length})
+                                    {t('candidateProfile.experienceTitle')} ({candidate.experiences.length})
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -255,7 +257,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                                         <h4 className="font-semibold">{exp.title}</h4>
                                         <p className="text-sm text-violet-600 dark:text-violet-400">{exp.company}</p>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            {new Date(exp.startDate).toLocaleDateString()} - {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
+                                            {new Date(exp.startDate).toLocaleDateString()} - {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : t('candidateProfile.present')}
                                         </p>
                                         {exp.description && (
                                             <p className="text-sm text-muted-foreground mt-2">{exp.description}</p>
@@ -275,12 +277,12 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             <CardHeader>
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5 text-violet-500" />
-                                    Match Analysis
+                                    {t('candidateProfile.matchAnalysis')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Overall Score</span>
+                                    <span className="text-sm text-muted-foreground">{t('candidateProfile.overallScore')}</span>
                                     <div className={cn(
                                         "px-3 py-1 rounded-lg text-white font-bold bg-gradient-to-r",
                                         getMatchColor(selectedSession?.matchPercentage ?? candidate.matchPercentage ?? 0)
@@ -291,7 +293,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                                 
                                 {((selectedSession?.matchReasons ?? candidate.matchReasons) || []).length > 0 && (
                                     <div>
-                                        <p className="text-xs text-muted-foreground mb-2">Why this match?</p>
+                                        <p className="text-xs text-muted-foreground mb-2">{t('candidateProfile.whyThisMatch')}</p>
                                         <div className="space-y-1">
                                             {(selectedSession?.matchReasons ?? candidate.matchReasons ?? []).map((reason, index) => (
                                                 <div key={index} className="flex items-center gap-2 text-sm">
@@ -305,7 +307,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
 
                                 {((selectedSession?.matchedSkills ?? candidate.matchedSkills) || []).length > 0 && (
                                     <div>
-                                        <p className="text-xs text-muted-foreground mb-2">Matched Skills</p>
+                                        <p className="text-xs text-muted-foreground mb-2">{t('candidateProfile.matchedSkills')}</p>
                                         <div className="flex flex-wrap gap-1">
                                             {(selectedSession?.matchedSkills ?? candidate.matchedSkills ?? []).map((skill) => (
                                                 <Badge 
@@ -321,7 +323,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
 
                                 {selectedSession?.searchQuery && (
                                     <div className="pt-2 border-t border-border/50">
-                                        <p className="text-xs text-muted-foreground mb-1">Search Query</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t('candidateProfile.searchQuery')}</p>
                                         <p className="text-sm italic text-muted-foreground">&quot;{selectedSession.searchQuery}&quot;</p>
                                     </div>
                                 )}
@@ -335,7 +337,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                             <CardHeader>
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <History className="h-5 w-5 text-purple-500" />
-                                    AI Search History
+                                    {t('candidateProfile.aiSearchHistory')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
@@ -358,7 +360,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Sparkles className="h-3 w-3 text-violet-500" />
                                                     <span className="text-xs font-medium truncate">
-                                                        {session.sessionName || "AI Search"}
+                                                        {session.sessionName || t('candidateProfile.aiSearch')}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -400,7 +402,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                     {/* Skills */}
                     <Card className="border-border/50">
                         <CardHeader>
-                            <CardTitle className="text-base">Skills</CardTitle>
+                            <CardTitle className="text-base">{t('candidateProfile.skills')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-2">
@@ -420,7 +422,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                                     )
                                 })}
                                 {candidate.skills.length === 0 && (
-                                    <p className="text-sm text-muted-foreground">No skills listed</p>
+                                    <p className="text-sm text-muted-foreground">{t('candidateProfile.noSkillsListed')}</p>
                                 )}
                             </div>
                         </CardContent>
@@ -430,7 +432,7 @@ export default function CandidateProfilePage({ params }: { params: Promise<{ id:
                     {candidate.interests.length > 0 && (
                         <Card className="border-border/50">
                             <CardHeader>
-                                <CardTitle className="text-base">Interests</CardTitle>
+                                <CardTitle className="text-base">{t('candidateProfile.interests')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">

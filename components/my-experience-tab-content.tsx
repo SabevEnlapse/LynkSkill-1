@@ -510,9 +510,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                 <CheckCircle className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">🎉 Welcome to Your New Internship!</h3>
+                <h3 className="text-xl font-bold">🎉 {t('experience.welcomeInternship')}</h3>
                 <p className="text-white/90">
-                  You&apos;ve accepted the offer. This is your project workspace where you can upload your work and track progress.
+                  {t('experience.welcomeInternshipDesc')}
                 </p>
               </div>
             </div>
@@ -549,7 +549,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <div className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
                       <span className="text-sm font-medium">
-                    {experiences.filter((exp) => exp.status === "pending").length} Pending
+                    {experiences.filter((exp) => exp.status === "pending").length} {t('experience.pending')}
                   </span>
                     </div>
                 )}
@@ -565,7 +565,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
               onClick={() => setFilter("all")}
           >
             <Layers className="mr-2 h-4 w-4" />
-            All Experiences
+            {t('experience.allExperiences')}
           </Button>
 
           <Button
@@ -574,7 +574,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
               onClick={() => setFilter("recent")}
           >
             <Clock className="mr-2 h-4 w-4" />
-            Recent
+            {t('experience.recent')}
           </Button>
 
           <div className="flex-1"></div>
@@ -582,7 +582,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
                 type="search"
-                placeholder="Search experiences..."
+                placeholder={t('experience.searchPlaceholder')}
                 className="w-full rounded-2xl pl-9 md:w-[250px] border-2 focus:border-[var(--experience-accent)] transition-colors"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -596,7 +596,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
               className="rounded-2xl"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Refreshing..." : "Refresh"}
+            {refreshing ? t('experience.refreshing') : t('experience.refresh')}
           </Button>
         </div>
 
@@ -607,30 +607,29 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
                   1
                 </div>
-                <h3 className="text-xl font-semibold">Upload Experience</h3>
+                <h3 className="text-xl font-semibold">{t('experience.uploadExperience')}</h3>
               </div>
 
               <Card className="overflow-hidden rounded-3xl border-2 border-[var(--experience-step-border)] bg-[var(--experience-step-background)]">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5 text-[var(--experience-accent)]" />
-                    Select Company & Project
+                    {t('experience.selectCompanyProject')}
                   </CardTitle>
                   <CardDescription>
-                    Choose a company where you have an approved application, then select the project to upload your
-                    experience.
+                    {t('experience.selectCompanyProjectDesc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-3">
                     <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-[var(--experience-accent)]" />
-                      Company (Approved Applications Only)
+                      {t('experience.companyApprovedOnly')}
                     </label>
                     {companies.length === 0 ? (
                         <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
                           <p className="text-sm text-muted-foreground">
-                            No approved companies yet. Apply to internships and wait for approval to upload experiences.
+                            {t('experience.noApprovedCompanies')}
                           </p>
                         </div>
                     ) : (
@@ -643,7 +642,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                         >
                           <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
                             <div className="flex items-center gap-3 w-full">
-                              <SelectValue placeholder="Select an approved company..." className="text-left flex-1" />
+                              <SelectValue placeholder={t('experience.selectCompanyPlaceholder')} className="text-left flex-1" />
                             </div>
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
@@ -670,13 +669,13 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                       <div className="space-y-3">
                         <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                           <Layers className="h-4 w-4 text-[var(--experience-accent)]" />
-                          Project (From Approved Applications)
+                          {t('experience.projectApproved')}
                         </label>
                         {projectsLoading ? (
                             <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
                               <div className="flex items-center gap-2">
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--experience-accent)]/30 border-t-[var(--experience-accent)]" />
-                                <p className="text-sm text-muted-foreground">Loading approved projects...</p>
+                                <p className="text-sm text-muted-foreground">{t('experience.loadingProjects')}</p>
                               </div>
                             </div>
                         ) : projectsError ? (
@@ -689,15 +688,14 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                         ) : projects.length === 0 ? (
                             <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
                               <p className="text-sm text-muted-foreground">
-                                No approved projects found for this company. Projects are created when your application is
-                                approved.
+                                {t('experience.noApprovedProjects')}
                               </p>
                             </div>
                         ) : (
                             <Select value={projectId} onValueChange={(value) => setProjectId(value)}>
                               <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
                                 <div className="flex items-center gap-3 w-full">
-                                  <SelectValue placeholder="Select a project..." className="text-left flex-1" />
+                                  <SelectValue placeholder={t('experience.selectProjectPlaceholder')} className="text-left flex-1" />
                                 </div>
                               </SelectTrigger>
                               <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
@@ -728,7 +726,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
 
                   {/* File Upload Zone */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Files</label>
+                    <label className="text-sm font-medium">{t('experience.files')}</label>
                     <div
                         className={`relative rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
                             dragActive
@@ -752,9 +750,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                           <Upload className="h-6 w-6 text-purple-500" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium">Drop files here or click to browse</p>
+                          <p className="text-sm font-medium">{t('experience.dropFiles')}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Support for images, videos, PDFs, and documents
+                            {t('experience.supportedFormats')}
                           </p>
                         </div>
                       </div>
@@ -764,7 +762,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                   {/* Selected Files */}
                   {files && files.length > 0 && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Selected Files ({files.length})</label>
+                        <label className="text-sm font-medium">{t('experience.selectedFiles')} ({files.length})</label>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {Array.from(files).map((file, index) => (
                               <div
@@ -796,7 +794,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                   {loading && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span>Uploading...</span>
+                          <span>{t('experience.uploading')}</span>
                           <span>{uploadProgress}%</span>
                         </div>
                         <Progress value={uploadProgress} className="h-2" />
@@ -812,12 +810,12 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     {loading ? (
                         <div className="flex items-center gap-2">
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          Uploading Experience...
+                          {t('experience.uploadingExperience')}
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
                           <Plus className="h-4 w-4" />
-                          Share Experience
+                          {t('experience.shareExperience')}
                         </div>
                     )}
                   </Button>
@@ -832,7 +830,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
               {role === "STUDENT" ? "2" : "1"}
             </div>
-            <h3 className="text-xl font-semibold">{role === "STUDENT" ? "Your Experiences" : "Student Submissions"}</h3>
+            <h3 className="text-xl font-semibold">{role === "STUDENT" ? t('experience.yourExperiences') : t('experience.studentSubmissions')}</h3>
           </div>
 
           {loading ? (
@@ -860,23 +858,23 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                   <div>
                     <h4 className="font-medium">
                       {searchQuery
-                          ? "No experiences match your search"
+                          ? t('experience.noSearchMatch')
                           : role === "STUDENT"
-                              ? "No experiences yet"
-                              : "No submissions yet"}
+                              ? t('experience.noExperiencesYet')
+                              : t('experience.noSubmissionsYet')}
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {searchQuery ? (
                           <>
-                            Try adjusting your search terms or{" "}
+                            {t('experience.tryAdjustingSearch')}{" "}
                             <button onClick={() => setSearchQuery("")} className="text-primary underline">
-                              clear search
+                              {t('experience.clearSearch')}
                             </button>
                           </>
                       ) : role === "STUDENT" ? (
-                          "Upload your first experience to get started"
+                          t('experience.uploadFirstExperience')
                       ) : (
-                          "Student submissions will appear here for review"
+                          t('experience.submissionsWillAppear')
                       )}
                     </p>
                   </div>
@@ -887,8 +885,8 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold">
                     {searchQuery
-                        ? `Search Results (${finalExperiences.length})`
-                        : `${filter === "recent" ? "Recent " : ""}Experiences (${finalExperiences.length})`}
+                        ? `${t('experience.searchResults')} (${finalExperiences.length})`
+                        : `${filter === "recent" ? t('experience.recent') + " " : ""}${t('experience.title')} (${finalExperiences.length})`}
                   </h2>
                 </div>
 
@@ -916,11 +914,11 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                 <div>
                                   <CardTitle className="text-base group-hover:text-[var(--experience-accent)] transition-colors">
                                     {role === "STUDENT"
-                                        ? exp.company?.name || "Unknown Company"
-                                        : exp.student?.email || "Unknown Student"}
+                                        ? exp.company?.name || t('experience.unknownCompany')
+                                        : exp.student?.email || t('experience.unknownStudent')}
                                   </CardTitle>
                                   <CardDescription className="text-xs">
-                                    {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : "Recently"}
+                                    {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : t('experience.recently')}
                                   </CardDescription>
                                 </div>
                               </div>
@@ -937,9 +935,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                             {exp.mediaUrls.length > 0 && (
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Media Files</span>
+                                    <span className="text-sm font-medium">{t('experience.mediaFiles')}</span>
                                     <Badge variant="outline" className="rounded-xl text-xs">
-                                      {exp.mediaUrls.length} {exp.mediaUrls.length === 1 ? "file" : "files"}
+                                      {exp.mediaUrls.length} {exp.mediaUrls.length === 1 ? t('experience.file') : t('experience.filesPlural')}
                                     </Badge>
                                   </div>
 
@@ -980,7 +978,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                             onClick={() => setViewAllFilesExp(exp)}
                                         >
                                           <Eye className="h-3 w-3 mr-1" />
-                                          View All ({exp.mediaUrls.length})
+                                          {t('experience.viewAll')} ({exp.mediaUrls.length})
                                         </Button>
                                     )}
                                     {exp.mediaUrls.length > 1 && (
@@ -995,7 +993,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                             }}
                                         >
                                           <DownloadCloud className="h-3 w-3 mr-1" />
-                                          Download All
+                                          {t('experience.downloadAll')}
                                         </Button>
                                     )}
                                   </div>
@@ -1033,7 +1031,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                           className="w-full bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white rounded-2xl"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
-                                        Endorse & Approve
+                                        {t('experience.endorseApprove')}
                                       </Button>
                                     </DialogTrigger>
 
@@ -1042,9 +1040,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] flex items-center justify-center">
                                           <ThumbsUp className="h-8 w-8 text-white" />
                                         </div>
-                                        <DialogTitle className="text-2xl text-center">Professional Endorsement</DialogTitle>
+                                        <DialogTitle className="text-2xl text-center">{t('experience.professionalEndorsement')}</DialogTitle>
                                         <p className="text-sm text-muted-foreground text-center">
-                                          Evaluate the student&apos;s performance across key professional competencies
+                                          {t('experience.evaluateStudent')}
                                         </p>
                                       </DialogHeader>
 
@@ -1053,9 +1051,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
                                             <Star className="h-4 w-4 text-yellow-500" />
-                                            Technical Skills
+                                            {t('experience.technicalSkills')}
                                           </label>
-                                          <p className="text-xs text-muted-foreground">How well did the student demonstrate practical and technical abilities?</p>
+                                          <p className="text-xs text-muted-foreground">{t('experience.technicalSkillsDesc')}</p>
                                           <div className="grid grid-cols-5 gap-2">
                                             {[1, 2, 3, 4, 5].map((value) => (
                                                 <button
@@ -1074,11 +1072,11 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                                 >
                                                   <span className="text-lg font-bold">{value}</span>
                                                   <span className="text-[10px] text-muted-foreground">
-                                                    {value === 1 && "Basic"}
-                                                    {value === 2 && "Fair"}
-                                                    {value === 3 && "Good"}
-                                                    {value === 4 && "Great"}
-                                                    {value === 5 && "Expert"}
+                                                    {value === 1 && t('experience.ratingBasic')}
+                                                    {value === 2 && t('experience.ratingFair')}
+                                                    {value === 3 && t('experience.ratingGood')}
+                                                    {value === 4 && t('experience.ratingGreat')}
+                                                    {value === 5 && t('experience.ratingExpert')}
                                                   </span>
                                                 </button>
                                             ))}
@@ -1089,9 +1087,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
                                             <Target className="h-4 w-4 text-blue-500" />
-                                            Project Impact
+                                            {t('experience.projectImpact')}
                                           </label>
-                                          <p className="text-xs text-muted-foreground">What was the level of contribution to the project/company?</p>
+                                          <p className="text-xs text-muted-foreground">{t('experience.projectImpactDesc')}</p>
                                           <div className="grid grid-cols-5 gap-2">
                                             {[1, 2, 3, 4, 5].map((value) => (
                                                 <button
@@ -1110,11 +1108,11 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                                 >
                                                   <span className="text-lg font-bold">{value}</span>
                                                   <span className="text-[10px] text-muted-foreground">
-                                                    {value === 1 && "Low"}
-                                                    {value === 2 && "Some"}
-                                                    {value === 3 && "Good"}
-                                                    {value === 4 && "High"}
-                                                    {value === 5 && "Major"}
+                                                    {value === 1 && t('experience.impactLow')}
+                                                    {value === 2 && t('experience.impactSome')}
+                                                    {value === 3 && t('experience.impactGood')}
+                                                    {value === 4 && t('experience.impactHigh')}
+                                                    {value === 5 && t('experience.impactMajor')}
                                                   </span>
                                                 </button>
                                             ))}
@@ -1125,9 +1123,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
                                             <TrendingUp className="h-4 w-4 text-green-500" />
-                                            Growth & Adaptability
+                                            {t('experience.growthAdaptability')}
                                           </label>
-                                          <p className="text-xs text-muted-foreground">How much did the student learn and adapt during the internship?</p>
+                                          <p className="text-xs text-muted-foreground">{t('experience.growthAdaptabilityDesc')}</p>
                                           <div className="grid grid-cols-5 gap-2">
                                             {[1, 2, 3, 4, 5].map((value) => (
                                                 <button
@@ -1146,11 +1144,11 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                                 >
                                                   <span className="text-lg font-bold">{value}</span>
                                                   <span className="text-[10px] text-muted-foreground">
-                                                    {value === 1 && "Little"}
-                                                    {value === 2 && "Some"}
-                                                    {value === 3 && "Good"}
-                                                    {value === 4 && "Strong"}
-                                                    {value === 5 && "Rapid"}
+                                                    {value === 1 && t('experience.growthLittle')}
+                                                    {value === 2 && t('experience.growthSome')}
+                                                    {value === 3 && t('experience.growthGood')}
+                                                    {value === 4 && t('experience.growthStrong')}
+                                                    {value === 5 && t('experience.growthRapid')}
                                                   </span>
                                                 </button>
                                             ))}
@@ -1161,14 +1159,14 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
                                             <ThumbsUp className="h-4 w-4 text-purple-500" />
-                                            Would you recommend this student?
+                                            {t('experience.wouldRecommend')}
                                           </label>
                                           <div className="grid grid-cols-2 gap-3">
                                             {[
-                                              { value: "highly_recommend", label: "Highly Recommend", emoji: "🌟", color: "emerald" },
-                                              { value: "recommend", label: "Recommend", emoji: "👍", color: "blue" },
-                                              { value: "neutral", label: "Neutral", emoji: "😐", color: "gray" },
-                                              { value: "not_recommend", label: "Not Recommend", emoji: "👎", color: "red" },
+                                              { value: "highly_recommend", label: t('experience.highlyRecommend'), emoji: "🌟", color: "emerald" },
+                                              { value: "recommend", label: t('experience.recommend'), emoji: "👍", color: "blue" },
+                                              { value: "neutral", label: t('experience.neutral'), emoji: "😐", color: "gray" },
+                                              { value: "not_recommend", label: t('experience.notRecommend'), emoji: "👎", color: "red" },
                                             ].map((option) => (
                                                 <button
                                                     key={option.value}
@@ -1198,10 +1196,10 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         <div className="space-y-3">
                                           <label className="text-sm font-semibold flex items-center gap-2">
                                             <MessageSquare className="h-4 w-4 text-[var(--experience-accent)]" />
-                                            Feedback Note (Optional)
+                                            {t('experience.feedbackNote')}
                                           </label>
                                           <Textarea
-                                              placeholder="Share specific feedback about the student's performance, strengths, and areas for improvement..."
+                                              placeholder={t('experience.feedbackPlaceholder')}
                                               value={endorsementData.endorsementNote}
                                               onChange={(e) => setEndorsementData(prev => ({ ...prev, endorsementNote: e.target.value }))}
                                               className="rounded-xl border-2 border-[var(--experience-step-border)] resize-none min-h-[80px]"
@@ -1211,19 +1209,19 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                         {/* Summary Preview */}
                                         {endorsementData.skillsRating && endorsementData.impactRating && endorsementData.growthRating && endorsementData.recommendation && (
                                             <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--experience-hero-gradient-from)]/10 to-[var(--experience-hero-gradient-to)]/10 border border-[var(--experience-accent)]/20">
-                                              <p className="text-sm font-semibold text-[var(--experience-accent)] mb-2">Endorsement Summary</p>
+                                              <p className="text-sm font-semibold text-[var(--experience-accent)] mb-2">{t('experience.endorsementSummary')}</p>
                                               <div className="grid grid-cols-4 gap-3 text-center">
                                                 <div>
                                                   <p className="text-2xl font-bold">{endorsementData.skillsRating}/5</p>
-                                                  <p className="text-xs text-muted-foreground">Skills</p>
+                                                  <p className="text-xs text-muted-foreground">{t('experience.skills')}</p>
                                                 </div>
                                                 <div>
                                                   <p className="text-2xl font-bold">{endorsementData.impactRating}/5</p>
-                                                  <p className="text-xs text-muted-foreground">Impact</p>
+                                                  <p className="text-xs text-muted-foreground">{t('experience.impact')}</p>
                                                 </div>
                                                 <div>
                                                   <p className="text-2xl font-bold">{endorsementData.growthRating}/5</p>
-                                                  <p className="text-xs text-muted-foreground">Growth</p>
+                                                  <p className="text-xs text-muted-foreground">{t('experience.growth')}</p>
                                                 </div>
                                                 <div>
                                                   <p className="text-xl">
@@ -1232,7 +1230,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                                     {endorsementData.recommendation === "neutral" && "😐"}
                                                     {endorsementData.recommendation === "not_recommend" && "👎"}
                                                   </p>
-                                                  <p className="text-xs text-muted-foreground">Rec.</p>
+                                                  <p className="text-xs text-muted-foreground">{t('experience.rec')}</p>
                                                 </div>
                                               </div>
                                             </div>
@@ -1250,7 +1248,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                               if (closeButton) closeButton.click()
                                             }}
                                         >
-                                          Cancel
+                                          {t('experience.cancel')}
                                         </Button>
 
                                         <Button
@@ -1266,7 +1264,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                             className="flex-1 rounded-2xl bg-gradient-to-r from-[var(--experience-hero-gradient-from)] to-[var(--experience-hero-gradient-to)] hover:opacity-90 text-white font-semibold disabled:opacity-50"
                                         >
                                           <CheckCircle className="h-4 w-4 mr-2" />
-                                          Submit Endorsement
+                                          {t('experience.submitEndorsement')}
                                         </Button>
                                       </DialogFooter>
                                     </DialogContent>
@@ -1279,7 +1277,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                       className="w-full mt-2 rounded-2xl"
                                   >
                                     <AlertCircle className="h-4 w-4 mr-1" />
-                                    Reject
+                                    {t('experience.reject')}
                                   </Button>
                                 </div>
                             )}
@@ -1297,17 +1295,17 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-[var(--experience-accent)]" />
-                Download File
+                {t('experience.downloadFile')}
               </DialogTitle>
               <DialogDescription>
-                Before downloading, we&apos;ll quickly scan this file for potential risks.
+                {t('experience.downloadScanDesc')}
               </DialogDescription>
             </DialogHeader>
 
             {scanStatus === "idle" && (
                 <div className="space-y-4 py-4">
                   <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
-                    <p className="text-sm text-muted-foreground mb-1">File:</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('experience.fileLabel')}:</p>
                     <p className="text-sm font-medium break-all">{selectedFile?.split("/").pop()}</p>
                   </div>
                   <Button
@@ -1315,7 +1313,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                       className="w-full rounded-2xl bg-[var(--experience-accent)] hover:bg-[var(--experience-accent)]/90"
                   >
                     <ShieldCheck className="h-4 w-4 mr-2" />
-                    Start Security Scan
+                    {t('experience.startSecurityScan')}
                   </Button>
                 </div>
             )}
@@ -1326,10 +1324,10 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <div className="h-16 w-16 rounded-full bg-[var(--experience-accent)]/10 flex items-center justify-center">
                       <ShieldCheck className="h-8 w-8 text-[var(--experience-accent)] animate-pulse" />
                     </div>
-                    <p className="text-sm font-medium">Scanning for threats...</p>
+                    <p className="text-sm font-medium">{t('experience.scanningThreats')}</p>
                   </div>
                   <Progress value={scanProgress} className="h-2" />
-                  <p className="text-xs text-center text-muted-foreground">{scanProgress}% complete</p>
+                  <p className="text-xs text-center text-muted-foreground">{scanProgress}% {t('experience.complete')}</p>
                 </div>
             )}
 
@@ -1339,8 +1337,8 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <ShieldCheck className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-green-600 mb-1">File is Safe</p>
-                    <p className="text-xs text-muted-foreground">No threats detected. Ready to download.</p>
+                    <p className="text-sm font-semibold text-green-600 mb-1">{t('experience.fileIsSafe')}</p>
+                    <p className="text-xs text-muted-foreground">{t('experience.noThreatsDetected')}</p>
                   </div>
                 </div>
             )}
@@ -1351,9 +1349,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <ShieldAlert className="h-8 w-8 text-red-600" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-red-600 mb-1">Warning: Suspicious Content</p>
+                    <p className="text-sm font-semibold text-red-600 mb-1">{t('experience.warningSuspicious')}</p>
                     <p className="text-xs text-muted-foreground">
-                      This file may contain harmful content. Download at your own risk.
+                      {t('experience.harmfulContentWarning')}
                     </p>
                   </div>
                 </div>
@@ -1361,7 +1359,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
 
             <DialogFooter className="flex gap-2 sm:gap-2">
               <Button variant="outline" onClick={() => setSelectedFile(null)} className="flex-1 rounded-2xl">
-                Cancel
+                {t('experience.cancel')}
               </Button>
               {scanStatus === "safe" && (
                   <Button
@@ -1369,7 +1367,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                       className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    {t('experience.download')}
                   </Button>
               )}
             </DialogFooter>
@@ -1381,12 +1379,12 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Layers className="h-5 w-5 text-[var(--experience-accent)]" />
-                All Media Files ({viewAllFilesExp?.mediaUrls.length || 0})
+                {t('experience.allMediaFiles')} ({viewAllFilesExp?.mediaUrls.length || 0})
               </DialogTitle>
               <DialogDescription>
                 {role === "STUDENT"
-                    ? `Experience with ${viewAllFilesExp?.company?.name || "Unknown Company"}`
-                    : `Experience from ${viewAllFilesExp?.student?.email || "Unknown Student"}`}
+                    ? `${t('experience.experienceWith')} ${viewAllFilesExp?.company?.name || t('experience.unknownCompany')}`
+                    : `${t('experience.experienceFrom')} ${viewAllFilesExp?.student?.email || t('experience.unknownStudent')}`}
               </DialogDescription>
             </DialogHeader>
 
@@ -1416,7 +1414,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                             onClick={() => handleDownloadClick(url)}
                         >
                           <Download className="h-5 w-5 mr-2" />
-                          Download
+                          {t('experience.download')}
                         </Button>
                       </div>
                       <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
@@ -1429,7 +1427,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
 
             <DialogFooter className="flex gap-2 sm:gap-2">
               <Button variant="outline" onClick={() => setViewAllFilesExp(null)} className="flex-1 rounded-2xl">
-                Close
+                {t('experience.close')}
               </Button>
               <Button
                   onClick={() => {
@@ -1443,7 +1441,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                   className="flex-1 rounded-2xl bg-[var(--experience-accent)] hover:bg-[var(--experience-accent)]/90"
               >
                 <DownloadCloud className="h-4 w-4 mr-2" />
-                Download All
+                {t('experience.downloadAll')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1454,10 +1452,10 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <DownloadCloud className="h-5 w-5 text-[var(--experience-accent)]" />
-                Download All Files
+                {t('experience.downloadAllFiles')}
               </DialogTitle>
               <DialogDescription>
-                Scanning {bulkDownloadExp?.mediaUrls.length || 0} files before download.
+                {t('experience.scanningFiles', { count: bulkDownloadExp?.mediaUrls.length || 0 })}
               </DialogDescription>
             </DialogHeader>
 
@@ -1465,13 +1463,13 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                 <div className="space-y-4 py-4">
                   <div className="p-4 rounded-xl bg-muted/50 border border-[var(--experience-step-border)]">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium">Files to download:</p>
+                      <p className="text-sm font-medium">{t('experience.filesToDownload')}:</p>
                       <Badge variant="outline" className="rounded-xl">
-                        {bulkDownloadExp?.mediaUrls.length || 0} files
+                        {bulkDownloadExp?.mediaUrls.length || 0} {t('experience.filesPlural')}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      All files will be scanned for security threats before downloading.
+                      {t('experience.allFilesScanned')}
                     </p>
                   </div>
                   <Button
@@ -1479,7 +1477,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                       className="w-full rounded-2xl bg-[var(--experience-accent)] hover:bg-[var(--experience-accent)]/90"
                   >
                     <ShieldCheck className="h-4 w-4 mr-2" />
-                    Start Bulk Security Scan
+                    {t('experience.startBulkScan')}
                   </Button>
                 </div>
             )}
@@ -1490,10 +1488,10 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <div className="h-16 w-16 rounded-full bg-[var(--experience-accent)]/10 flex items-center justify-center">
                       <ShieldCheck className="h-8 w-8 text-[var(--experience-accent)] animate-pulse" />
                     </div>
-                    <p className="text-sm font-medium">Scanning {bulkDownloadExp?.mediaUrls.length || 0} files...</p>
+                    <p className="text-sm font-medium">{t('experience.scanningNFiles', { count: bulkDownloadExp?.mediaUrls.length || 0 })}</p>
                   </div>
                   <Progress value={bulkScanProgress} className="h-2" />
-                  <p className="text-xs text-center text-muted-foreground">{bulkScanProgress}% complete</p>
+                  <p className="text-xs text-center text-muted-foreground">{bulkScanProgress}% {t('experience.complete')}</p>
                 </div>
             )}
 
@@ -1503,9 +1501,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <ShieldCheck className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-green-600 mb-1">All Files are Safe</p>
+                    <p className="text-sm font-semibold text-green-600 mb-1">{t('experience.allFilesSafe')}</p>
                     <p className="text-xs text-muted-foreground">
-                      No threats detected in {bulkDownloadExp?.mediaUrls.length || 0} files. Ready to download.
+                      {t('experience.noThreatsInFiles', { count: bulkDownloadExp?.mediaUrls.length || 0 })}
                     </p>
                   </div>
                 </div>
@@ -1517,9 +1515,9 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                     <ShieldAlert className="h-8 w-8 text-red-600" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-red-600 mb-1">Warning: Suspicious Content Detected</p>
+                    <p className="text-sm font-semibold text-red-600 mb-1">{t('experience.warningSuspiciousDetected')}</p>
                     <p className="text-xs text-muted-foreground">
-                      Some files may contain harmful content. Download at your own risk.
+                      {t('experience.someFilesHarmful')}
                     </p>
                   </div>
                 </div>
@@ -1535,7 +1533,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                   }}
                   className="flex-1 rounded-2xl"
               >
-                Cancel
+                {t('experience.cancel')}
               </Button>
               {bulkScanStatus === "safe" && (
                   <Button
@@ -1543,7 +1541,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                       className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white"
                   >
                     <DownloadCloud className="h-4 w-4 mr-2" />
-                    Download All
+                    {t('experience.downloadAll')}
                   </Button>
               )}
             </DialogFooter>
@@ -1552,11 +1550,11 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
         <Dialog open={!!fileSizeError} onOpenChange={() => setFileSizeError(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>File Size Limit Exceeded</DialogTitle>
+              <DialogTitle>{t('experience.fileSizeLimitExceeded')}</DialogTitle>
               <DialogDescription>{fileSizeError}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => setFileSizeError(null)}>OK</Button>
+              <Button onClick={() => setFileSizeError(null)}>{t('experience.ok')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

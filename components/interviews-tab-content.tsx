@@ -101,14 +101,14 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                 setInterviews(prev => prev.map(i => 
                     i.id === id ? { ...i, status: status as Interview["status"] } : i
                 ))
-                toast.success(`Interview ${status.toLowerCase()}`)
+                toast.success(t("interviews.interviewStatusUpdated", { status: status.toLowerCase() }))
             } else {
                 const data = await res.json()
-                toast.error(data.error || "Failed to update interview")
+                toast.error(data.error || t("interviews.failedToUpdate"))
             }
         } catch (error) {
             console.error("Error updating interview:", error)
-            toast.error("Something went wrong")
+            toast.error(t("interviews.somethingWentWrong"))
         } finally {
             setUpdatingId(null)
         }
@@ -116,7 +116,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
 
     const updateMeetingLink = async (id: string) => {
         if (!editLinkValue.trim()) {
-            toast.error("Please enter a meeting link")
+            toast.error(t("interviews.pleaseEnterMeetingLink"))
             return
         }
         
@@ -132,16 +132,16 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                 setInterviews(prev => prev.map(i => 
                     i.id === id ? { ...i, location: editLinkValue.trim() } : i
                 ))
-                toast.success("Meeting link updated!")
+                toast.success(t("interviews.meetingLinkUpdated"))
                 setEditingLinkId(null)
                 setEditLinkValue("")
             } else {
                 const data = await res.json()
-                toast.error(data.error || "Failed to update meeting link")
+                toast.error(data.error || t("interviews.failedToUpdateMeetingLink"))
             }
         } catch (error) {
             console.error("Error updating meeting link:", error)
-            toast.error("Something went wrong")
+            toast.error(t("interviews.somethingWentWrong"))
         } finally {
             setUpdatingId(null)
         }
@@ -286,7 +286,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                                 <Clock className="h-5 w-5 text-blue-500" />
-                                Upcoming Interviews
+                                {t('interviews.upcomingInterviews')}
                             </h3>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {upcomingInterviews.map((interview) => {
@@ -362,7 +362,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                 {updatingId === interview.id ? (
                                                                     <Loader2 className="h-4 w-4 animate-spin" />
                                                                 ) : (
-                                                                    "Save"
+                                                                    t("interviews.save")
                                                                 )}
                                                             </Button>
                                                             <Button
@@ -371,7 +371,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                 onClick={() => setEditingLinkId(null)}
                                                                 className="h-9"
                                                             >
-                                                                Cancel
+                                                                {t('common.cancel')}
                                                             </Button>
                                                         </div>
                                                     ) : interview.location ? (
@@ -401,7 +401,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                             className="w-full border-dashed"
                                                         >
                                                             <Link2 className="h-4 w-4 mr-2" />
-                                                            Add Meeting Link
+                                                            {t('interviews.addMeetingLink')}
                                                         </Button>
                                                     ) : null}
 
@@ -427,7 +427,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                     ) : (
                                                                         <CheckCircle className="h-4 w-4 mr-1" />
                                                                     )}
-                                                                    Confirm
+                                                                    {t('interviews.confirmInterview')}
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
@@ -437,7 +437,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                     className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white"
                                                                 >
                                                                     <Clock className="h-4 w-4 mr-1" />
-                                                                    Reschedule
+                                                                    {t('interviews.rescheduled')}
                                                                 </Button>
                                                             </>
                                                         )}
@@ -453,7 +453,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                         className="border-red-500 text-red-600 hover:bg-red-500 hover:text-white"
                                                                     >
                                                                         <XCircle className="h-4 w-4 mr-1" />
-                                                                        Cancel
+                                                                        {t('interviews.cancelInterview')}
                                                                     </Button>
                                                                 )}
                                                                 {interview.status === "CONFIRMED" && (
@@ -467,7 +467,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                                                                         ) : (
                                                                             <CheckCircle className="h-4 w-4 mr-1" />
                                                                         )}
-                                                                        Mark Complete
+                                                                        {t('interviews.markComplete')}
                                                                     </Button>
                                                                 )}
                                                             </>
@@ -487,7 +487,7 @@ export function InterviewsTabContent({ userType }: InterviewsTabContentProps) {
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold text-muted-foreground flex items-center gap-2">
                                 <Clock className="h-5 w-5" />
-                                Past Interviews
+                                {t('interviews.pastInterviews')}
                             </h3>
                             <div className="grid gap-4 md:grid-cols-2 opacity-75">
                                 {pastInterviews.slice(0, 4).map((interview) => {

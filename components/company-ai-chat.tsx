@@ -32,8 +32,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAIMode } from "@/lib/ai-mode-context"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 export function CompanyAIChat() {
+    const { t } = useTranslation()
     const { 
         messages, 
         addMessage, 
@@ -169,14 +171,14 @@ export function CompanyAIChat() {
     // Callback when search is triggered from AI message
     const onSearchTriggered = async (criteria: { skills: string[]; roleType: string; field: string }) => {
         setIsSearching(true)
-        setSearchStatus("🔍 Searching our talent database...")
+        setSearchStatus(t("ai.searchingDatabase"))
         
         // Show search progress
         const statuses = [
-            "Analyzing your requirements...",
-            "Scanning student profiles...",
-            "Matching skills & experience...",
-            "Ranking best candidates..."
+            t("ai.analyzingRequirements"),
+            t("ai.scanningProfiles"),
+            t("ai.matchingSkills"),
+            t("ai.rankingCandidates")
         ]
         
         for (let i = 0; i < statuses.length; i++) {
@@ -223,7 +225,7 @@ export function CompanyAIChat() {
             if (data.error) {
                 addMessage({
                     role: "assistant",
-                    content: "I apologize, but I encountered an issue. Please try again or rephrase your message."
+                    content: t("ai.errorEncountered")
                 })
             } else {
                 // Parse the reply to check for search JSON and strip it
@@ -259,15 +261,15 @@ export function CompanyAIChat() {
                     // Save evaluation results to database
                     saveEvaluationResults(data.matches, userMessage, allSkills)
                     
-                    toast.success(`Found ${data.matches.length} candidates!`, {
-                        description: "Results saved to candidate history"
+                    toast.success(`${t("ai.foundCandidates", { count: data.matches.length })}`, {
+                        description: t("ai.resultsSaved")
                     })
                     
                     // Add results message after a short delay
                     setTimeout(() => {
                         addMessage({
                             role: "assistant",
-                            content: `✅ Found ${data.matches.length} matching candidate${data.matches.length > 1 ? 's' : ''}! Check out their profiles on the right. Would you like me to refine the search or look for different skills?`
+                            content: t("ai.foundMatchingCandidates", { count: data.matches.length })
                         })
                     }, 500)
                 }
@@ -276,7 +278,7 @@ export function CompanyAIChat() {
             console.error("AI Mode error:", error)
             addMessage({
                 role: "assistant",
-                content: "I'm having trouble connecting. Please check your connection and try again."
+                content: t("ai.connectionTrouble")
             })
         } finally {
             setIsLoading(false)
@@ -325,12 +327,12 @@ export function CompanyAIChat() {
                                 <Zap className="h-6 w-6 text-violet-500" />
                             </div>
                             <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:via-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
-                                AI Talent Scout
+                                {t("ai.companyTitle")}
                             </h2>
                         </div>
                         <p className="text-muted-foreground text-sm md:text-base font-medium flex items-center gap-2">
                             <Sparkles className="h-4 w-4 text-violet-500" />
-                            Find perfect candidates with AI-powered search
+                            {t("ai.companyDescription")}
                         </p>
                     </div>
 
@@ -341,7 +343,7 @@ export function CompanyAIChat() {
                             className="rounded-xl px-3 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-colors duration-150"
                         >
                             {showSessionsSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-                            <span className="ml-2 hidden sm:inline">Sessions</span>
+                            <span className="ml-2 hidden sm:inline">{t("ai.sessions")}</span>
                             {companySessions.length > 0 && (
                                 <Badge variant="secondary" className="ml-2 bg-violet-500/20 text-violet-600">
                                     {companySessions.length}
@@ -354,7 +356,7 @@ export function CompanyAIChat() {
                             className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-colors duration-150"
                         >
                             <Plus className="h-4 w-4 mr-2" />
-                            New Chat
+                            {t("ai.newChat")}
                         </Button>
                     </div>
                 </div>
@@ -363,13 +365,13 @@ export function CompanyAIChat() {
                 <div className="relative z-10 mt-6">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", chatPhase !== "intro" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <Building2 className="h-3 w-3" /> Your Needs
+                            <Building2 className="h-3 w-3" /> {t("ai.yourNeeds")}
                         </span>
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", ["matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <Search className="h-3 w-3" /> Searching
+                            <Search className="h-3 w-3" /> {t("ai.searching")}
                         </span>
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", chatPhase === "results" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <Users className="h-3 w-3" /> Candidates
+                            <Users className="h-3 w-3" /> {t("ai.candidates")}
                         </span>
                     </div>
                     <Progress 
@@ -396,7 +398,7 @@ export function CompanyAIChat() {
                             <div className="p-4 border-b border-violet-500/20">
                                 <h3 className="font-semibold flex items-center gap-2">
                                     <History className="h-4 w-4 text-violet-500" />
-                                    Chat Sessions
+                                    {t("ai.chatSessions")}
                                 </h3>
                             </div>
                             <ScrollArea className="h-[calc(100%-60px)]">
@@ -404,7 +406,7 @@ export function CompanyAIChat() {
                                     {companySessions.length === 0 ? (
                                         <div className="text-center py-8 text-muted-foreground text-sm">
                                             <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                            No previous sessions
+                                            {t("ai.noPreviousSessions")}
                                         </div>
                                     ) : (
                                         companySessions.map((session) => (
@@ -427,7 +429,7 @@ export function CompanyAIChat() {
                                                             {new Date(session.createdAt).toLocaleDateString()}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground truncate mt-1">
-                                                            {session.messages.length} messages
+                                                            {session.messages.length} {t("ai.messagesCount")}
                                                         </p>
                                                     </div>
                                                     <Button
@@ -500,7 +502,7 @@ export function CompanyAIChat() {
                                         <Bot className="h-5 w-5 text-violet-500" />
                                     </div>
                                     <div className="bg-card/80 border border-border/50 rounded-2xl px-4 py-3">
-                                        <p className="text-xs text-muted-foreground mb-1">Linky is typing</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t("ai.linkyTyping")}</p>
                                         <div className="flex gap-1.5">
                                             <motion.div
                                                 animate={{ y: [0, -4, 0] }}
@@ -534,7 +536,7 @@ export function CompanyAIChat() {
                                         <Search className="h-5 w-5 text-violet-500 animate-pulse" />
                                     </div>
                                     <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20 rounded-2xl px-4 py-3">
-                                        <p className="text-xs text-violet-600 dark:text-violet-400 font-medium mb-1">🔍 Searching...</p>
+                                        <p className="text-xs text-violet-600 dark:text-violet-400 font-medium mb-1">{t("ai.searchingDatabase")}</p>
                                         <p className="text-sm text-muted-foreground">{searchStatus}</p>
                                         <div className="flex gap-1.5 mt-2">
                                             <motion.div
@@ -567,7 +569,7 @@ export function CompanyAIChat() {
                                 ref={inputRef}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Describe the talent you're looking for..."
+                                placeholder={t("ai.describeTalent")}
                                 className="flex-1 rounded-xl border-2 border-border/50 focus:border-violet-500/50 bg-background/80 h-11 transition-colors duration-150"
                                 disabled={isLoading}
                             />
@@ -601,7 +603,7 @@ export function CompanyAIChat() {
                                             <Users className="h-5 w-5 text-violet-500" />
                                         </div>
                                         <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
-                                            Matching Candidates
+                                            {t("ai.matchingCandidates")}
                                         </span>
                                         <Badge variant="secondary" className="ml-auto bg-violet-500/10 text-violet-600 dark:text-violet-400 border-0">
                                             {studentMatches.length}
@@ -651,11 +653,11 @@ export function CompanyAIChat() {
                                                     <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                                                         <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg hover:bg-violet-500/10 hover:text-violet-600">
                                                             <User className="h-3 w-3 mr-1" />
-                                                            Profile
+                                                            {t("ai.profile")}
                                                         </Button>
                                                         <Button size="sm" variant="ghost" className="h-7 text-xs rounded-lg hover:bg-violet-500/10 hover:text-violet-600">
                                                             <Mail className="h-3 w-3 mr-1" />
-                                                            Contact
+                                                            {t("ai.contact")}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -675,7 +677,7 @@ export function CompanyAIChat() {
                                     <Search className="h-8 w-8 text-violet-500" />
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Tell me what kind of talent you need and I&apos;ll find the best matching candidates
+                                    {t("ai.tellMeYourNeeds")}
                                 </p>
                             </CardContent>
                         </Card>
@@ -686,15 +688,15 @@ export function CompanyAIChat() {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
                                 <Target className="h-4 w-4" />
-                                Quick Searches
+                                {t("ai.quickSearches")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             {[
-                                "React developer with TypeScript experience",
-                                "Python data science intern",
-                                "UI/UX design student",
-                                "Full-stack developer"
+                                t("ai.suggestionReact"),
+                                t("ai.suggestionPython"),
+                                t("ai.suggestionDesign"),
+                                t("ai.suggestionFullstack")
                             ].map((suggestion, i) => (
                                 <Button
                                     key={i}

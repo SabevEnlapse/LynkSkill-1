@@ -31,6 +31,7 @@ import { RolesList } from "@/components/team/roles-list"
 import { PendingInvitations } from "@/components/team/pending-invitations"
 import { OwnershipTransferSection } from "@/components/team/ownership-transfer-section"
 import { TeamCodeSettings } from "@/components/team/team-code-settings"
+import { useTranslation } from "@/lib/i18n"
 import { toast } from "sonner"
 
 interface Member {
@@ -76,6 +77,7 @@ interface UserPermissions {
 }
 
 export default function TeamPage() {
+  const { t } = useTranslation()
   const [members, setMembers] = React.useState<Member[]>([])
   const [companyId, setCompanyId] = React.useState<string | null>(null)
   const [companyCode, setCompanyCode] = React.useState<string | null>(null)
@@ -135,11 +137,11 @@ export default function TeamPage() {
     if (!companyCode) return
     try {
       await navigator.clipboard.writeText(companyCode)
-      toast.success("Invitation code copied!", {
-        description: "Share this code with team members to join your company.",
+      toast.success(t('teamPage.invitationCodeCopied'), {
+        description: t('teamPage.shareCodeWithMembers'),
       })
     } catch {
-      toast.error("Failed to copy code")
+      toast.error(t('teamPage.failedToCopyCode'))
     }
   }
 
@@ -169,7 +171,7 @@ export default function TeamPage() {
               <div>
                 <p className="font-medium text-destructive">{error}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Something went wrong. Please try again.
+                  {t('teamPage.errorOccurred')}
                 </p>
               </div>
               <Button
@@ -178,7 +180,7 @@ export default function TeamPage() {
                 className="border-destructive/30 hover:bg-destructive/10"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
+                {t('teamPage.tryAgain')}
               </Button>
             </div>
           </CardContent>
@@ -208,19 +210,19 @@ export default function TeamPage() {
                 <Users className="h-5 w-5" />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Team Management
+                {t('teamPage.teamManagement')}
               </h1>
             </div>
             <p className="text-white/80 text-sm md:text-base max-w-lg">
               {canInviteMembers
-                ? "Manage your team members, roles, and permissions. Invite new members using email or your unique company code."
-                : "View your team members and their roles."}
+                ? t('teamPage.manageTeamDesc')
+                : t('teamPage.viewTeamDesc')}
             </p>
           </div>
           <div className="flex items-center gap-3 self-start md:self-center">
             <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm hidden sm:flex items-center gap-1.5 py-1.5 px-3">
               <Eye className="h-3 w-3" />
-              Your role: {currentUserRole}
+              {t('teamPage.yourRole')} {currentUserRole}
             </Badge>
             {canInviteMembers && (
               <Button
@@ -229,7 +231,7 @@ export default function TeamPage() {
                 size="lg"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Invite Member
+                {t('teamPage.inviteMember')}
               </Button>
             )}
           </div>
@@ -244,14 +246,14 @@ export default function TeamPage() {
               <div className="h-7 w-7 rounded-lg bg-violet-500/10 dark:bg-violet-500/20 flex items-center justify-center">
                 <Users className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
               </div>
-              Total Members
+              {t('teamPage.totalMembers')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-violet-700 dark:text-violet-300">{activeMembers.length}</span>
               <span className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" /> active
+                <TrendingUp className="h-3 w-3" /> {t('teamPage.active')}
               </span>
             </div>
           </CardContent>
@@ -263,7 +265,7 @@ export default function TeamPage() {
               <div className="h-7 w-7 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center">
                 <Crown className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
               </div>
-              Owner
+              {t('teamPage.owner')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -282,13 +284,13 @@ export default function TeamPage() {
               <div className="h-7 w-7 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
                 <Shield className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              Admins
+              {t('teamPage.admins')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">{admins.length}</span>
-              <span className="text-xs text-muted-foreground mb-1">administrator{admins.length !== 1 ? "s" : ""}</span>
+              <span className="text-xs text-muted-foreground mb-1">{admins.length !== 1 ? t('teamPage.administrators') : t('teamPage.administrator')}</span>
             </div>
           </CardContent>
         </Card>
@@ -299,7 +301,7 @@ export default function TeamPage() {
               <div className="h-7 w-7 rounded-lg bg-orange-500/10 dark:bg-orange-500/20 flex items-center justify-center">
                 <UserPlus className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
               </div>
-              Pending
+              {t('teamPage.pending')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -307,7 +309,7 @@ export default function TeamPage() {
               <span className="text-3xl font-bold text-orange-700 dark:text-orange-300">{pendingMembers.length}</span>
               {pendingMembers.length > 0 && (
                 <Badge variant="secondary" className="mb-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] px-1.5">
-                  awaiting
+                  {t('teamPage.awaiting')}
                 </Badge>
               )}
             </div>
@@ -326,10 +328,10 @@ export default function TeamPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-foreground">
-                    Company Invitation Code
+                    {t('teamPage.companyInvitationCode')}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Share with team members to join instantly
+                    {t('teamPage.shareToJoinInstantly')}
                   </p>
                 </div>
               </div>
@@ -350,7 +352,7 @@ export default function TeamPage() {
                         {showCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{showCode ? "Hide code" : "Show code"}</TooltipContent>
+                    <TooltipContent>{showCode ? t('teamPage.hideCode') : t('teamPage.showCode')}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 <TooltipProvider>
@@ -365,7 +367,7 @@ export default function TeamPage() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy code</TooltipContent>
+                    <TooltipContent>{t('teamPage.copyCode')}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -383,7 +385,7 @@ export default function TeamPage() {
               className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md py-2.5"
             >
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Members</span>
+              <span className="hidden sm:inline">{t('teamPage.members')}</span>
               <Badge variant="secondary" className="ml-1 data-[state=active]:bg-white/20 data-[state=active]:text-white hidden sm:inline-flex">
                 {activeMembers.length}
               </Badge>
@@ -394,7 +396,7 @@ export default function TeamPage() {
                 className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md py-2.5"
               >
                 <Shield className="h-4 w-4" />
-                <span className="hidden sm:inline">Roles</span>
+                <span className="hidden sm:inline">{t('teamPage.roles')}</span>
               </TabsTrigger>
             )}
             {canInviteMembers && (
@@ -403,7 +405,7 @@ export default function TeamPage() {
                 className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md py-2.5 relative"
               >
                 <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Invitations</span>
+                <span className="hidden sm:inline">{t('teamPage.invitations')}</span>
                 {pendingMembers.length > 0 && (
                   <Badge className="absolute -top-1.5 -right-1.5 h-5 min-w-5 rounded-full bg-orange-500 text-white text-[10px] p-0 flex items-center justify-center">
                     {pendingMembers.length}
@@ -417,7 +419,7 @@ export default function TeamPage() {
                 className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md py-2.5"
               >
                 <Key className="h-4 w-4" />
-                <span className="hidden sm:inline">Code</span>
+                <span className="hidden sm:inline">{t('teamPage.code')}</span>
               </TabsTrigger>
             )}
             {isOwner && (
@@ -426,7 +428,7 @@ export default function TeamPage() {
                 className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md py-2.5"
               >
                 <Crown className="h-4 w-4" />
-                <span className="hidden sm:inline">Ownership</span>
+                <span className="hidden sm:inline">{t('teamPage.ownership')}</span>
               </TabsTrigger>
             )}
           </TabsList>

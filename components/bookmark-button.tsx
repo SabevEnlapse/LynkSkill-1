@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTranslation } from "@/lib/i18n"
 
 interface BookmarkButtonProps {
     internshipId: string
@@ -24,6 +25,7 @@ export function BookmarkButton({
 }: BookmarkButtonProps) {
     const [isSaved, setIsSaved] = useState(initialSaved)
     const [isLoading, setIsLoading] = useState(false)
+    const { t } = useTranslation()
 
     const handleToggle = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -43,7 +45,7 @@ export function BookmarkButton({
                 if (res.ok) {
                     setIsSaved(false)
                     onToggle?.(false)
-                    toast.success("Removed from saved")
+                    toast.success(t('bookmarks.removedFromSaved'))
                 } else {
                     throw new Error("Failed to remove")
                 }
@@ -58,19 +60,19 @@ export function BookmarkButton({
                 if (res.ok) {
                     setIsSaved(true)
                     onToggle?.(true)
-                    toast.success("Saved to bookmarks")
+                    toast.success(t('bookmarks.savedToBookmarks'))
                 } else {
                     const data = await res.json()
                     if (data.error === "Already saved") {
                         setIsSaved(true)
                     } else {
-                        throw new Error(data.error || "Failed to save")
+                        throw new Error(data.error || t('bookmarks.failedToSave'))
                     }
                 }
             }
         } catch (error) {
             console.error("Bookmark toggle error:", error)
-            toast.error("Something went wrong")
+            toast.error(t('errors.somethingWentWrong'))
         } finally {
             setIsLoading(false)
         }
@@ -124,12 +126,12 @@ export function BookmarkButton({
             ) : isSaved ? (
                 <>
                     <BookmarkCheck className="h-4 w-4 fill-current" />
-                    Saved
+                    {t('bookmarks.saved')}
                 </>
             ) : (
                 <>
                     <Bookmark className="h-4 w-4" />
-                    Save
+                    {t('common.save')}
                 </>
             )}
         </Button>

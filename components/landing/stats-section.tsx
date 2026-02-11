@@ -2,15 +2,23 @@
 
 import { motion } from "framer-motion"
 import { Users, Briefcase, FileText, Trophy } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
-const stats = [
-    { value: "10,000+", label: "Active Students", icon: <Users className="w-6 h-6 md:w-8 md:h-8" /> },
-    { value: "500+", label: "Partner Companies", icon: <Briefcase className="w-6 h-6 md:w-8 md:h-8" /> },
-    { value: "15,000+", label: "Internships Posted", icon: <FileText className="w-6 h-6 md:w-8 md:h-8" /> },
-    { value: "95%", label: "Success Rate", icon: <Trophy className="w-6 h-6 md:w-8 md:h-8" /> },
+const statsMeta = [
+    { key: "activeStudents", icon: <Users className="w-6 h-6 md:w-8 md:h-8" /> },
+    { key: "partnerCompanies", icon: <Briefcase className="w-6 h-6 md:w-8 md:h-8" /> },
+    { key: "internshipsPosted", icon: <FileText className="w-6 h-6 md:w-8 md:h-8" /> },
+    { key: "successRate", icon: <Trophy className="w-6 h-6 md:w-8 md:h-8" /> },
 ]
 
 export function StatsSection() {
+    const { t } = useTranslation()
+
+    const stats = statsMeta.map((s) => ({
+        ...s,
+        value: t(`landing.stats.${s.key}.value`),
+        label: t(`landing.stats.${s.key}.label`),
+    }))
     return (
         <section className="relative py-16 md:py-32 px-4 sm:px-6 lg:px-8 bg-muted/30">
             <div className="max-w-7xl mx-auto">
@@ -22,13 +30,13 @@ export function StatsSection() {
                     className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20"
                 >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                        Trusted by{" "}
+                        {t("landing.stats.title")}{" "}
                         <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              Thousands
+              {t("landing.stats.titleHighlight")}
             </span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Join a thriving community of students and businesses building the future together.
+                        {t("landing.stats.subtitle")}
                     </p>
                 </motion.div>
 

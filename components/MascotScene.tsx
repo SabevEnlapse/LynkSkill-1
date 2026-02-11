@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/lib/i18n"
 
 interface MascotSceneProps {
     mascotUrl: string
@@ -20,6 +21,7 @@ export function MascotScene({
     // setActiveTab prop available for future tab navigation during tutorial
     userType,
 }: MascotSceneProps) {
+    const { t } = useTranslation()
     const [visible, setVisible] = useState(true)
     const [step, setStep] = useState(-1) // -1 = intro, then 0..steps.length-1
 
@@ -100,16 +102,16 @@ export function MascotScene({
                                 animate={{ y: 0, opacity: 1 }}
                             >
                                 <p className="text-2xl font-semibold mb-4">
-                                    👋 Hi, I’m <strong>Linky</strong> — your guide through <em>LynkSkill</em>!
+                                    {t("mascot.greeting")}
                                 </p>
                                 <p className="text-lg mb-6">
-                                    Let’s explore how to get started together.
+                                    {t("mascot.letsExplore")}
                                 </p>
                                 <Button
                                     onClick={handleNext}
                                     className="w-full bg-white text-purple-600 hover:bg-gray-100 rounded-2xl font-bold"
                                 >
-                                    Start
+                                    {t("mascot.start")}
                                 </Button>
                             </motion.div>
                         </motion.div>
@@ -176,7 +178,7 @@ export function MascotScene({
                                                 : "bg-transparent border-white text-white hover:bg-white/20"
                                                 }`}
                                         >
-                                            Back
+                                            {t("common.back")}
                                         </Button>
 
                                         <Button
@@ -186,14 +188,14 @@ export function MascotScene({
                                             }}
                                             className="flex-1 bg-transparent border border-white text-white hover:bg-white/20 rounded-2xl font-bold"
                                         >
-                                            Skip
+                                            {t("mascot.skip")}
                                         </Button>
 
                                         <Button
                                             onClick={handleNext}
                                             className="flex-1 bg-white text-purple-600 hover:bg-gray-100 rounded-2xl font-bold"
                                         >
-                                            {step === steps.length - 1 ? "Finish" : "Next"}
+                                            {step === steps.length - 1 ? t("mascot.finish") : t("common.next")}
                                         </Button>
                                     </div>
 

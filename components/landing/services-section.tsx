@@ -1,89 +1,53 @@
 "use client"
 
-import type React from "react"
-
 import {motion} from "framer-motion"
 import {Briefcase, FileText, Trophy, Sparkles, ArrowRight, Users, Handshake} from "lucide-react"
 import Image from "next/image"
+import { useTranslation } from "@/lib/i18n"
 
-interface ServiceData {
-    id: string
-    icon: React.ReactNode
-    title: string
-    subtitle: string
-    description: string
-    features: string[]
-    gradient: string
-    color: string
-    businessBenefit: string
-    studentBenefit: string
-    mascotImage: string
-}
-
-const servicesData: ServiceData[] = [
+const servicesMeta = [
     {
         id: "internship",
+        key: "internship",
         icon: <Briefcase className="w-8 h-8 md:w-10 md:h-10"/>,
-        title: "Smart Internship Matching",
-        subtitle: "AI-Powered Student-Business Connection",
-        description:
-            "Revolutionary matching system that connects ambitious students with businesses seeking fresh talent. Our advanced AI analyzes skills, interests, and company culture to create perfect matches that benefit both parties.",
-        features: [
-            "AI-powered compatibility matching",
-            "Real-time opportunity notifications",
-            "One-click application system",
-            "Direct employer communication",
-            "Progress tracking & analytics",
-        ],
+        featureKeys: ["f1", "f2", "f3", "f4", "f5"],
         gradient: "from-purple-600 via-blue-600 to-purple-600",
         color: "purple",
-        businessBenefit: "Access to pre-screened, motivated young talent",
-        studentBenefit: "Find internships that match your career goals",
         mascotImage: "/linky-mascot-boss.png",
     },
     {
         id: "portfolio",
+        key: "portfolio",
         icon: <FileText className="w-8 h-8 md:w-10 md:h-10"/>,
-        title: "Dynamic Portfolio Showcase",
-        subtitle: "Showcase Your Potential to the World",
-        description:
-            "Create stunning, interactive portfolios that tell your story. Our platform helps businesses discover your unique talents through intelligent filtering and presentation that goes beyond traditional resumes.",
-        features: [
-            "Interactive project galleries",
-            "Skill-based categorization",
-            "Media-rich presentations",
-            "SEO-optimized visibility",
-            "Real-time portfolio analytics",
-        ],
+        featureKeys: ["f1", "f2", "f3", "f4", "f5"],
         gradient: "from-blue-600 via-cyan-600 to-blue-600",
         color: "blue",
-        businessBenefit: "Discover talent through comprehensive portfolios",
-        studentBenefit: "Stand out with professional presentation",
         mascotImage: "/linky-mascot.png",
     },
     {
         id: "experience",
+        key: "experience",
         icon: <Trophy className="w-8 h-8 md:w-10 md:h-10"/>,
-        title: "Experience & Growth Hub",
-        subtitle: "Build Your Professional Journey Together",
-        description:
-            "A collaborative space where students share achievements and businesses recognize potential. This creates a community-driven ecosystem that celebrates growth and builds lasting professional relationships.",
-        features: [
-            "Achievement sharing & recognition",
-            "Professional milestone tracking",
-            "Peer networking opportunities",
-            "Employer feedback system",
-            "Career progression insights",
-        ],
+        featureKeys: ["f1", "f2", "f3", "f4", "f5"],
         gradient: "from-cyan-600 via-purple-600 to-cyan-600",
         color: "cyan",
-        businessBenefit: "Identify high-potential candidates early",
-        studentBenefit: "Build a professional reputation and network",
         mascotImage: "/linky-mascot-left.png",
     },
 ]
 
 export function ServicesSection() {
+    const { t } = useTranslation()
+
+    const servicesData = servicesMeta.map((s) => ({
+        ...s,
+        title: t(`landing.services.${s.key}.title`),
+        subtitle: t(`landing.services.${s.key}.subtitle`),
+        description: t(`landing.services.${s.key}.description`),
+        features: s.featureKeys.map((fk) => t(`landing.services.${s.key}.features.${fk}`)),
+        businessBenefit: t(`landing.services.${s.key}.businessBenefit`),
+        studentBenefit: t(`landing.services.${s.key}.studentBenefit`),
+    }))
+
     return (
         <section className="relative py-20 md:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
             {/* Enhanced Background */}
@@ -175,12 +139,12 @@ export function ServicesSection() {
                         </motion.div>
                         <span
                             className="text-sm md:text-base font-semibold bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-                            Revolutionary Student-Business Connection
+                            {t("landing.services.badge")}
                         </span>
                     </motion.div>
 
                     <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight">
-                        Meet{" "}
+                        {t("landing.services.meetTitle")}{" "}
                         <motion.span
                             className="relative inline-block bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent"
                             animate={{
@@ -206,10 +170,10 @@ export function ServicesSection() {
                         viewport={{once: true}}
                         transition={{duration: 0.8, delay: 0.4, ease: "easeOut"}}
                     >
-                        Your AI-powered guide to the future of student-business connections!
+                        {t("landing.services.subtitle1")}
                         <span className="text-foreground font-semibold">
               {" "}
-                            Discover how I revolutionize the way young talent meets opportunity! ✨
+                            {t("landing.services.subtitle2")} ✨
             </span>
                     </motion.p>
                 </motion.div>
@@ -250,7 +214,7 @@ export function ServicesSection() {
                                 >
                                     <Image
                                         src={service.mascotImage || "/placeholder.svg"}
-                                        alt={`Linky mascot for ${service.title}`}
+                                        alt={`${t("landing.services.linkyMascotAlt")} - ${service.title}`}
                                         width={384}
                                         height={384}
                                         className="w-full h-full object-contain drop-shadow-2xl"
@@ -320,7 +284,7 @@ export function ServicesSection() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Users className="w-4 h-4 text-green-400"/>
                                                     <span
-                                                        className="text-sm font-semibold text-green-400">For Students</span>
+                                                        className="text-sm font-semibold text-green-400">{t("landing.services.forStudents")}</span>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">{service.studentBenefit}</p>
                                             </motion.div>
@@ -331,7 +295,7 @@ export function ServicesSection() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Handshake className="w-4 h-4 text-blue-400"/>
                                                     <span
-                                                        className="text-sm font-semibold text-blue-400">For Businesses</span>
+                                                        className="text-sm font-semibold text-blue-400">{t("landing.services.forBusinesses")}</span>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">{service.businessBenefit}</p>
                                             </motion.div>
@@ -374,7 +338,7 @@ export function ServicesSection() {
                                                 <motion.div
                                                     className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"/>
                                                 <span className="relative cursor-pointer flex items-center gap-2">
-                                                  Learn More
+                                                  {t("landing.services.learnMore")}
                                                   <motion.div
                                                       animate={{x: [0, 4, 0]}}
                                                       transition={{

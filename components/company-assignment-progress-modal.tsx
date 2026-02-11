@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "@/lib/i18n"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -128,6 +129,7 @@ export function CompanyAssignmentProgressModal({
     onClose,
     onRefresh
 }: CompanyAssignmentProgressModalProps) {
+    const { t } = useTranslation()
     const [internships, setInternships] = useState<InternshipWithAssignments[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -231,10 +233,10 @@ export function CompanyAssignmentProgressModal({
                             </div>
                             <div className="flex-1">
                                 <DialogTitle className="text-xl font-bold text-white">
-                                    Assignment Progress Dashboard
+                                    {t("assignmentProgress.dashboardTitle")}
                                 </DialogTitle>
                                 <p className="text-white/60 text-sm mt-1">
-                                    Track student submissions and manage assignments
+                                    {t("assignmentProgress.dashboardSubtitle")}
                                 </p>
                             </div>
                             <Button
@@ -267,7 +269,7 @@ export function CompanyAssignmentProgressModal({
                             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
                             <p className="text-red-500">{error}</p>
                             <Button onClick={handleRefresh} variant="outline" className="mt-4">
-                                Try Again
+                                {t("assignmentProgress.tryAgain")}
                             </Button>
                         </div>
                     ) : internships.length === 0 ? (
@@ -275,9 +277,9 @@ export function CompanyAssignmentProgressModal({
                             <div className="p-4 rounded-full bg-muted/50 mb-4">
                                 <FileText className="h-8 w-8 text-muted-foreground" />
                             </div>
-                            <h3 className="font-semibold text-lg">No Assignments Yet</h3>
+                            <h3 className="font-semibold text-lg">{t("assignmentProgress.noAssignmentsYet")}</h3>
                             <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                                Create internships with test assignments to start tracking student progress
+                                {t("assignmentProgress.noAssignmentsDesc")}
                             </p>
                         </div>
                     ) : (
@@ -286,7 +288,7 @@ export function CompanyAssignmentProgressModal({
                             <div className="w-64 border-r border-border bg-muted/20 overflow-y-auto">
                                 <div className="p-3">
                                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-2">
-                                        Internships
+                                        {t("assignmentProgress.internships")}
                                     </p>
                                     <div className="space-y-1">
                                         {internships.map(internship => {
@@ -306,7 +308,7 @@ export function CompanyAssignmentProgressModal({
                                                     <p className="font-medium text-sm truncate">{internship.title}</p>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="text-xs text-muted-foreground">
-                                                            {submittedCount}/{assignmentCount} submitted
+                                                            {submittedCount}/{assignmentCount} {t("assignmentProgress.submitted")}
                                                         </span>
                                                         {assignmentCount > 0 && (
                                                             <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -333,19 +335,19 @@ export function CompanyAssignmentProgressModal({
                                             <div className="grid grid-cols-4 gap-3">
                                                 <div className="p-3 rounded-xl bg-muted/50 text-center">
                                                     <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                                                    <p className="text-xs text-muted-foreground">Total</p>
+                                                    <p className="text-xs text-muted-foreground">{t("assignmentProgress.total")}</p>
                                                 </div>
                                                 <div className="p-3 rounded-xl bg-emerald-500/10 text-center">
                                                     <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.submitted}</p>
-                                                    <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Submitted</p>
+                                                    <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">{t("assignmentProgress.submittedLabel")}</p>
                                                 </div>
                                                 <div className="p-3 rounded-xl bg-amber-500/10 text-center">
                                                     <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</p>
-                                                    <p className="text-xs text-amber-600/70 dark:text-amber-400/70">Pending</p>
+                                                    <p className="text-xs text-amber-600/70 dark:text-amber-400/70">{t("assignmentProgress.pendingLabel")}</p>
                                                 </div>
                                                 <div className="p-3 rounded-xl bg-red-500/10 text-center">
                                                     <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.overdue}</p>
-                                                    <p className="text-xs text-red-600/70 dark:text-red-400/70">Overdue</p>
+                                                    <p className="text-xs text-red-600/70 dark:text-red-400/70">{t("assignmentProgress.overdueLabel")}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -355,7 +357,7 @@ export function CompanyAssignmentProgressModal({
                                             <div className="relative flex-1 max-w-xs">
                                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                                 <Input
-                                                    placeholder="Search students..."
+                                                    placeholder={t("assignmentProgress.searchStudents")}
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
                                                     className="pl-9 rounded-xl"
@@ -374,7 +376,7 @@ export function CompanyAssignmentProgressModal({
                                                                 : ''
                                                         }`}
                                                     >
-                                                        {status}
+                                                        {t(`assignmentProgress.filter_${status}`)}
                                                     </Button>
                                                 ))}
                                             </div>
@@ -385,7 +387,7 @@ export function CompanyAssignmentProgressModal({
                                             {filteredAssignments.length === 0 ? (
                                                 <div className="flex flex-col items-center justify-center py-8 text-center">
                                                     <Search className="h-8 w-8 text-muted-foreground mb-3" />
-                                                    <p className="text-muted-foreground">No assignments match your filters</p>
+                                                    <p className="text-muted-foreground">{t("assignmentProgress.noMatchingAssignments")}</p>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3">
@@ -428,7 +430,7 @@ export function CompanyAssignmentProgressModal({
                                                                             <div className="flex items-start justify-between gap-2">
                                                                                 <div>
                                                                                     <h4 className="font-semibold text-foreground">
-                                                                                        {assignment.student.profile?.name || 'Unknown Student'}
+                                                                                        {assignment.student.profile?.name || t("assignmentProgress.unknownStudent")}
                                                                                     </h4>
                                                                                     <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                                                         <Mail className="h-3 w-3" />
@@ -443,11 +445,11 @@ export function CompanyAssignmentProgressModal({
                                                                                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
                                                                                 }`}>
                                                                                     {hasSubmissions ? (
-                                                                                        <><CheckCircle2 className="h-3 w-3 mr-1" />Submitted</>
+                                                                                        <><CheckCircle2 className="h-3 w-3 mr-1" />{t("assignmentProgress.submittedBadge")}</>
                                                                                     ) : isOverdue ? (
-                                                                                        <><AlertCircle className="h-3 w-3 mr-1" />Overdue</>
+                                                                                        <><AlertCircle className="h-3 w-3 mr-1" />{t("assignmentProgress.overdueBadge")}</>
                                                                                     ) : (
-                                                                                        <><Clock3 className="h-3 w-3 mr-1" />Pending</>
+                                                                                        <><Clock3 className="h-3 w-3 mr-1" />{t("assignmentProgress.pendingBadge")}</>
                                                                                     )}
                                                                                 </Badge>
                                                                             </div>
@@ -458,20 +460,20 @@ export function CompanyAssignmentProgressModal({
                                                                                 <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                                                                                     <span className="flex items-center gap-1">
                                                                                         <Calendar className="h-3 w-3" />
-                                                                                        Due: {safeFormatDate(assignment.dueDate, "MMM d, yyyy")}
+                                                                                        {t("assignmentProgress.due")}: {safeFormatDate(assignment.dueDate, "MMM d, yyyy")}
                                                                                     </span>
                                                                                     {!hasSubmissions && !isOverdue && (
                                                                                         <span className={`flex items-center gap-1 ${
                                                                                             daysUntilDue <= 3 ? 'text-amber-500' : ''
                                                                                         }`}>
                                                                                             <Clock className="h-3 w-3" />
-                                                                                            {daysUntilDue} day{daysUntilDue !== 1 ? 's' : ''} left
+                                                                                            {t("assignmentProgress.daysLeft", { count: daysUntilDue })}
                                                                                         </span>
                                                                                     )}
                                                                                     {hasSubmissions && (
                                                                                         <span className="flex items-center gap-1 text-emerald-500">
                                                                                             <FileCheck className="h-3 w-3" />
-                                                                                            {assignment.submissions.length} file{assignment.submissions.length !== 1 ? 's' : ''}
+                                                                                            {t("assignmentProgress.filesCount", { count: assignment.submissions.length })}
                                                                                         </span>
                                                                                     )}
                                                                                 </div>
@@ -492,7 +494,7 @@ export function CompanyAssignmentProgressModal({
                                     </>
                                 ) : (
                                     <div className="flex items-center justify-center h-full">
-                                        <p className="text-muted-foreground">Select an internship to view assignments</p>
+                                        <p className="text-muted-foreground">{t("assignmentProgress.selectInternship")}</p>
                                     </div>
                                 )}
                             </div>
@@ -519,7 +521,7 @@ export function CompanyAssignmentProgressModal({
                                         </div>
                                         <div>
                                             <DialogTitle className="text-lg font-bold">
-                                                {selectedAssignment.student.profile?.name || 'Unknown Student'}
+                                                {selectedAssignment.student.profile?.name || t("assignmentProgress.unknownStudent")}
                                             </DialogTitle>
                                             <p className="text-sm text-muted-foreground">{selectedAssignment.student.email}</p>
                                         </div>
@@ -528,20 +530,20 @@ export function CompanyAssignmentProgressModal({
                                     {/* Assignment Details */}
                                     <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
                                         <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wider">Assignment</p>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("assignmentProgress.assignmentLabel")}</p>
                                             <p className="font-medium">{selectedAssignment.title}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wider">Description</p>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("assignmentProgress.descriptionLabel")}</p>
                                             <p className="text-sm text-muted-foreground">{selectedAssignment.description}</p>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div>
-                                                <p className="text-xs text-muted-foreground">Due Date</p>
+                                                <p className="text-xs text-muted-foreground">{t("assignmentProgress.dueDateLabel")}</p>
                                                 <p className="text-sm font-medium">{safeFormatDate(selectedAssignment.dueDate, "MMM d, yyyy 'at' h:mm a")}</p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-muted-foreground">Created</p>
+                                                <p className="text-xs text-muted-foreground">{t("assignmentProgress.createdLabel")}</p>
                                                 <p className="text-sm font-medium">{safeFormatDistance(selectedAssignment.createdAt)}</p>
                                             </div>
                                         </div>
@@ -551,12 +553,12 @@ export function CompanyAssignmentProgressModal({
                                     <div>
                                         <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
                                             <FileCheck className="h-4 w-4 text-purple-500" />
-                                            Submissions ({selectedAssignment.submissions.length})
+                                            {t("assignmentProgress.submissions")} ({selectedAssignment.submissions.length})
                                         </h4>
                                         {selectedAssignment.submissions.length === 0 ? (
                                             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
                                                 <Clock3 className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-                                                <p className="text-sm text-amber-600 dark:text-amber-400">No submissions yet</p>
+                                                <p className="text-sm text-amber-600 dark:text-amber-400">{t("assignmentProgress.noSubmissionsYet")}</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-2">
@@ -589,7 +591,7 @@ export function CompanyAssignmentProgressModal({
                                     </div>
 
                                     <Button onClick={() => setSelectedAssignment(null)} className="w-full">
-                                        Close
+                                        {t("assignmentProgress.close")}
                                     </Button>
                                 </div>
                             </DialogContent>

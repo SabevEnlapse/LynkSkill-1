@@ -1,6 +1,7 @@
 "use client"
 
 import { Award, Star, Building2, Trophy, TrendingUp, ThumbsUp } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 interface Summary {
     totalExperiences?: number
@@ -21,6 +22,7 @@ function formatNumber(num: number) {
 
 export function StudentSummary({ summary }: { summary: Summary | null }) {
     if (!summary) return null
+    const { t } = useTranslation()
 
     // Use new metrics if available, fallback to legacy
     const skillScore = summary.avgSkillScore ?? Math.round((summary.avgGrade / 6) * 100)
@@ -30,22 +32,22 @@ export function StudentSummary({ summary }: { summary: Summary | null }) {
 
     const stats = [
         {
-            label: "Experiences",
+            label: t("studentSummary.experiences"),
             value: totalExp,
             icon: Award,
         },
         {
-            label: "Skill Score",
+            label: t("studentSummary.skillScore"),
             value: `${skillScore}%`,
             icon: Star,
         },
         {
-            label: "Companies",
+            label: t("studentSummary.companies"),
             value: summary.uniqueCompanies,
             icon: Building2,
         },
         ...(highlyRecommended > 0 ? [{
-            label: "Top Endorsed",
+            label: t("studentSummary.topEndorsed"),
             value: highlyRecommended,
             icon: ThumbsUp,
         }] : []),
@@ -63,7 +65,7 @@ export function StudentSummary({ summary }: { summary: Summary | null }) {
                         {formatNumber(proScore)}
 
                     </div>
-                    <div className="text-xs text-white/70">Professional Score</div>
+                    <div className="text-xs text-white/70">{t("studentSummary.professionalScore")}</div>
                 </div>
 
             </div>

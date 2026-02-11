@@ -77,7 +77,7 @@ export function DashboardSidebar({
                 <div className="flex items-center gap-3">
                     <Image
                         src="/Linky-head-logo.png"
-                        alt="Company Logo"
+                        alt={t('dashboard.companyLogo')}
                         width={40}
                         height={40}
                         className="rounded-2xl object-cover"
@@ -155,7 +155,7 @@ export function DashboardSidebar({
                             >
                                 <div className="flex items-center gap-2">
                                     <Users className="h-5 w-5" />
-                                    <span>{t('navigation.team') || 'Team'}</span>
+                                    <span>{t('navigation.team')}</span>
                                 </div>
                             </button>
                         </AnimateIcon>
@@ -237,7 +237,7 @@ export function DashboardSidebar({
                             >
                                 <div className="flex items-center gap-2">
                                     <Building2 className="h-4 w-4" />
-                                    <span>{t('navigation.myTeams') || 'My Teams'}</span>
+                                    <span>{t('navigation.myTeams')}</span>
                                 </div>
                                 {teamsExpanded ? (
                                     <ChevronDown className="h-4 w-4" />
@@ -270,7 +270,7 @@ export function DashboardSidebar({
                                                 <div className="flex-1 text-left">
                                                     <span className="font-medium text-foreground">{team.companyName}</span>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {team.internships.length} {team.internships.length === 1 ? 'project' : 'projects'}
+                                                        {team.internships.length} {team.internships.length === 1 ? t('dashboard.project') : t('dashboard.projects')}
                                                     </p>
                                                 </div>
                                             </button>
@@ -286,7 +286,7 @@ export function DashboardSidebar({
                         <div className="mt-4 pt-4 border-t">
                             <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
-                                <span>Loading teams...</span>
+                                <span>{t('dashboard.loadingTeams')}</span>
                             </div>
                         </div>
                     )}

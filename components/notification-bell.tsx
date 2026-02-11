@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 interface NotificationMetadata {
     applicationId?: string
@@ -44,6 +45,7 @@ interface Notification extends NotificationMetadata {
 
 export function NotificationBell() {
     const router = useRouter()
+    const { t } = useTranslation()
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [loading, setLoading] = useState(true)
@@ -145,7 +147,7 @@ export function NotificationBell() {
             router.push(notification.link)
         } else if (notification.type === "TEAM_INVITATION") {
             // Fallback for old team invitation notifications without links
-            toast.info("Please check your email for the invitation link, or ask the company to resend the invitation.")
+            toast.info(t('team.checkEmailInvitation'))
         } else {
             console.log("No link available for notification") // Debug log
         }
@@ -154,7 +156,7 @@ export function NotificationBell() {
     // Accept internship offer
     const acceptOffer = async () => {
         if (!selectedNotification?.applicationId) {
-            toast.error("No application found")
+            toast.error(t('notifications.noApplicationFound'))
             return
         }
         
@@ -172,7 +174,7 @@ export function NotificationBell() {
             const data = await res.json()
             
             if (res.ok) {
-                toast.success("🎉 Congratulations! You've accepted the internship offer!")
+                toast.success("🎉 " + t('notifications.congratulations'))
                 setActionModalOpen(false)
                 fetchNotifications()
                 
@@ -184,11 +186,11 @@ export function NotificationBell() {
                     window.location.reload()
                 }, 500)
             } else {
-                toast.error(data.error || "Failed to accept offer")
+                toast.error(data.error || t('notifications.failedToAccept'))
             }
         } catch (error) {
             console.error("Accept offer error:", error)
-            toast.error("Something went wrong")
+            toast.error(t('errors.somethingWentWrong'))
         } finally {
             setAccepting(false)
         }
@@ -233,7 +235,7 @@ export function NotificationBell() {
         const diffHours = Math.floor(diffMs / 3600000)
         const diffDays = Math.floor(diffMs / 86400000)
 
-        if (diffMins < 1) return "Just now"
+        if (diffMins < 1) return t('notifications.justNow')
         if (diffMins < 60) return `${diffMins}m ago`
         if (diffHours < 24) return `${diffHours}h ago`
         if (diffDays < 7) return `${diffDays}d ago`
@@ -280,7 +282,7 @@ export function NotificationBell() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 md:w-96">
                     <div className="flex items-center justify-between px-4 py-3 border-b">
-                        <h3 className="font-semibold">Notifications</h3>
+                        <h3 className="font-semibold">{t('notifications.title')}</h3>
                         {unreadCount > 0 && (
                             <Button 
                                 variant="ghost" 
@@ -289,7 +291,7 @@ export function NotificationBell() {
                                 className="text-xs h-7"
                             >
                                 <CheckCheck className="h-3 w-3 mr-1" />
-                                Mark all read
+                                {t('notifications.markAllRead')}
                             </Button>
                         )}
                     </div>
@@ -302,7 +304,7 @@ export function NotificationBell() {
                         ) : notifications.length === 0 ? (
                             <div className="p-8 text-center text-muted-foreground">
                                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                <p>No notifications yet</p>
+                                <p>{t('notifications.noNotifications')}</p>
                             </div>
                         ) : (
                             <div className="divide-y">
@@ -338,7 +340,7 @@ export function NotificationBell() {
                                                 {isActionable(notification) && (
                                                     <div className="mt-2 flex items-center gap-1 text-xs text-green-600 font-medium">
                                                         <CheckCircle className="h-3 w-3" />
-                                                        <span>Click to accept offer</span>
+                                                        <span>{t('notifications.clickToAccept')}</span>
                                                         <ArrowRight className="h-3 w-3" />
                                                     </div>
                                                 )}
@@ -347,7 +349,7 @@ export function NotificationBell() {
                                                 {isTeamInvitation(notification) && (
                                                     <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 font-medium">
                                                         <Building2 className="h-3 w-3" />
-                                                        <span>Click to view invitation</span>
+                                                        <span>{t('notifications.clickToViewInvitation')}</span>
                                                         <ArrowRight className="h-3 w-3" />
                                                     </div>
                                                 )}
@@ -366,7 +368,7 @@ export function NotificationBell() {
                                                                     e.stopPropagation()
                                                                     markAsRead(notification.id)
                                                                 }}
-                                                                title="Mark as read"
+                                                                title={t('notifications.markAsRead')}
                                                             >
                                                                 <Check className="h-3 w-3" />
                                                             </Button>
@@ -376,7 +378,7 @@ export function NotificationBell() {
                                                             size="icon" 
                                                             className="h-6 w-6 text-destructive hover:text-destructive"
                                                             onClick={(e) => deleteNotification(notification.id, e)}
-                                                            title="Delete"
+                                                            title={t('common.delete')}
                                                         >
                                                             <Trash2 className="h-3 w-3" />
                                                         </Button>
@@ -401,7 +403,7 @@ export function NotificationBell() {
                                         router.push("/dashboard/student/internships/applied")
                                     }}
                                 >
-                                    View all applications
+                                    {t('notifications.viewAllApplications')}
                                 </Button>
                             </div>
                         </>
@@ -415,7 +417,7 @@ export function NotificationBell() {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-3 text-xl">
                             <span className="text-3xl">🎉</span>
-                            <span>Accept Internship Offer</span>
+                            <span>{t('notifications.acceptInternshipOffer')}</span>
                         </DialogTitle>
                         <DialogDescription className="text-base pt-2">
                             {selectedNotification?.message}
@@ -442,15 +444,15 @@ export function NotificationBell() {
                             <div className="space-y-2 text-sm text-green-800 dark:text-green-200">
                                 <p className="flex items-center gap-2">
                                     <CheckCircle className="h-4 w-4" />
-                                    <span>Your application has been approved!</span>
+                                    <span>{t('notifications.applicationApproved')}</span>
                                 </p>
                                 <p className="flex items-center gap-2">
                                     <CheckCircle className="h-4 w-4" />
-                                    <span>Accept to join the team and start your journey</span>
+                                    <span>{t('notifications.acceptToJoin')}</span>
                                 </p>
                                 <p className="flex items-center gap-2">
                                     <CheckCircle className="h-4 w-4" />
-                                    <span>Access your project workspace after accepting</span>
+                                    <span>{t('notifications.accessWorkspace')}</span>
                                 </p>
                             </div>
                         </div>
@@ -483,7 +485,7 @@ export function NotificationBell() {
                             size="lg"
                         >
                             <ExternalLink className="h-4 w-4 mr-2" />
-                            View Details
+                            {t('common.viewDetails')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

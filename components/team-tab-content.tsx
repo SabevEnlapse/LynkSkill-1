@@ -154,11 +154,11 @@ export function TeamTabContent() {
     if (!companyCode) return
     try {
       await navigator.clipboard.writeText(companyCode)
-      toast.success("Invitation code copied!", {
-        description: "Share this code with team members to join your company.",
+      toast.success(t("teamTab.invitationCodeCopied"), {
+        description: t("teamTab.shareCodeDescription"),
       })
     } catch {
-      toast.error("Failed to copy code")
+      toast.error(t("teamTab.failedToCopyCode"))
     }
   }
 
@@ -181,7 +181,7 @@ export function TeamTabContent() {
             <div>
               <p className="font-medium text-destructive">{error}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Something went wrong. Please try again.
+                {t('teamTab.somethingWentWrong')}
               </p>
             </div>
             <Button
@@ -248,7 +248,7 @@ export function TeamTabContent() {
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-violet-700 dark:text-violet-300">{activeMembers.length}</span>
               <span className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" /> active
+                <TrendingUp className="h-3 w-3" /> {t('common.active').toLowerCase()}
               </span>
             </div>
           </CardContent>
@@ -282,7 +282,7 @@ export function TeamTabContent() {
           <CardContent>
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">{admins.length}</span>
-              <span className="text-xs text-muted-foreground mb-1">administrator{admins.length !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-muted-foreground mb-1">{admins.length !== 1 ? t('teamTab.administrators') : t('teamTab.administrator')}</span>
             </div>
           </CardContent>
         </Card>
@@ -301,7 +301,7 @@ export function TeamTabContent() {
               <span className="text-3xl font-bold text-orange-700 dark:text-orange-300">{pendingMembers.length}</span>
               {pendingMembers.length > 0 && (
                 <Badge variant="secondary" className="mb-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] px-1.5">
-                  awaiting
+                  {t("teamTab.awaiting")}
                 </Badge>
               )}
             </div>
@@ -323,7 +323,7 @@ export function TeamTabContent() {
                     {t('team.invitationCode') || 'Company Invitation Code'}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Share with team members to join instantly
+                    {t('teamTab.shareWithTeamMembers')}
                   </p>
                 </div>
               </div>
@@ -344,7 +344,7 @@ export function TeamTabContent() {
                         {showCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{showCode ? "Hide code" : "Show code"}</TooltipContent>
+                    <TooltipContent>{showCode ? t('teamTab.hideCode') : t('teamTab.showCode')}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 <TooltipProvider>
@@ -359,7 +359,7 @@ export function TeamTabContent() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy code</TooltipContent>
+                    <TooltipContent>{t('team.copyCode')}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>

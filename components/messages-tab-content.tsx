@@ -359,9 +359,9 @@ export function MessagesTabContent({ userType }: MessagesTabContentProps) {
                                 ) : messages.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-40 text-center">
                                         <MessageSquare className="h-10 w-10 text-muted-foreground/50 mb-2" />
-                                        <p className="text-muted-foreground text-sm">No messages yet</p>
+                                        <p className="text-muted-foreground text-sm">{t('messages.noMessages')}</p>
                                         <p className="text-muted-foreground/70 text-xs mt-1">
-                                            Send the first message!
+                                            {t('messages.sendFirstMessage')}
                                         </p>
                                     </div>
                                 ) : (
@@ -414,7 +414,7 @@ export function MessagesTabContent({ userType }: MessagesTabContentProps) {
                                         ref={inputRef}
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
-                                        placeholder="Type a message..."
+                                        placeholder={t('messages.typeMessage')}
                                         className="flex-1 rounded-xl border-2 border-border/50 focus:border-indigo-500"
                                         disabled={isSending}
                                     />
@@ -438,10 +438,10 @@ export function MessagesTabContent({ userType }: MessagesTabContentProps) {
                                 <MessageSquare className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <h3 className="text-xl font-semibold text-foreground mb-2">
-                                Select a conversation
+                                {t('messages.selectConversation')}
                             </h3>
                             <p className="text-muted-foreground text-sm max-w-sm">
-                                Choose a conversation from the list to start messaging
+                                {t('messages.chooseConversation')}
                             </p>
                         </div>
                     )}

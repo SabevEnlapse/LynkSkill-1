@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface CoverLetterViewerProps {
     open: boolean
@@ -56,6 +57,7 @@ export function CoverLetterViewer({
     const [data, setData] = useState<CoverLetterData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
+    const { t } = useTranslation()
     
     // Student edit mode
     const [isEditing, setIsEditing] = useState(false)
@@ -112,9 +114,9 @@ export function CoverLetterViewer({
             const updated = await res.json()
             setData(prev => prev ? { ...prev, ...updated } : prev)
             setIsEditing(false)
-            toast.success("Cover letter updated successfully")
+            toast.success(t("coverLetter.updatedSuccess"))
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to save cover letter")
+            toast.error(err instanceof Error ? err.message : t("coverLetter.failedToSave"))
         } finally {
             setIsSaving(false)
         }
@@ -137,9 +139,9 @@ export function CoverLetterViewer({
             const updated = await res.json()
             setData(prev => prev ? { ...prev, ...updated } : prev)
             setShowReviewForm(false)
-            toast.success("Cover letter review submitted")
+            toast.success(t("coverLetter.reviewSubmitted"))
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to submit review")
+            toast.error(err instanceof Error ? err.message : t("coverLetter.failedToSubmitReview"))
         } finally {
             setIsReviewing(false)
         }
@@ -149,9 +151,9 @@ export function CoverLetterViewer({
         if (!data?.coverLetterStatus) return null
 
         const statusConfig = {
-            DRAFT: { label: "Draft", icon: Edit3, className: "bg-gray-500/10 text-gray-600 border-gray-500/20" },
-            SUBMITTED: { label: "Submitted", icon: Clock, className: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-            REVIEWED: { label: "Reviewed", icon: CheckCircle2, className: "bg-green-500/10 text-green-600 border-green-500/20" },
+            DRAFT: { label: t("coverLetter.draft"), icon: Edit3, className: "bg-gray-500/10 text-gray-600 border-gray-500/20" },
+            SUBMITTED: { label: t("coverLetter.submitted"), icon: Clock, className: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+            REVIEWED: { label: t("coverLetter.reviewed"), icon: CheckCircle2, className: "bg-green-500/10 text-green-600 border-green-500/20" },
         }
 
         const config = statusConfig[data.coverLetterStatus]
@@ -180,15 +182,15 @@ export function CoverLetterViewer({
                             <div>
                                 <DialogTitle className="text-xl font-bold text-white">
                                     {userType === "Company" && studentName
-                                        ? `${studentName}'s Cover Letter`
-                                        : "Cover Letter"
+                                        ? `${studentName} - ${t("coverLetter.title")}`
+                                        : t("coverLetter.title")
                                     }
                                 </DialogTitle>
                                 {data && (
                                     <p className="text-white/70 mt-1 text-sm">
-                                        For <span className="text-white/90 font-medium">{data.internshipTitle}</span>
+                                        {t("coverLetter.forPosition")} <span className="text-white/90 font-medium">{data.internshipTitle}</span>
                                         {userType === "Student" && (
-                                            <> at <span className="text-white/90 font-medium">{data.companyName}</span></>
+                                            <> {t("coverLetter.atCompany")} <span className="text-white/90 font-medium">{data.companyName}</span></>
                                         )}
                                     </p>
                                 )}
@@ -218,9 +220,9 @@ export function CoverLetterViewer({
                             <div className="p-3 rounded-full bg-destructive/10">
                                 <AlertCircle className="h-8 w-8 text-destructive" />
                             </div>
-                            <p className="text-sm text-muted-foreground">Failed to load cover letter</p>
+                            <p className="text-sm text-muted-foreground">{t("coverLetter.failedToLoad")}</p>
                             <Button variant="outline" size="sm" onClick={fetchCoverLetter}>
-                                Try Again
+                                {t("coverLetter.tryAgain")}
                             </Button>
                         </div>
                     ) : !data?.coverLetter ? (
@@ -229,11 +231,11 @@ export function CoverLetterViewer({
                                 <FileText className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <div className="text-center">
-                                <h3 className="font-semibold text-foreground mb-1">No Cover Letter</h3>
+                                <h3 className="font-semibold text-foreground mb-1">{t("coverLetter.noCoverLetter")}</h3>
                                 <p className="text-sm text-muted-foreground">
                                     {userType === "Student"
-                                        ? "You didn't submit a cover letter with this application."
-                                        : "The student did not include a cover letter."}
+                                        ? t("coverLetter.noLetterStudent")
+                                        : t("coverLetter.noLetterCompany")}
                                 </p>
                             </div>
                         </div>
@@ -245,7 +247,7 @@ export function CoverLetterViewer({
                                 {data.coverLetterGeneratedByAI && (
                                     <Badge variant="outline" className="gap-1.5 text-xs bg-purple-500/10 text-purple-600 border-purple-500/20">
                                         <Sparkles className="h-3 w-3" />
-                                        AI-Generated
+                                        {t("coverLetter.aiGenerated")}
                                     </Badge>
                                 )}
                             </div>
@@ -260,7 +262,7 @@ export function CoverLetterViewer({
                                     />
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-muted-foreground">
-                                            {editedLetter.length.toLocaleString()} / 5,000 characters
+                                            {editedLetter.length.toLocaleString()} / 5,000 {t("coverLetter.characters")}
                                         </span>
                                         <div className="flex gap-2">
                                             <Button
@@ -272,7 +274,7 @@ export function CoverLetterViewer({
                                                 }}
                                                 className="rounded-xl"
                                             >
-                                                Cancel
+                                                {t("coverLetter.cancel")}
                                             </Button>
                                             <Button
                                                 size="sm"
@@ -285,7 +287,7 @@ export function CoverLetterViewer({
                                                 ) : (
                                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                                 )}
-                                                Save
+                                                {t("coverLetter.save")}
                                             </Button>
                                         </div>
                                     </div>
@@ -308,7 +310,7 @@ export function CoverLetterViewer({
                                     <div className="flex items-center gap-2 mb-2">
                                         <MessageSquare className="h-4 w-4 text-green-600" />
                                         <span className="text-sm font-semibold text-green-700 dark:text-green-400">
-                                            Reviewer Feedback
+                                            {t("coverLetter.reviewerFeedback")}
                                         </span>
                                         {data.coverLetterReviewedAt && (
                                             <span className="text-xs text-muted-foreground ml-auto">
@@ -328,13 +330,13 @@ export function CoverLetterViewer({
                                     <div className="flex items-center gap-2">
                                         <Eye className="h-4 w-4 text-purple-600" />
                                         <span className="text-sm font-semibold text-purple-700 dark:text-purple-400">
-                                            Review Note (internal — not visible to student)
+                                            {t("coverLetter.reviewNoteInternal")}
                                         </span>
                                     </div>
                                     <Textarea
                                         value={reviewNote}
                                         onChange={(e) => setReviewNote(e.target.value)}
-                                        placeholder="Add your feedback about this cover letter for the team..."
+                                        placeholder={t("coverLetter.reviewPlaceholder")}
                                         className="min-h-[100px] rounded-xl border-2 resize-none focus:border-purple-500 text-sm"
                                     />
                                     <div className="flex gap-2 justify-end">
@@ -344,7 +346,7 @@ export function CoverLetterViewer({
                                             onClick={() => setShowReviewForm(false)}
                                             className="rounded-xl"
                                         >
-                                            Cancel
+                                            {t("coverLetter.cancel")}
                                         </Button>
                                         <Button
                                             size="sm"
@@ -357,7 +359,7 @@ export function CoverLetterViewer({
                                             ) : (
                                                 <Send className="h-3.5 w-3.5" />
                                             )}
-                                            Submit Review
+                                            {t("coverLetter.submitReview")}
                                         </Button>
                                     </div>
                                 </div>
@@ -373,7 +375,7 @@ export function CoverLetterViewer({
                                         className="gap-2 rounded-xl"
                                     >
                                         <Edit3 className="h-3.5 w-3.5" />
-                                        Edit Cover Letter
+                                        {t("coverLetter.editCoverLetter")}
                                     </Button>
                                 )}
                                 {userType === "Company" && canReview && !showReviewForm && (
@@ -384,7 +386,7 @@ export function CoverLetterViewer({
                                         className="gap-2 rounded-xl border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
                                     >
                                         <MessageSquare className="h-3.5 w-3.5" />
-                                        {data.coverLetterStatus === "REVIEWED" ? "Update Review" : "Add Review"}
+                                        {data.coverLetterStatus === "REVIEWED" ? t("coverLetter.updateReview") : t("coverLetter.addReview")}
                                     </Button>
                                 )}
                             </div>

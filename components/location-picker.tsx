@@ -5,6 +5,7 @@ import { MapPin, Search, Loader2, Navigation, X, ChevronDown, ChevronUp } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 import dynamic from "next/dynamic"
 
@@ -134,6 +135,7 @@ export function LocationPicker({
     mapHeight = 220,
     disabled = false,
 }: LocationPickerProps) {
+    const { t } = useTranslation()
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState<Array<{
         display_name: string
@@ -253,7 +255,7 @@ export function LocationPicker({
                 )}
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">{value?.address || "No location set"}</span>
+                    <span className="text-muted-foreground">{value?.address || t("locationPicker.noLocationSet")}</span>
                 </div>
             </div>
         )
@@ -291,7 +293,7 @@ export function LocationPicker({
                             : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground hover:border-emerald-500/40"
                     )}
                 >
-                    🌐 Remote
+                    🌐 {t("locationPicker.remote")}
                 </button>
             </div>
 
@@ -316,7 +318,7 @@ export function LocationPicker({
                             size="icon"
                             className="h-7 w-7 rounded-lg hover:bg-blue-500/10"
                             onClick={handleUseMyLocation}
-                            title="Използвай текущата ми локация"
+                            title={t("locationPicker.useMyLocation")}
                         >
                             <Navigation className="h-3.5 w-3.5 text-blue-500" />
                         </Button>
@@ -377,7 +379,7 @@ export function LocationPicker({
                     className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <MapPin className="h-3 w-3" />
-                    {showMap ? "Скрий картата" : "Покажи картата — натисни за точна локация"}
+                    {showMap ? t("locationPicker.hideMap") : t("locationPicker.showMap")}
                     {showMap ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                 </button>
             )}
@@ -388,7 +390,7 @@ export function LocationPicker({
                     {isReverseGeocoding && (
                         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-full border shadow-lg flex items-center gap-2">
                             <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
-                            <span className="text-xs">Зареждане на адрес...</span>
+                            <span className="text-xs">{t("locationPicker.loadingAddress")}</span>
                         </div>
                     )}
                     <MapContainerDynamic

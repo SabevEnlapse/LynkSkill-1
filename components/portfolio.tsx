@@ -179,11 +179,13 @@ const validateCustomText = (text: string): string | null => {
 }
 
 const AttachmentDisplay = ({ attachments }: { attachments?: FileAttachment[] }) => {
+    const { t } = useTranslation()
+
     if (!attachments || attachments.length === 0) return null
 
     return (
         <div className="mt-4 space-y-2">
-            <h5 className="text-sm font-semibold text-muted-foreground">Attachments:</h5>
+            <h5 className="text-sm font-semibold text-muted-foreground">{t("portfolio.attachments")}</h5>
             <div className="flex flex-wrap gap-2">
                 {attachments.map((file) => (
                     <motion.a
@@ -324,7 +326,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
 
         if (Object.keys(errors).length > 0) {
             setValidationErrors(errors)
-            toast.error("Please fix validation errors before saving")
+            toast.error(t("portfolio.fixValidationErrors"))
             return
         }
 
@@ -340,14 +342,14 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
             if (res.ok) {
                 setIsEditing(false)
                 setActiveSection(null)
-                toast.success("Portfolio saved successfully!")
+                toast.success(t("portfolio.savedSuccessfully"))
             } else {
                 const data = await res.json()
-                toast.error(data.error || "Failed to save portfolio")
+                toast.error(data.error || t("portfolio.failedToSave"))
             }
         } catch (error) {
             console.error("Save error:", error)
-            toast.error("Failed to save portfolio")
+            toast.error(t("portfolio.failedToSave"))
         }
     }
 
@@ -435,7 +437,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
             setAiReply(data.reply)
         } catch (err) {
             console.error("AI error:", err)
-            setAiReply("Something went wrong while getting recommendations.")
+            setAiReply(t("portfolio.aiError"))
         }
         setLoadingAi(false)
     }
@@ -453,7 +455,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
         )
     }
 
-    const displayName = user?.fullName || portfolio?.fullName || "Professional Portfolio"
+    const displayName = user?.fullName || portfolio?.fullName || t("portfolio.professionalPortfolio")
 
     return (
         <div className="min-h-screen bg-background">
@@ -501,19 +503,19 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                 <div className="space-y-4">
                                     <h1 className="text-6xl font-bold text-balance leading-tight">{displayName}</h1>
                                     <p className="text-2xl font-semibold text-white/95">
-                                        {portfolio?.headline || "Professional Portfolio"}
+                                        {portfolio?.headline || t("portfolio.professionalPortfolio")}
                                     </p>
 
                                     <div className="flex flex-wrap gap-3 pt-4">
                                         {portfolio?.age && (
                                             <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
                                                 <Calendar className="h-5 w-5" />
-                                                <span className="font-semibold">{portfolio.age} years old</span>
+                                                <span className="font-semibold">{portfolio.age} {t("portfolio.yearsOld")}</span>
                                             </div>
                                         )}
                                         <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
                                             <MapPin className="h-5 w-5" />
-                                            <span className="font-semibold">Available</span>
+                                            <span className="font-semibold">{t("portfolio.available")}</span>
                                         </div>
                                         {portfolio?.needsApproval && (
                                             <Badge
@@ -537,7 +539,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 title={`Generated from AI Mode session on ${portfolio.aiGeneratedAt ? new Date(portfolio.aiGeneratedAt).toLocaleDateString() : 'Unknown date'}`}
                                             >
                                                 <Bot className="h-5 w-5 text-violet-200" />
-                                                <span className="font-semibold text-violet-100">AI Generated</span>
+                                                <span className="font-semibold text-violet-100">{t("portfolio.aiGenerated")}</span>
                                                 <Sparkles className="h-4 w-4 text-violet-200" />
                                             </motion.div>
                                         )}
@@ -566,7 +568,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     >
                                         <Briefcase className="h-8 w-8 mb-3" />
                                         <div className="text-3xl font-bold">{portfolio?.projects?.length || 0}</div>
-                                        <div className="text-white/80 font-medium">Projects</div>
+                                        <div className="text-white/80 font-medium">{t("portfolio.projects")}</div>
                                     </motion.div>
                                     <motion.div
                                         whileHover={{ scale: 1.05, y: -5 }}
@@ -574,7 +576,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     >
                                         <Award className="h-8 w-8 mb-3" />
                                         <div className="text-3xl font-bold">{portfolio?.certifications?.length || 0}</div>
-                                        <div className="text-white/80 font-medium">Certificates</div>
+                                        <div className="text-white/80 font-medium">{t("portfolio.certificates")}</div>
                                     </motion.div>
                                     <motion.div
                                         whileHover={{ scale: 1.05, y: -5 }}
@@ -582,7 +584,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     >
                                         <GraduationCap className="h-8 w-8 mb-3" />
                                         <div className="text-3xl font-bold">{portfolio?.education?.length || 0}</div>
-                                        <div className="text-white/80 font-medium">Education</div>
+                                        <div className="text-white/80 font-medium">{t("portfolio.education")}</div>
                                     </motion.div>
                                 </div>
 
@@ -596,12 +598,12 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                             {isEditing ? (
                                                 <>
                                                     <Save className="mr-3 h-6 w-6" />
-                                                    Save All Changes
+                                                    {t("portfolio.saveAllChanges")}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Edit3 className="mr-3 h-6 w-6" />
-                                                    Edit Portfolio
+                                                    {t("portfolio.editPortfolio")}
                                                 </>
                                             )}
                                         </Button>
@@ -646,7 +648,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 setShowMascot(true)
                                             } catch (err) {
                                                 console.error("AI error:", err)
-                                                setAiReply("Something went wrong while getting recommendations.")
+                                                setAiReply(t("portfolio.aiError"))
                                                 setShowMascot(true)
                                             } finally {
                                                 setIsGenerating(false)
@@ -657,7 +659,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         size="lg"
                                     >
                                         <Sparkles className="mr-3 h-6 w-6" />
-                                        {loadingAi || isGenerating ? "Thinking..." : "Ask Linky for Feedback"}
+                                        {loadingAi || isGenerating ? t("portfolio.thinking") : t("portfolio.askLinkyForFeedback")}
                                     </Button>
                                 </motion.div>
                             </motion.div>
@@ -680,32 +682,32 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                            AI Mode Generated Portfolio
+                                            {t("portfolio.aiModeGeneratedPortfolio")}
                                             <Sparkles className="h-4 w-4" />
                                         </h3>
                                         <p className="text-white/80 text-sm">
-                                            Some parts of this portfolio were created with help from Linky, your AI Career Assistant
+                                            {t("portfolio.aiModeDescription")}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="p-6">
                                     <div className="grid md:grid-cols-3 gap-4">
                                         <div className="bg-card/50 rounded-xl p-4 border border-violet-500/20">
-                                            <p className="text-xs text-muted-foreground mb-1">Session ID</p>
+                                            <p className="text-xs text-muted-foreground mb-1">{t("portfolio.sessionId")}</p>
                                             <p className="font-mono text-sm text-violet-600 dark:text-violet-400 truncate">
                                                 {portfolio.aiModeSessionId}
                                             </p>
                                         </div>
                                         <div className="bg-card/50 rounded-xl p-4 border border-violet-500/20">
-                                            <p className="text-xs text-muted-foreground mb-1">Generated On</p>
+                                            <p className="text-xs text-muted-foreground mb-1">{t("portfolio.generatedOn")}</p>
                                             <p className="font-medium text-sm">
                                                 {portfolio.aiGeneratedAt 
                                                     ? new Date(portfolio.aiGeneratedAt).toLocaleString() 
-                                                    : "Unknown"}
+                                                    : t("portfolio.unknown")}
                                             </p>
                                         </div>
                                         <div className="bg-card/50 rounded-xl p-4 border border-violet-500/20">
-                                            <p className="text-xs text-muted-foreground mb-1">AI Generated Fields</p>
+                                            <p className="text-xs text-muted-foreground mb-1">{t("portfolio.aiGeneratedFields")}</p>
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 {(portfolio.aiGeneratedFields || []).map((field, i) => (
                                                     <Badge 
@@ -717,7 +719,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </Badge>
                                                 ))}
                                                 {(!portfolio.aiGeneratedFields || portfolio.aiGeneratedFields.length === 0) && (
-                                                    <span className="text-sm text-muted-foreground">None tracked</span>
+                                                    <span className="text-sm text-muted-foreground">{t("portfolio.noneTracked")}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -737,20 +739,20 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                             <User className="h-6 w-6" />
                                         </div>
-                                        About Me
+                                        {t("portfolio.aboutMe")}
                                     </h2>
                                 </div>
                                 <div className="p-8">
                                     {isEditing ? (
                                         <Textarea
-                                            placeholder="Write a compelling bio..."
+                                            placeholder={t("portfolio.bioPlaceholder")}
                                             value={portfolio?.bio || ""}
                                             onChange={(e) => setPortfolio((prev) => ({ ...prev!, bio: e.target.value }))}
                                             className="min-h-40 rounded-[1.5rem] border-2 text-lg"
                                         />
                                     ) : (
                                         <p className="text-muted-foreground leading-relaxed text-lg">
-                                            {portfolio?.bio || "No bio added yet. Share your story!"}
+                                            {portfolio?.bio || t("portfolio.noBioYet")}
                                         </p>
                                     )}
                                 </div>
@@ -767,14 +769,14 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                             <LinkIcon className="h-6 w-6" />
                                         </div>
-                                        Links
+                                        {t("portfolio.links")}
                                     </h2>
                                 </div>
                                 <div className="p-6 space-y-3">
                                     {isEditing ? (
                                         <div className="space-y-3">
                                             <Input
-                                                placeholder="LinkedIn URL"
+                                                placeholder={t("portfolio.linkedinUrl")}
                                                 value={portfolio?.linkedin || ""}
                                                 onChange={(e) =>
                                                     setPortfolio((prev) => ({
@@ -785,7 +787,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 className="rounded-xl"
                                             />
                                             <Input
-                                                placeholder="GitHub URL"
+                                                placeholder={t("portfolio.githubUrl")}
                                                 value={portfolio?.github || ""}
                                                 onChange={(e) =>
                                                     setPortfolio((prev) => ({
@@ -796,7 +798,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 className="rounded-xl"
                                             />
                                             <Input
-                                                placeholder="Portfolio URL"
+                                                placeholder={t("portfolio.portfolioUrl")}
                                                 value={portfolio?.portfolioUrl || ""}
                                                 onChange={(e) =>
                                                     setPortfolio((prev) => ({
@@ -818,7 +820,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-2xl transition-all"
                                                 >
                                                     <LinkIcon className="h-5 w-5" />
-                                                    <span className="font-semibold">LinkedIn</span>
+                                                    <span className="font-semibold">{t("portfolio.linkedin")}</span>
                                                     <ExternalLink className="h-4 w-4 ml-auto" />
                                                 </motion.a>
                                             )}
@@ -831,7 +833,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-2xl transition-all"
                                                 >
                                                     <Code className="h-5 w-5" />
-                                                    <span className="font-semibold">GitHub</span>
+                                                    <span className="font-semibold">{t("portfolio.github")}</span>
                                                     <ExternalLink className="h-4 w-4 ml-auto" />
                                                 </motion.a>
                                             )}
@@ -844,14 +846,14 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-2xl transition-all"
                                                 >
                                                     <Globe className="h-5 w-5" />
-                                                    <span className="font-semibold">Portfolio</span>
+                                                    <span className="font-semibold">{t("portfolio.portfolio")}</span>
                                                     <ExternalLink className="h-4 w-4 ml-auto" />
                                                 </motion.a>
                                             )}
                                             {!portfolio?.linkedin && !portfolio?.github && !portfolio?.portfolioUrl && (
                                                 <div className="text-center py-8">
                                                     <LinkIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                                                    <p className="text-muted-foreground text-sm">No links yet</p>
+                                                    <p className="text-muted-foreground text-sm">{t("portfolio.noLinksYet")}</p>
                                                 </div>
                                             )}
                                         </>
@@ -871,7 +873,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                         <Code className="h-6 w-6" />
                                     </div>
-                                    Technical Skills
+                                    {t("portfolio.technicalSkills")}
                                 </h2>
                             </div>
                             <div className="p-8">
@@ -899,10 +901,10 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <h4 className="font-semibold text-sm text-muted-foreground">Add Custom Skill</h4>
+                                            <h4 className="font-semibold text-sm text-muted-foreground">{t("portfolio.addCustomSkill")}</h4>
                                             <div className="flex gap-2">
                                                 <Input
-                                                    placeholder="e.g., Figma, Photoshop..."
+                                                    placeholder={t("portfolio.customSkillPlaceholder")}
                                                     value={customSkillInput}
                                                     onChange={(e) => setCustomSkillInput(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && handleAddCustomSkill()}
@@ -949,7 +951,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         ) : (
                                             <div className="col-span-full text-center py-12">
                                                 <Code className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                                <p className="text-muted-foreground">No skills added yet</p>
+                                                <p className="text-muted-foreground">{t("portfolio.noSkillsYet")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -968,7 +970,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                         <Heart className="h-6 w-6" />
                                     </div>
-                                    Interests & Hobbies
+                                    {t("portfolio.interestsAndHobbies")}
                                 </h2>
                             </div>
                             <div className="p-8">
@@ -996,10 +998,10 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <h4 className="font-semibold text-sm text-muted-foreground">Add Custom Interest</h4>
+                                            <h4 className="font-semibold text-sm text-muted-foreground">{t("portfolio.addCustomInterest")}</h4>
                                             <div className="flex gap-2">
                                                 <Input
-                                                    placeholder="e.g., Hiking, Volunteering..."
+                                                    placeholder={t("portfolio.customInterestPlaceholder")}
                                                     value={customInterestInput}
                                                     onChange={(e) => setCustomInterestInput(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && handleAddCustomInterest()}
@@ -1048,7 +1050,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         ) : (
                                             <div className="w-full text-center py-12">
                                                 <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                                <p className="text-muted-foreground">No interests added yet</p>
+                                                <p className="text-muted-foreground">{t("portfolio.noInterestsYet")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -1067,7 +1069,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                         <Briefcase className="h-6 w-6" />
                                     </div>
-                                    Projects
+                                    {t("portfolio.projects")}
                                 </h2>
                             </div>
                             <div className="p-8">
@@ -1082,7 +1084,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 className="p-6 border-2 rounded-[1.25rem] bg-accent/50 border-border space-y-4 hover:shadow-lg transition-all duration-300"
                                             >
                                                 <div className="flex justify-between items-center">
-                                                    <h4 className="font-semibold text-accent-foreground">Project #{i + 1}</h4>
+                                                    <h4 className="font-semibold text-accent-foreground">{t("portfolio.projectNumber", { num: i + 1 })}</h4>
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"
@@ -1098,7 +1100,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </Button>
                                                 </div>
                                                 <Input
-                                                    placeholder="Project Title"
+                                                    placeholder={t("portfolio.projectTitle")}
                                                     value={proj.title || ""}
                                                     onChange={(e) => {
                                                         const copy = [...(portfolio?.projects || [])]
@@ -1108,7 +1110,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                                 />
                                                 <Textarea
-                                                    placeholder="Project Description"
+                                                    placeholder={t("portfolio.projectDescription")}
                                                     value={proj.description || ""}
                                                     onChange={(e) => {
                                                         const copy = [...(portfolio?.projects || [])]
@@ -1118,7 +1120,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                                 />
                                                 <Input
-                                                    placeholder="Project Link (optional)"
+                                                    placeholder={t("portfolio.projectLink")}
                                                     value={proj.link || ""}
                                                     onChange={(e) => {
                                                         const copy = [...(portfolio?.projects || [])]
@@ -1129,7 +1131,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 />
                                                 <div className="space-y-3">
                                                     <h5 className="font-medium text-accent-foreground">
-                                                        Attach Files (screenshots, demos, documentation)
+                                                        {t("portfolio.attachFilesProjects")}
                                                     </h5>
                                                     <FileUpload
                                                         section="projects"
@@ -1158,7 +1160,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                             variant="outline"
                                         >
                                             <Plus className="mr-2 h-5 w-5" />
-                                            Add Project
+                                            {t("portfolio.addProject")}
                                         </Button>
                                     </div>
                                 ) : portfolio?.projects?.length ? (
@@ -1197,7 +1199,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                 ) : (
                                     <div className="text-center py-12">
                                         <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                        <p className="text-muted-foreground">No projects added yet</p>
+                                        <p className="text-muted-foreground">{t("portfolio.noProjectsYet")}</p>
                                     </div>
                                 )}
                             </div>
@@ -1215,7 +1217,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                             <GraduationCap className="h-6 w-6" />
                                         </div>
-                                        Education
+                                        {t("portfolio.education")}
                                     </h2>
                                 </div>
                                 <div className="p-8">
@@ -1230,7 +1232,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="p-6 border-2 rounded-[1.25rem] bg-accent/50 border-border space-y-4 hover:shadow-lg transition-all duration-300"
                                                 >
                                                     <div className="flex justify-between items-center">
-                                                        <h4 className="font-semibold text-accent-foreground">Education #{i + 1}</h4>
+                                                        <h4 className="font-semibold text-accent-foreground">{t("portfolio.educationNumber", { num: i + 1 })}</h4>
                                                         <Button
                                                             variant="destructive"
                                                             size="sm"
@@ -1247,7 +1249,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <Input
-                                                            placeholder="School/University"
+                                                            placeholder={t("portfolio.schoolUniversity")}
                                                             value={edu.school || ""}
                                                             onChange={(e) =>
                                                                 setPortfolio((prev) => {
@@ -1259,7 +1261,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                             className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                                         />
                                                         <Input
-                                                            placeholder="Degree/Program"
+                                                            placeholder={t("portfolio.degreeProgram")}
                                                             value={edu.degree || ""}
                                                             onChange={(e) =>
                                                                 setPortfolio((prev) => {
@@ -1272,7 +1274,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                         />
                                                         <div className="space-y-1">
                                                             <Input
-                                                                placeholder="Start Year"
+                                                                placeholder={t("portfolio.startYear")}
                                                                 type="number"
                                                                 value={edu.startYear || ""}
                                                                 onChange={(e) =>
@@ -1295,7 +1297,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <Input
-                                                                placeholder="End Year (or leave empty if current)"
+                                                                placeholder={t("portfolio.endYear")}
                                                                 type="number"
                                                                 value={edu.endYear || ""}
                                                                 onChange={(e) =>
@@ -1319,7 +1321,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </div>
                                                     <div className="space-y-3">
                                                         <h5 className="font-medium text-accent-foreground">
-                                                            Attach Files (transcripts, certificates, etc.)
+                                                            {t("portfolio.attachFilesEducation")}
                                                         </h5>
                                                         <FileUpload
                                                             section="education"
@@ -1352,7 +1354,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 variant="outline"
                                             >
                                                 <Plus className="mr-2 h-5 w-5" />
-                                                Add Education
+                                                {t("portfolio.addEducation")}
                                             </Button>
                                         </div>
                                     ) : portfolio?.education?.length ? (
@@ -1371,7 +1373,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                         <h4 className="font-bold text-lg mb-1">{edu.degree}</h4>
                                                         <p className="text-muted-foreground font-semibold">{edu.school}</p>
                                                         <p className="text-muted-foreground text-sm">
-                                                            {edu.startYear} - {edu.endYear || "Present"}
+                                                            {edu.startYear} - {edu.endYear || t("portfolio.present")}
                                                         </p>
                                                         <AttachmentDisplay attachments={edu.attachments} />
                                                     </div>
@@ -1381,7 +1383,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     ) : (
                                         <div className="text-center py-12">
                                             <GraduationCap className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                            <p className="text-muted-foreground">No education added yet</p>
+                                            <p className="text-muted-foreground">{t("portfolio.noEducationYet")}</p>
                                         </div>
                                     )}
                                 </div>
@@ -1398,7 +1400,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                         <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                                             <Award className="h-6 w-6" />
                                         </div>
-                                        Certifications
+                                        {t("portfolio.certifications")}
                                     </h2>
                                 </div>
                                 <div className="p-8">
@@ -1413,7 +1415,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     className="p-6 border-2 rounded-[1.25rem] bg-accent/50 border-border space-y-4 hover:shadow-lg transition-all duration-300"
                                                 >
                                                     <div className="flex justify-between items-center">
-                                                        <h4 className="font-semibold text-accent-foreground">Certification #{i + 1}</h4>
+                                                        <h4 className="font-semibold text-accent-foreground">{t("portfolio.certificationNumber", { num: i + 1 })}</h4>
                                                         <Button
                                                             variant="destructive"
                                                             size="sm"
@@ -1430,7 +1432,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <Input
-                                                            placeholder="Certification Name"
+                                                            placeholder={t("portfolio.certificationName")}
                                                             value={cert.name || ""}
                                                             onChange={(e) => {
                                                                 const copy = [...(portfolio?.certifications || [])]
@@ -1443,7 +1445,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                             className="rounded-[1.25rem] border-2 focus:ring-2 focus:ring-purple-500"
                                                         />
                                                         <Input
-                                                            placeholder="Issuing Authority"
+                                                            placeholder={t("portfolio.issuingAuthority")}
                                                             value={cert.authority || ""}
                                                             onChange={(e) => {
                                                                 const copy = [...(portfolio?.certifications || [])]
@@ -1457,7 +1459,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                         />
                                                         <div className="space-y-1">
                                                             <Input
-                                                                placeholder="Issue Date (YYYY-MM-DD)"
+                                                                placeholder={t("portfolio.issueDate")}
                                                                 value={cert.issuedAt || ""}
                                                                 onChange={(e) => {
                                                                     const copy = [...(portfolio?.certifications || [])]
@@ -1480,7 +1482,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <Input
-                                                                placeholder="Expiry Date (optional)"
+                                                                placeholder={t("portfolio.expiryDate")}
                                                                 value={cert.expiresAt || ""}
                                                                 onChange={(e) => {
                                                                     const copy = [...(portfolio?.certifications || [])]
@@ -1504,7 +1506,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                     </div>
                                                     <div className="space-y-3">
                                                         <h5 className="font-medium text-accent-foreground">
-                                                            Attach Files (certificates, badges, etc.)
+                                                            {t("portfolio.attachFilesCertifications")}
                                                         </h5>
                                                         <FileUpload
                                                             section="certifications"
@@ -1536,7 +1538,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 variant="outline"
                                             >
                                                 <Plus className="mr-2 h-5 w-5" />
-                                                Add Certification
+                                                {t("portfolio.addCertification")}
                                             </Button>
                                         </div>
                                     ) : portfolio?.certifications?.length ? (
@@ -1559,7 +1561,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                             <p className="text-muted-foreground font-semibold text-sm">{cert.authority}</p>
                                                             <p className="text-muted-foreground text-xs">
                                                                 {cert.issuedAt}
-                                                                {cert.expiresAt && ` • Expires: ${cert.expiresAt}`}
+                                                                {cert.expiresAt && ` • ${t("portfolio.expires")}: ${cert.expiresAt}`}
                                                             </p>
                                                             <AttachmentDisplay attachments={cert.attachments} />
                                                         </div>
@@ -1570,7 +1572,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                     ) : (
                                         <div className="text-center py-12">
                                             <Award className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                            <p className="text-muted-foreground">No certifications added yet</p>
+                                            <p className="text-muted-foreground">{t("portfolio.noCertificationsYet")}</p>
                                         </div>
                                     )}
                                 </div>
@@ -1582,7 +1584,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
             {showMascot && (
                 <AIMascotScene
                     portfolio={portfolio ?? undefined}
-                    aiReply={aiReply ?? "No reply yet."}
+                    aiReply={aiReply ?? t("portfolio.noReplyYet")}
                     onClose={() => setShowMascot(false)}
                 />
             )}

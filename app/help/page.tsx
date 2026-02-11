@@ -4,10 +4,12 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 export default function HelpRedirectPage() {
     const router = useRouter()
     const { isSignedIn, isLoaded } = useUser()
+    const { t } = useTranslation()
 
     useEffect(() => {
         if (!isLoaded) return
@@ -36,7 +38,7 @@ export default function HelpRedirectPage() {
         <div className="min-h-screen flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-                <p className="text-muted-foreground">Redirecting to Help Center...</p>
+                <p className="text-muted-foreground">{t("help.redirecting")}</p>
             </div>
         </div>
     )

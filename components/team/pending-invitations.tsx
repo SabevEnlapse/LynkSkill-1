@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner"
 import { RoleBadge } from "./role-badge"
 import { formatDistanceToNow } from "date-fns"
+import { useTranslation } from "@/lib/i18n"
 
 interface Member {
   id: string
@@ -56,6 +57,7 @@ export function PendingInvitations({
   companyId: _companyId,
   onUpdate,
 }: PendingInvitationsProps) {
+  const { t } = useTranslation()
   const [cancelMember, setCancelMember] = React.useState<Member | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [resendingId, setResendingId] = React.useState<string | null>(null)
@@ -69,15 +71,15 @@ export function PendingInvitations({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to resend invitation")
+        throw new Error(data.error || t("team.failedToResendInvitation"))
       }
 
-      toast.success("Invitation resent!", {
-        description: `A new invitation email has been sent to ${email}`,
+      toast.success(t("team.invitationResent"), {
+        description: `${t("team.newInvitationSentTo")} ${email}`,
       })
       onUpdate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to resend invitation")
+      toast.error(err instanceof Error ? err.message : t("team.failedToResendInvitation"))
     } finally {
       setResendingId(null)
     }
@@ -94,13 +96,13 @@ export function PendingInvitations({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to cancel invitation")
+        throw new Error(data.error || t("team.failedToCancelInvitation"))
       }
 
-      toast.success("Invitation cancelled")
+      toast.success(t("team.invitationCancelled"))
       onUpdate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to cancel invitation")
+      toast.error(err instanceof Error ? err.message : t("team.failedToCancelInvitation"))
     } finally {
       setLoading(false)
       setCancelMember(null)
@@ -113,9 +115,9 @@ export function PendingInvitations({
         <CardContent className="pt-6">
           <div className="text-center py-8">
             <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No pending invitations</h3>
+            <h3 className="text-lg font-medium">{t("team.noPendingInvitations")}</h3>
             <p className="text-muted-foreground mt-1">
-              All invitations have been accepted or expired
+              {t("team.allInvitationsAcceptedOrExpired")}
             </p>
           </div>
         </CardContent>
@@ -129,7 +131,7 @@ export function PendingInvitations({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Pending Invitations
+            {t("team.pendingInvitations")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -150,7 +152,7 @@ export function PendingInvitations({
                       <span className="font-medium">{member.email}</span>
                       <Badge variant="outline" className="text-xs">
                         <Clock className="h-3 w-3 mr-1" />
-                        Pending
+                        {t("team.pending")}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -177,7 +179,7 @@ export function PendingInvitations({
                     ) : (
                       <RefreshCw className="h-4 w-4 mr-2" />
                     )}
-                    Resend
+                    {t("team.resend")}
                   </Button>
 
                   <Button
@@ -198,21 +200,21 @@ export function PendingInvitations({
       <AlertDialog open={!!cancelMember} onOpenChange={() => setCancelMember(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
+            <AlertDialogTitle>{t("team.cancelInvitation")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel the invitation for{" "}
+              {t("team.confirmCancelInvitation")}{" "}
               <span className="font-medium">{cancelMember?.email}</span>?
-              They will no longer be able to join using the invitation link.
+              {t("team.cannotJoinAfterCancel")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>Keep Invitation</AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>{t("team.keepInvitation")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelInvitation}
               disabled={loading}
             >
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Cancel Invitation
+              {t("team.cancelInvitation")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

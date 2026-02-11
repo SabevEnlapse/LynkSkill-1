@@ -4,6 +4,7 @@ import * as React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Loader2, XCircle } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 interface StudentPolicyModalProps {
     open: boolean
@@ -26,6 +27,7 @@ export function StudentPolicyModal({
                                        onTosChange,
                                        onPrivacyChange,
                                    }: StudentPolicyModalProps) {
+    const { t } = useTranslation()
     const [loading, setLoading] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
 
@@ -33,7 +35,7 @@ export function StudentPolicyModal({
         setError(null)
 
         if (!portfolioId || portfolioId === "null") {
-            setError("Missing portfolio ID")
+            setError(t("policyModal.missingPortfolioId"))
             return
         }
 
@@ -43,7 +45,7 @@ export function StudentPolicyModal({
             onOpenChange(false)
         } catch (err) {
             console.error(err)
-            setError("Failed to save policies. Please try again.")
+            setError(t("policyModal.failedToSaveTryAgain"))
         } finally {
             setLoading(false)
         }
@@ -62,7 +64,7 @@ export function StudentPolicyModal({
                                 Student Registration Policy
                             </DialogTitle>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                Please review and accept our policies to continue
+                                {t("policyModal.reviewPolicies")}
                             </p>
                         </div>
                     </div>
@@ -75,7 +77,7 @@ export function StudentPolicyModal({
                             <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-50 font-medium">
                                 By continuing, you confirm that you are at least{" "}
                                 <span className="font-bold text-amber-900 dark:text-amber-100 underline decoration-amber-400/50 decoration-2 underline-offset-2">
-                  16 years old
+                  {t("policyModal.sixteenYearsOld")}
                 </span>
                                 , in accordance with Bulgarian law regarding digital services and data processing for minors. You also
                                 declare that all information provided in your student profile and portfolio is accurate and truthful.
@@ -94,7 +96,7 @@ export function StudentPolicyModal({
                                 />
                             </div>
                             <span className="text-sm leading-relaxed text-foreground/90 group-hover:text-foreground transition-colors flex-1">
-                I have read and accept the{" "}
+                {t("policyModal.readAcceptTerms")}{" "}
                                 <a
                                     className="text-primary font-semibold underline decoration-primary/30 decoration-2 underline-offset-2 hover:decoration-primary/60 transition-colors"
                                     href="/terms"
@@ -102,7 +104,7 @@ export function StudentPolicyModal({
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                  Terms of Service
+                  {t("policyModal.termsOfService")}
                 </a>
               </span>
                         </label>
@@ -117,7 +119,7 @@ export function StudentPolicyModal({
                                 />
                             </div>
                             <span className="text-sm leading-relaxed text-foreground/90 group-hover:text-foreground transition-colors flex-1">
-                I have read and accept the{" "}
+                {t("policyModal.readAcceptPrivacy")}{" "}
                                 <a
                                     className="text-primary font-semibold underline decoration-primary/30 decoration-2 underline-offset-2 hover:decoration-primary/60 transition-colors"
                                     href="/privacy"
@@ -125,7 +127,7 @@ export function StudentPolicyModal({
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                  Privacy Policy
+                  {t("policyModal.privacyPolicy")}
                 </a>
               </span>
                         </label>
@@ -145,7 +147,7 @@ export function StudentPolicyModal({
                             disabled={loading}
                             className="px-6 hover:bg-accent/50 transition-colors"
                         >
-                            Cancel
+                            {t("policyModal.cancel")}
                         </Button>
                         <Button
                             onClick={handleAccept}
@@ -156,10 +158,10 @@ export function StudentPolicyModal({
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                                    Saving...
+                                    {t("policyModal.saving")}
                                 </>
                             ) : (
-                                "I Understand and Agree"
+                                t("policyModal.agreeAndContinue")
                             )}
                         </Button>
                     </div>

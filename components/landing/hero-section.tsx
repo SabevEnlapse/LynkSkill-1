@@ -13,8 +13,10 @@ import {
     Play
 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useTranslation } from "@/lib/i18n"
 
 export function HeroSection() {
+    const { t } = useTranslation()
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const { scrollY } = useScroll()
     const y = useTransform(scrollY, [0, 500], [0, 150])
@@ -121,7 +123,7 @@ export function HeroSection() {
                         <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                     </motion.div>
                     <span className="text-sm md:text-base font-semibold bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-                        🚀 Connecting Students with Opportunities
+                        🚀 {t("landing.hero.badge")}
                     </span>
                     <motion.div
                         className="w-2 h-2 bg-green-400 rounded-full"
@@ -138,7 +140,7 @@ export function HeroSection() {
                     className="space-y-6 md:space-y-8"
                 >
                     <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]">
-                        <span className="block">Welcome to</span>
+                        <span className="block">{t("landing.hero.welcomeTo")}</span>
                         <span className="relative inline-block">
                             <motion.span 
                                 className="bg-gradient-to-r from-purple-400 via-blue-400 via-purple-500 to-blue-500 bg-clip-text text-transparent"
@@ -173,10 +175,10 @@ export function HeroSection() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 0.6 }}
                     >
-                        The ultimate platform bridging the gap between{" "}
+                        {t("landing.hero.subtitle1")}{" "}
                         <span className="relative inline-block">
                             <span className="text-foreground font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                                talented students
+                                {t("landing.hero.talentedStudents")}
                             </span>
                             <motion.div
                                 className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"
@@ -185,10 +187,10 @@ export function HeroSection() {
                                 transition={{ duration: 1, delay: 1.2 }}
                             />
                         </span>{" "}
-                        and{" "}
+                        {t("common.and")}{" "}
                         <span className="relative inline-block">
                             <span className="font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                innovative businesses
+                                {t("landing.hero.innovativeBusinesses")}
                             </span>
                             <motion.div
                                 className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
@@ -208,10 +210,10 @@ export function HeroSection() {
                     className="flex flex-wrap justify-center gap-2 md:gap-3 pt-2"
                 >
                     {[
-                        { icon: Target, text: "Manage Internships", color: "from-purple-500 to-pink-500" },
-                        { icon: Star, text: "Showcase Portfolios", color: "from-blue-500 to-cyan-500" },
-                        { icon: TrendingUp, text: "Track Progress", color: "from-green-500 to-emerald-500" },
-                        { icon: Zap, text: "Real-time Updates", color: "from-orange-500 to-red-500" }
+                        { icon: Target, text: t("landing.hero.manageInternships"), color: "from-purple-500 to-pink-500" },
+                        { icon: Star, text: t("landing.hero.showcasePortfolios"), color: "from-blue-500 to-cyan-500" },
+                        { icon: TrendingUp, text: t("landing.hero.trackProgress"), color: "from-green-500 to-emerald-500" },
+                        { icon: Zap, text: t("landing.hero.realTimeUpdates"), color: "from-orange-500 to-red-500" }
                     ].map((feature, index) => (
                         <motion.div
                             key={feature.text}
@@ -254,7 +256,7 @@ export function HeroSection() {
                                     }}
                                 />
                                 <span className="relative flex items-center justify-center gap-3">
-                                    Get Started Free
+                                    {t("landing.hero.getStartedFree")}
                                     <motion.div
                                         animate={{ x: [0, 4, 0] }}
                                         transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
@@ -272,7 +274,7 @@ export function HeroSection() {
                                 className="group relative overflow-hidden rounded-2xl px-8 py-6 md:px-12 md:py-8 text-lg md:text-xl font-bold transition-all duration-500 hover:scale-105 active:scale-95 w-full sm:w-auto min-w-[280px] border-2 border-white/30 hover:border-white/60 bg-white/5 backdrop-blur-xl hover:bg-white/10 shadow-xl"
                             >
                                 <span className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-transparent">
-                                    Sign In
+                                    {t("landing.hero.signIn")}
                                     <Play className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                                 </span>
                             </Button>
@@ -297,9 +299,9 @@ export function HeroSection() {
                             />
                             <div className="text-left">
                                 <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-transparent">
-                                    Welcome back!
+                                    {t("landing.hero.welcomeBack")}
                                 </span>
-                                <p className="text-sm text-muted-foreground">Ready to continue your journey?</p>
+                                <p className="text-sm text-muted-foreground">{t("landing.hero.continueJourney")}</p>
                             </div>
                         </motion.div>
                     </SignedIn>

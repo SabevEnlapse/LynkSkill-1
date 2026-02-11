@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Loader2, XCircle } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "@/lib/i18n"
 
 interface CompanyPolicyModalProps {
     open: boolean
@@ -26,6 +27,7 @@ export function CompanyPolicyModal({
                                        onTosChange,
                                        onPrivacyChange,
                                    }: CompanyPolicyModalProps) {
+    const { t } = useTranslation()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -33,7 +35,7 @@ export function CompanyPolicyModal({
         setError(null)
 
         if (!companyId || companyId === "null") {
-            setError("Missing company ID")
+            setError(t("policyModal.missingCompanyId"))
             return
         }
 
@@ -43,7 +45,7 @@ export function CompanyPolicyModal({
             onOpenChange(false)
         } catch (err) {
             console.error(err)
-            setError(err instanceof Error ? err.message : "Failed to save policies")
+            setError(err instanceof Error ? err.message : t("policyModal.failedToSave"))
         } finally {
             setLoading(false)
         }
@@ -62,7 +64,7 @@ export function CompanyPolicyModal({
                                 Company Registration Policy
                             </DialogTitle>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                Please review and accept our policies to continue
+                                {t("policyModal.reviewPolicies")}
                             </p>
                         </div>
                     </div>
@@ -94,7 +96,7 @@ export function CompanyPolicyModal({
                                 />
                             </div>
                             <span className="text-sm leading-relaxed text-foreground/90 group-hover:text-foreground transition-colors flex-1">
-                I have read and accept the{" "}
+                {t("policyModal.readAcceptTerms")}{" "}
                                 <a
                                     className="text-primary font-semibold underline decoration-primary/30 decoration-2 underline-offset-2 hover:decoration-primary/60 transition-colors"
                                     href="/terms"
@@ -102,7 +104,7 @@ export function CompanyPolicyModal({
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                  Terms of Service
+                  {t("policyModal.termsOfService")}
                 </a>
               </span>
                         </label>
@@ -117,7 +119,7 @@ export function CompanyPolicyModal({
                                 />
                             </div>
                             <span className="text-sm leading-relaxed text-foreground/90 group-hover:text-foreground transition-colors flex-1">
-                I have read and accept the{" "}
+                {t("policyModal.readAcceptPrivacy")}{" "}
                                 <a
                                     className="text-primary font-semibold underline decoration-primary/30 decoration-2 underline-offset-2 hover:decoration-primary/60 transition-colors"
                                     href="/privacy"
@@ -125,7 +127,7 @@ export function CompanyPolicyModal({
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                  Privacy Policy
+                  {t("policyModal.privacyPolicy")}
                 </a>
               </span>
                         </label>
@@ -145,7 +147,7 @@ export function CompanyPolicyModal({
                             disabled={loading}
                             className="px-6 hover:bg-accent/50 transition-colors"
                         >
-                            Cancel
+                            {t("policyModal.cancel")}
                         </Button>
                         <Button
                             onClick={handleAccept}
@@ -156,10 +158,10 @@ export function CompanyPolicyModal({
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                                    Saving...
+                                    {t("policyModal.saving")}
                                 </>
                             ) : (
-                                "I Understand and Agree"
+                                t("policyModal.agreeAndContinue")
                             )}
                         </Button>
                     </div>

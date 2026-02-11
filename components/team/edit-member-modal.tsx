@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, Shield, Settings } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 interface Member {
   id: string
@@ -47,44 +48,44 @@ interface EditMemberModalProps {
 }
 
 const DEFAULT_ROLES = [
-  { value: "ADMIN", label: "Admin", description: "Full access except ownership" },
-  { value: "HR_MANAGER", label: "HR Manager", description: "Manage internships & applications" },
-  { value: "HR_RECRUITER", label: "HR Recruiter", description: "View & manage applications" },
-  { value: "VIEWER", label: "Viewer", description: "Read-only access" },
+  { value: "ADMIN", labelKey: "team.roleAdmin", descKey: "team.adminDesc" },
+  { value: "HR_MANAGER", labelKey: "team.roleHRManager", descKey: "team.hrManagerDesc" },
+  { value: "HR_RECRUITER", labelKey: "team.roleHRRecruiter", descKey: "team.hrRecruiterDesc" },
+  { value: "VIEWER", labelKey: "team.roleViewer", descKey: "team.viewerDesc" },
 ]
 
-const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
-  "Member Management": [
-    { value: "MANAGE_MEMBERS", label: "Manage Members" },
-    { value: "INVITE_MEMBERS", label: "Invite Members" },
-    { value: "REMOVE_MEMBERS", label: "Remove Members" },
-    { value: "CHANGE_ROLES", label: "Change Roles" },
-    { value: "DELEGATE_PERMISSIONS", label: "Delegate Permissions" },
+const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; labelKey: string }[]> = {
+  "team.permCategoryMember": [
+    { value: "MANAGE_MEMBERS", labelKey: "team.permManageMembers" },
+    { value: "INVITE_MEMBERS", labelKey: "team.permInviteMembers" },
+    { value: "REMOVE_MEMBERS", labelKey: "team.permRemoveMembers" },
+    { value: "CHANGE_ROLES", labelKey: "team.permChangeRoles" },
+    { value: "DELEGATE_PERMISSIONS", labelKey: "team.permDelegatePermissions" },
   ],
-  "Internship Management": [
-    { value: "CREATE_INTERNSHIPS", label: "Create Internships" },
-    { value: "EDIT_INTERNSHIPS", label: "Edit Internships" },
-    { value: "DELETE_INTERNSHIPS", label: "Delete Internships" },
+  "team.permCategoryInternship": [
+    { value: "CREATE_INTERNSHIPS", labelKey: "team.permCreateInternships" },
+    { value: "EDIT_INTERNSHIPS", labelKey: "team.permEditInternships" },
+    { value: "DELETE_INTERNSHIPS", labelKey: "team.permDeleteInternships" },
   ],
-  "Application Management": [
-    { value: "VIEW_APPLICATIONS", label: "View Applications" },
-    { value: "MANAGE_APPLICATIONS", label: "Manage Applications" },
+  "team.permCategoryApplication": [
+    { value: "VIEW_APPLICATIONS", labelKey: "team.permViewApplications" },
+    { value: "MANAGE_APPLICATIONS", labelKey: "team.permManageApplications" },
   ],
-  "Candidate Management": [
-    { value: "VIEW_CANDIDATES", label: "View Candidates" },
-    { value: "SEARCH_CANDIDATES", label: "Search Candidates" },
+  "team.permCategoryCandidate": [
+    { value: "VIEW_CANDIDATES", labelKey: "team.permViewCandidates" },
+    { value: "SEARCH_CANDIDATES", labelKey: "team.permSearchCandidates" },
   ],
-  "Interview Management": [
-    { value: "SCHEDULE_INTERVIEWS", label: "Schedule Interviews" },
-    { value: "CONDUCT_INTERVIEWS", label: "Conduct Interviews" },
+  "team.permCategoryInterview": [
+    { value: "SCHEDULE_INTERVIEWS", labelKey: "team.permScheduleInterviews" },
+    { value: "CONDUCT_INTERVIEWS", labelKey: "team.permConductInterviews" },
   ],
-  "Messaging": [
-    { value: "SEND_MESSAGES", label: "Send Messages" },
-    { value: "VIEW_MESSAGES", label: "View Messages" },
+  "team.permCategoryMessaging": [
+    { value: "SEND_MESSAGES", labelKey: "team.permSendMessages" },
+    { value: "VIEW_MESSAGES", labelKey: "team.permViewMessages" },
   ],
-  "Experience & Assignments": [
-    { value: "CREATE_ASSIGNMENTS", label: "Create Assignments" },
-    { value: "GRADE_EXPERIENCES", label: "Grade Experiences" },
+  "team.permCategoryExperience": [
+    { value: "CREATE_ASSIGNMENTS", labelKey: "team.permCreateAssignments" },
+    { value: "GRADE_EXPERIENCES", labelKey: "team.permGradeExperiences" },
   ],
 }
 
@@ -94,6 +95,7 @@ export function EditMemberModal({
   member,
   onSuccess,
 }: EditMemberModalProps) {
+  const { t } = useTranslation()
   const [role, setRole] = React.useState<string>(member.defaultRole || "VIEWER")
   const [extraPermissions, setExtraPermissions] = React.useState<string[]>(
     member.extraPermissions || []
@@ -120,15 +122,15 @@ export function EditMemberModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to update role")
+        throw new Error(data.error || t("team.failedToUpdateRole"))
       }
 
-      toast.success("Role updated", {
-        description: `${member.name}'s role has been updated`,
+      toast.success(t("team.roleUpdated"), {
+        description: `${member.name} ${t("team.roleHasBeenUpdated")}`,
       })
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update role")
+      toast.error(err instanceof Error ? err.message : t("team.failedToUpdateRole"))
     } finally {
       setLoading(false)
     }
@@ -145,15 +147,15 @@ export function EditMemberModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to update permissions")
+        throw new Error(data.error || t("team.failedToUpdatePermissions"))
       }
 
-      toast.success("Permissions updated", {
-        description: `${member.name}'s permissions have been updated`,
+      toast.success(t("team.permissionsUpdated"), {
+        description: `${member.name} ${t("team.permissionsHaveBeenUpdated")}`,
       })
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update permissions")
+      toast.error(err instanceof Error ? err.message : t("team.failedToUpdatePermissions"))
     } finally {
       setLoading(false)
     }
@@ -163,9 +165,9 @@ export function EditMemberModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit Team Member</DialogTitle>
+          <DialogTitle>{t("team.editTeamMember")}</DialogTitle>
           <DialogDescription>
-            Update role and permissions for {member.name}
+            {t("team.updateRoleAndPermissionsFor")} {member.name}
           </DialogDescription>
         </DialogHeader>
 
@@ -173,28 +175,28 @@ export function EditMemberModal({
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="role" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Role
+              {t("team.role")}
             </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Extra Permissions
+              {t("team.extraPermissions")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="role" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Select Role</Label>
+              <Label>{t("team.selectRole")}</Label>
               <Select value={role} onValueChange={setRole} disabled={loading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder={t("team.selectARole")} />
                 </SelectTrigger>
                 <SelectContent>
                   {DEFAULT_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>
                       <div className="flex flex-col">
-                        <span>{r.label}</span>
+                        <span>{t(r.labelKey)}</span>
                         <span className="text-xs text-muted-foreground">
-                          {r.description}
+                          {t(r.descKey)}
                         </span>
                       </div>
                     </SelectItem>
@@ -205,27 +207,27 @@ export function EditMemberModal({
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                Cancel
+                {t("team.cancel")}
               </Button>
               <Button onClick={handleSaveRole} disabled={loading}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Save Role
+                {t("team.saveRole")}
               </Button>
             </DialogFooter>
           </TabsContent>
 
           <TabsContent value="permissions" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Grant Additional Permissions</Label>
+              <Label>{t("team.grantAdditionalPermissions")}</Label>
               <p className="text-sm text-muted-foreground">
-                These are added on top of the role&apos;s default permissions.
+                {t("team.permissionsAddedOnTop")}
               </p>
             </div>
 
             <ScrollArea className="h-[300px] rounded-md border p-4">
-              {Object.entries(PERMISSIONS_BY_CATEGORY).map(([category, permissions]) => (
-                <div key={category} className="mb-4">
-                  <h4 className="font-medium text-sm mb-2">{category}</h4>
+              {Object.entries(PERMISSIONS_BY_CATEGORY).map(([categoryKey, permissions]) => (
+                <div key={categoryKey} className="mb-4">
+                  <h4 className="font-medium text-sm mb-2">{t(categoryKey)}</h4>
                   <div className="space-y-2 ml-2">
                     {permissions.map((perm) => (
                       <div key={perm.value} className="flex items-center space-x-2">
@@ -239,7 +241,7 @@ export function EditMemberModal({
                           htmlFor={perm.value}
                           className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          {perm.label}
+                          {t(perm.labelKey)}
                         </label>
                       </div>
                     ))}
@@ -250,11 +252,11 @@ export function EditMemberModal({
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                Cancel
+                {t("team.cancel")}
               </Button>
               <Button onClick={handleSavePermissions} disabled={loading}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Save Permissions
+                {t("team.savePermissions")}
               </Button>
             </DialogFooter>
           </TabsContent>

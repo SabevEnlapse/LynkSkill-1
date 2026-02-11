@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import type { Application } from "@/app/types"
 import { useDashboard } from "@/lib/dashboard-context"
+import { useTranslation } from "@/lib/i18n"
 
 interface RecentApplicationsSectionProps {
   userType: "Student" | "Company"
@@ -26,6 +27,7 @@ export function RecentApplicationsSection({
                                             setActiveTab,
                                           }: RecentApplicationsSectionProps) {
   const router = useRouter()
+  const { t } = useTranslation()
   
   // Use centralized context - no more individual fetches
   const { applications: contextApplications, isLoadingApplications } = useDashboard()
@@ -47,7 +49,7 @@ export function RecentApplicationsSection({
           icon: CheckCircle,
           className:
               "bg-[var(--experience-success)] text-[var(--experience-approved-foreground)] shadow-lg shadow-[var(--experience-approved)]/25",
-          label: "Approved",
+          label: t("common.approved"),
         }
       case "rejected":
       case "REJECTED":
@@ -55,14 +57,14 @@ export function RecentApplicationsSection({
           icon: XCircle,
           className:
               "bg-[var(--experience-error)] text-[var(--experience-rejected-foreground)] shadow-lg shadow-[var(--experience-rejected)]/25",
-          label: "Rejected",
+          label: t("common.rejected"),
         }
       default:
         return {
           icon: Clock,
           className:
               "bg-[var(--experience-warning)] text-[var(--experience-pending-foreground)] shadow-lg shadow-[var(--experience-warning)]/25",
-          label: "Pending",
+          label: t("common.pending"),
         }
     }
   }
@@ -128,13 +130,13 @@ export function RecentApplicationsSection({
               <div>
                 <h2 className="text-xl font-bold text-card-foreground">
                   {userType === "Student"
-                      ? "Recent Applications"
-                      : "Latest Applications"}
+                      ? t("recentApplications.recentApplications")
+                      : t("recentApplications.latestApplications")}
                 </h2>
                 <p className="text-sm text-muted-foreground font-medium">
                   {userType === "Student"
-                      ? "Your latest submissions"
-                      : "Newest incoming applications"}
+                      ? t("recentApplications.yourLatestSubmissions")
+                      : t("recentApplications.newestIncoming")}
                 </p>
               </div>
             </div>
@@ -143,7 +145,7 @@ export function RecentApplicationsSection({
                 {applications.length}
               </div>
               <div className="text-muted-foreground text-xs font-medium">
-                {applications.length === 1 ? "Application" : "Applications"}
+                {applications.length === 1 ? t("recentApplications.application") : t("recentApplications.applications")}
               </div>
             </div>
           </div>
@@ -163,7 +165,7 @@ export function RecentApplicationsSection({
                 </div>
               </div>
               <p className="text-muted-foreground font-medium">
-                No recent applications
+                {t("recentApplications.noRecentApplications")}
               </p>
             </div>
         ) : (
@@ -193,7 +195,7 @@ export function RecentApplicationsSection({
                                   <Briefcase className="w-4 h-4 text-primary" />
                                 </div>
                                 <h3 className="font-bold text-card-foreground text-base line-clamp-1 group-hover:text-primary transition-colors duration-150">
-                                  {app.internship?.title ?? "Unknown Internship"}
+                                  {app.internship?.title ?? t("recentApplications.unknownInternship")}
                                 </h3>
                               </div>
 
@@ -205,7 +207,7 @@ export function RecentApplicationsSection({
                                       </div>
                                       <span className="font-medium text-muted-foreground">
                                 {app.internship?.company?.name ??
-                                    "Unknown Company"}
+                                    t("recentApplications.unknownCompany")}
                               </span>
                                     </>
                                 ) : (
@@ -216,7 +218,7 @@ export function RecentApplicationsSection({
                                       <span className="font-medium text-muted-foreground">
                                 {app.student?.name ??
                                     app.student?.email ??
-                                    "Unknown Student"}
+                                    t("recentApplications.unknownStudent")}
                               </span>
                                     </>
                                 )}
@@ -237,7 +239,7 @@ export function RecentApplicationsSection({
                                 <Calendar className="w-3 h-3" />
                               </div>
                               <span className="font-medium">
-                          Applied{" "}
+                          {t("recentApplications.appliedOn")}{" "}
                                 {new Date(app.createdAt).toLocaleDateString()}
                         </span>
                             </div>

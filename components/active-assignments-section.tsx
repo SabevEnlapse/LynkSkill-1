@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useDashboard } from "@/lib/dashboard-context"
+import { useTranslation } from "@/lib/i18n"
 import { AssignmentSubmitModal } from "@/components/assignment-submit-modal"
 import { CompanyAssignmentProgressModal } from "@/components/company-assignment-progress-modal"
 
@@ -40,6 +41,7 @@ interface ActiveProjectsSectionProps {
 
 export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }: ActiveProjectsSectionProps) {
     const router = useRouter()
+    const { t } = useTranslation()
     const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null)
     const [submitModalOpen, setSubmitModalOpen] = useState(false)
     const [progressModalOpen, setProgressModalOpen] = useState(false)
@@ -143,11 +145,11 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                         </div>
                         <div>
                             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                                Active Assignments
+                                {t('activeAssignments.title')}
                                 <Sparkles className="h-4 w-4 text-purple-500" />
                             </h2>
                             <p className="text-sm text-muted-foreground">
-                                {projects.length} assignments • {projects.filter((p) => p.status === "ONGOING").length} active
+                                {projects.length} {t('activeAssignments.title').toLowerCase()} • {projects.filter((p) => p.status === "ONGOING").length} {t('common.active').toLowerCase()}
                             </p>
                         </div>
                     </div>
@@ -159,11 +161,11 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                 onClick={() => setProgressModalOpen(true)}
                             >
                                 <BarChart3 className="mr-2 h-4 w-4" />
-                                Progress Dashboard
+                                {t('activeAssignments.progressDashboard')}
                             </Button>
                         )}
                         <Button variant="ghost" size="sm" className="hover:bg-muted group" onClick={handleNavigateToProjects}>
-                            View All
+                            {t('common.viewAll')}
                             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </div>
@@ -202,8 +204,8 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                     <div className="space-y-2">
                         <Building2 className="h-8 w-8 text-muted-foreground mx-auto" />
                         <div>
-                            <h4 className="font-medium">No active projects</h4>
-                            <p className="text-sm text-muted-foreground">Projects will appear here when applications are approved</p>
+                            <h4 className="font-medium">{t('activeAssignments.noActiveProjects')}</h4>
+                            <p className="text-sm text-muted-foreground">{t('activeAssignments.projectsWillAppear')}</p>
                         </div>
                     </div>
                 </Card>
@@ -240,7 +242,7 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                     {proj.internship.title}
                                                                 </h4>
                                                                 <p className="text-sm text-muted-foreground font-medium">
-                                                                    {proj.internship.company?.name || "Unknown Company"}
+                                                                    {proj.internship.company?.name || t('activeAssignments.unknownCompany')}
                                                                 </p>
                                                             </div>
                                                             <Badge className={`text-xs font-medium ${getStatusColor(proj.status)} shadow-sm`}>
@@ -267,7 +269,7 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                         </p>
                                                                         <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                                                                             <Clock className="h-3 w-3" />
-                                                                            Due: {new Date(proj.assignment.dueDate).toLocaleDateString("en-US", {
+                                                                            {t('activeAssignments.due')} {new Date(proj.assignment.dueDate).toLocaleDateString("en-US", {
                                                                                 month: "short",
                                                                                 day: "numeric",
                                                                                 year: "numeric"
@@ -285,7 +287,7 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                             className="shrink-0 bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:opacity-90"
                                                                         >
                                                                             <Upload className="mr-1.5 h-3.5 w-3.5" />
-                                                                            Submit
+                                                                            {t('common.submit')}
                                                                         </Button>
                                                                     )}
                                                                     {userType === "Company" && (
@@ -299,7 +301,7 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                             className="shrink-0 border-purple-500/30 hover:bg-purple-500/10"
                                                                         >
                                                                             <Eye className="mr-1.5 h-3.5 w-3.5" />
-                                                                            View
+                                                                            {t('common.view')}
                                                                         </Button>
                                                                     )}
                                                                 </div>
@@ -309,10 +311,10 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                         {/* Student Info */}
                                                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-3">
                                                             <User className="h-4 w-4" />
-                                                            <span>{proj.student?.name || "Unknown Student"}</span>
+                                                            <span>{proj.student?.name || t('activeAssignments.unknownStudent')}</span>
                                                             <span className="text-muted-foreground/60">•</span>
                                                             <Calendar className="h-4 w-4" />
-                                                            <span>Started {details.formattedStartDate}</span>
+                                                            <span>{t('activeAssignments.started')} {details.formattedStartDate}</span>
                                                         </div>
 
                                                         {/* Progress Section */}
@@ -320,14 +322,14 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-2">
                                                                     <Target className="h-4 w-4 text-purple-500" />
-                                                                    <span className="text-sm font-medium">Progress</span>
+                                                                    <span className="text-sm font-medium">{t('activeAssignments.progress')}</span>
                                                                 </div>
                                                                 {details.totalDays ? (
                                                                     <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
                                                                         {details.progress}%
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="text-xs italic text-muted-foreground">Ongoing</span>
+                                                                    <span className="text-xs italic text-muted-foreground">{t('activeAssignments.ongoing')}</span>
                                                                 )}
                                                             </div>
 
@@ -353,11 +355,11 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                         <div className="flex items-center gap-4">
                                                                           <span className="flex items-center gap-1">
                                                                             <Clock className="h-3 w-3" />
-                                                                              {details.daysSinceStart} days active
+                                                                              {details.daysSinceStart} {t('activeAssignments.daysActive')}
                                                                           </span>
                                                                             {proj.status === "ONGOING" && (
                                                                                 <span className="flex items-center gap-1">
-                                                                                  <Calendar className="h-3 w-3" />~{details.remainingDays} days remaining
+                                                                                  <Calendar className="h-3 w-3" />~{details.remainingDays} {t('activeAssignments.daysRemaining')}
                                                                                 </span>
                                                                             )}
                                                                         </div>
@@ -370,7 +372,7 @@ export function ActiveAssignmentsSection({ setActiveTab, userType = "Student" }:
                                                                 </div>
                                                             ) : (
                                                                 <div className="text-xs text-muted-foreground italic">
-                                                                    Ongoing internship (no end date)
+                                                                    {t('activeAssignments.ongoingNoEndDate')}
                                                                 </div>
                                                             )}
                                                         </div>

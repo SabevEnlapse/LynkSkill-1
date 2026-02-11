@@ -3,38 +3,24 @@
 import { motion } from "framer-motion"
 import { Star } from "lucide-react"
 import Image from "next/image"
+import { useTranslation } from "@/lib/i18n"
 
-const testimonials = [
-    {
-        name: "Sarah Johnson",
-        role: "Computer Science Student",
-        company: "Interned at TechCorp",
-        content:
-            "LynkSkill made finding my dream internship so easy! The platform is intuitive, and I love how I can showcase my projects in my portfolio.",
-        avatar: "/professional-woman-diverse.png",
-        rating: 5,
-    },
-    {
-        name: "Michael Chen",
-        role: "Business Major",
-        company: "Interned at StartupXYZ",
-        content:
-            "The one-click application feature saved me so much time. I applied to 20 internships in one day and got 5 interviews!",
-        avatar: "/professional-man.jpg",
-        rating: 5,
-    },
-    {
-        name: "Emily Rodriguez",
-        role: "Design Student",
-        company: "Interned at CreativeHub",
-        content:
-            "Being able to share my achievements and connect with other students has been incredible. LynkSkill is more than just a job board.",
-        avatar: "/professional-woman-designer.png",
-        rating: 5,
-    },
+const testimonialsMeta = [
+    { key: "t1", avatar: "/professional-woman-diverse.png", rating: 5 },
+    { key: "t2", avatar: "/professional-man.jpg", rating: 5 },
+    { key: "t3", avatar: "/professional-woman-designer.png", rating: 5 },
 ]
 
 export function TestimonialsSection() {
+    const { t } = useTranslation()
+
+    const testimonials = testimonialsMeta.map((tm) => ({
+        ...tm,
+        name: t(`landing.testimonials.${tm.key}.name`),
+        role: t(`landing.testimonials.${tm.key}.role`),
+        company: t(`landing.testimonials.${tm.key}.company`),
+        content: t(`landing.testimonials.${tm.key}.content`),
+    }))
     return (
         <section className="relative py-16 md:py-32 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
@@ -46,11 +32,11 @@ export function TestimonialsSection() {
                     className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20"
                 >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                        What Students{" "}
-                        <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Say</span>
+                        {t("landing.testimonials.title")}{" "}
+                        <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{t("landing.testimonials.titleHighlight")}</span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Don&apos;t just take our word for it. Here&apos;s what our community has to say about their experience.
+                        {t("landing.testimonials.subtitle")}
                     </p>
                 </motion.div>
 

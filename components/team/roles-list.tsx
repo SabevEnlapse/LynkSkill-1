@@ -27,6 +27,7 @@ import {
   Users,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 interface CustomRole {
   type: "custom"
@@ -61,45 +62,46 @@ interface RolesListProps {
   companyId: string
 }
 
-const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
-  "Company Management": [
-    { value: "EDIT_COMPANY", label: "Edit Company" },
+const PERMISSIONS_BY_CATEGORY: Record<string, { value: string; labelKey: string }[]> = {
+  "team.permCategoryCompany": [
+    { value: "EDIT_COMPANY", labelKey: "team.permEditCompany" },
   ],
-  "Member Management": [
-    { value: "MANAGE_MEMBERS", label: "Manage Members" },
-    { value: "INVITE_MEMBERS", label: "Invite Members" },
-    { value: "REMOVE_MEMBERS", label: "Remove Members" },
-    { value: "CHANGE_ROLES", label: "Change Roles" },
-    { value: "DELEGATE_PERMISSIONS", label: "Delegate Permissions" },
+  "team.permCategoryMember": [
+    { value: "MANAGE_MEMBERS", labelKey: "team.permManageMembers" },
+    { value: "INVITE_MEMBERS", labelKey: "team.permInviteMembers" },
+    { value: "REMOVE_MEMBERS", labelKey: "team.permRemoveMembers" },
+    { value: "CHANGE_ROLES", labelKey: "team.permChangeRoles" },
+    { value: "DELEGATE_PERMISSIONS", labelKey: "team.permDelegatePermissions" },
   ],
-  "Internship Management": [
-    { value: "CREATE_INTERNSHIPS", label: "Create Internships" },
-    { value: "EDIT_INTERNSHIPS", label: "Edit Internships" },
-    { value: "DELETE_INTERNSHIPS", label: "Delete Internships" },
+  "team.permCategoryInternship": [
+    { value: "CREATE_INTERNSHIPS", labelKey: "team.permCreateInternships" },
+    { value: "EDIT_INTERNSHIPS", labelKey: "team.permEditInternships" },
+    { value: "DELETE_INTERNSHIPS", labelKey: "team.permDeleteInternships" },
   ],
-  "Application Management": [
-    { value: "VIEW_APPLICATIONS", label: "View Applications" },
-    { value: "MANAGE_APPLICATIONS", label: "Manage Applications" },
+  "team.permCategoryApplication": [
+    { value: "VIEW_APPLICATIONS", labelKey: "team.permViewApplications" },
+    { value: "MANAGE_APPLICATIONS", labelKey: "team.permManageApplications" },
   ],
-  "Candidate Management": [
-    { value: "VIEW_CANDIDATES", label: "View Candidates" },
-    { value: "SEARCH_CANDIDATES", label: "Search Candidates" },
+  "team.permCategoryCandidate": [
+    { value: "VIEW_CANDIDATES", labelKey: "team.permViewCandidates" },
+    { value: "SEARCH_CANDIDATES", labelKey: "team.permSearchCandidates" },
   ],
-  "Interview Management": [
-    { value: "SCHEDULE_INTERVIEWS", label: "Schedule Interviews" },
-    { value: "CONDUCT_INTERVIEWS", label: "Conduct Interviews" },
+  "team.permCategoryInterview": [
+    { value: "SCHEDULE_INTERVIEWS", labelKey: "team.permScheduleInterviews" },
+    { value: "CONDUCT_INTERVIEWS", labelKey: "team.permConductInterviews" },
   ],
-  "Messaging": [
-    { value: "SEND_MESSAGES", label: "Send Messages" },
-    { value: "VIEW_MESSAGES", label: "View Messages" },
+  "team.permCategoryMessaging": [
+    { value: "SEND_MESSAGES", labelKey: "team.permSendMessages" },
+    { value: "VIEW_MESSAGES", labelKey: "team.permViewMessages" },
   ],
-  "Experience & Assignments": [
-    { value: "CREATE_ASSIGNMENTS", label: "Create Assignments" },
-    { value: "GRADE_EXPERIENCES", label: "Grade Experiences" },
+  "team.permCategoryExperience": [
+    { value: "CREATE_ASSIGNMENTS", labelKey: "team.permCreateAssignments" },
+    { value: "GRADE_EXPERIENCES", labelKey: "team.permGradeExperiences" },
   ],
 }
 
 export function RolesList({ companyId: _companyId }: RolesListProps) {
+  const { t } = useTranslation()
   const [roles, setRoles] = React.useState<RolesData | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [createModalOpen, setCreateModalOpen] = React.useState(false)
@@ -112,7 +114,7 @@ export function RolesList({ companyId: _companyId }: RolesListProps) {
       const data = await res.json()
       setRoles(data)
     } catch (_err) {
-      toast.error("Failed to load roles")
+      toast.error(t("team.failedToLoadRoles"))
     } finally {
       setLoading(false)
     }
@@ -131,9 +133,9 @@ export function RolesList({ companyId: _companyId }: RolesListProps) {
       {/* Default Roles */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Default Roles</CardTitle>
+          <CardTitle className="text-lg">{t("team.defaultRoles")}</CardTitle>
           <CardDescription>
-            Built-in roles with predefined permissions
+            {t("team.builtInRolesDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -152,7 +154,7 @@ export function RolesList({ companyId: _companyId }: RolesListProps) {
                 </p>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Badge variant="secondary" className="text-xs">
-                    {role.permissions.length} permissions
+                    {role.permissions.length} {t("team.permissions")}
                   </Badge>
                 </div>
               </div>
@@ -165,23 +167,23 @@ export function RolesList({ companyId: _companyId }: RolesListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg">Custom Roles</CardTitle>
+            <CardTitle className="text-lg">{t("team.customRoles")}</CardTitle>
             <CardDescription>
-              Create custom roles with specific permissions
+              {t("team.customRolesDescription")}
             </CardDescription>
           </div>
           <Button onClick={() => setCreateModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Create Role
+            {t("team.createRole")}
           </Button>
         </CardHeader>
         <CardContent>
           {roles?.customRoles.length === 0 ? (
             <div className="text-center py-8">
               <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No custom roles yet</h3>
+              <h3 className="text-lg font-medium">{t("team.noCustomRolesYet")}</h3>
               <p className="text-muted-foreground mt-1">
-                Create custom roles for specific team needs
+                {t("team.createCustomRolesForNeeds")}
               </p>
             </div>
           ) : (
@@ -218,6 +220,7 @@ function CustomRoleCard({
   role: CustomRole
   onUpdate: () => void
 }) {
+  const { t } = useTranslation()
   const [deleting, setDeleting] = React.useState(false)
 
   const handleDelete = async () => {
@@ -229,13 +232,13 @@ function CustomRoleCard({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to delete role")
+        throw new Error(data.error || t("team.failedToDeleteRole"))
       }
 
-      toast.success("Role deleted")
+      toast.success(t("team.roleDeleted"))
       onUpdate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete role")
+      toast.error(err instanceof Error ? err.message : t("team.failedToDeleteRole"))
     } finally {
       setDeleting(false)
     }
@@ -284,11 +287,11 @@ function CustomRoleCard({
 
       <div className="flex items-center gap-2 text-xs">
         <Badge variant="secondary">
-          {role.permissions.length} permissions
+          {role.permissions.length} {t("team.permissions")}
         </Badge>
         <Badge variant="outline" className="flex items-center gap-1">
           <Users className="h-3 w-3" />
-          {role.memberCount} members
+          {role.memberCount} {t("team.members")}
         </Badge>
       </div>
     </div>
@@ -304,6 +307,7 @@ function CreateRoleModal({
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [permissions, setPermissions] = React.useState<string[]>([])
@@ -322,12 +326,12 @@ function CreateRoleModal({
     e.preventDefault()
 
     if (!name.trim()) {
-      toast.error("Role name is required")
+      toast.error(t("team.roleNameRequired"))
       return
     }
 
     if (permissions.length === 0) {
-      toast.error("Select at least one permission")
+      toast.error(t("team.selectAtLeastOnePermission"))
       return
     }
 
@@ -346,16 +350,16 @@ function CreateRoleModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to create role")
+        throw new Error(data.error || t("team.failedToCreateRole"))
       }
 
-      toast.success("Role created")
+      toast.success(t("team.roleCreated"))
       setName("")
       setDescription("")
       setPermissions([])
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create role")
+      toast.error(err instanceof Error ? err.message : t("team.failedToCreateRole"))
     } finally {
       setLoading(false)
     }
@@ -365,26 +369,26 @@ function CreateRoleModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create Custom Role</DialogTitle>
+          <DialogTitle>{t("team.createCustomRole")}</DialogTitle>
           <DialogDescription>
-            Define a new role with specific permissions
+            {t("team.defineNewRoleWithPermissions")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3 space-y-2">
-              <Label htmlFor="name">Role Name</Label>
+              <Label htmlFor="name">{t("team.roleName")}</Label>
               <Input
                 id="name"
-                placeholder="e.g., Intern Coordinator"
+                placeholder={t("team.roleNamePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
+              <Label htmlFor="color">{t("team.roleColor")}</Label>
               <Input
                 id="color"
                 type="color"
@@ -397,10 +401,10 @@ function CreateRoleModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("team.description")}</Label>
             <Textarea
               id="description"
-              placeholder="Describe what this role is for..."
+              placeholder={t("team.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={loading}
@@ -409,11 +413,11 @@ function CreateRoleModal({
           </div>
 
           <div className="space-y-2">
-            <Label>Permissions</Label>
+            <Label>{t("team.permissions")}</Label>
             <ScrollArea className="h-[200px] rounded-md border p-4">
-              {Object.entries(PERMISSIONS_BY_CATEGORY).map(([category, perms]) => (
-                <div key={category} className="mb-4">
-                  <h4 className="font-medium text-sm mb-2">{category}</h4>
+              {Object.entries(PERMISSIONS_BY_CATEGORY).map(([categoryKey, perms]) => (
+                <div key={categoryKey} className="mb-4">
+                  <h4 className="font-medium text-sm mb-2">{t(categoryKey)}</h4>
                   <div className="space-y-2 ml-2">
                     {perms.map((perm) => (
                       <div key={perm.value} className="flex items-center space-x-2">
@@ -427,7 +431,7 @@ function CreateRoleModal({
                           htmlFor={`create-${perm.value}`}
                           className="text-sm leading-none"
                         >
-                          {perm.label}
+                          {t(perm.labelKey)}
                         </label>
                       </div>
                     ))}
@@ -444,11 +448,11 @@ function CreateRoleModal({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              {t("team.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Role
+              {t("team.createRole")}
             </Button>
           </DialogFooter>
         </form>

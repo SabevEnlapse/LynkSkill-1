@@ -18,6 +18,7 @@ import { toast } from "sonner"
 import { format, addMonths } from "date-fns"
 import { LocationPicker, type LocationData } from "@/components/location-picker"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface ScheduleInterviewModalProps {
     open: boolean
@@ -43,6 +44,7 @@ export function ScheduleInterviewModal({
     const [locationType, setLocationType] = useState<"video" | "in-person">("video")
     const [notes, setNotes] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const { t } = useTranslation()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -84,7 +86,7 @@ export function ScheduleInterviewModal({
             })
 
             if (res.ok) {
-                toast.success("Interview scheduled successfully!")
+                toast.success(t('interviewModal.scheduleSuccess'))
                 onSuccess?.()
                 onClose()
                 // Reset form
@@ -95,11 +97,11 @@ export function ScheduleInterviewModal({
                 setNotes("")
             } else {
                 const data = await res.json()
-                toast.error(data.error || "Failed to schedule interview")
+                toast.error(data.error || t('interviewModal.failedToSchedule'))
             }
         } catch (error) {
             console.error("Error scheduling interview:", error)
-            toast.error("Something went wrong")
+            toast.error(t('errors.somethingWentWrong'))
         } finally {
             setIsSubmitting(false)
         }
@@ -142,8 +144,8 @@ export function ScheduleInterviewModal({
                                     <Calendar className="h-6 w-6 text-blue-500" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold text-foreground">Schedule Interview</h2>
-                                    <p className="text-sm text-muted-foreground">Set up a meeting with the candidate</p>
+                                    <h2 className="text-xl font-bold text-foreground">{t('interviewModal.scheduleInterview')}</h2>
+                                    <p className="text-sm text-muted-foreground">{t('interviewModal.setupMeeting')}</p>
                                 </div>
                             </div>
                         </div>
@@ -164,7 +166,7 @@ export function ScheduleInterviewModal({
                             {/* Date and Time */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="date">Date</Label>
+                                    <Label htmlFor="date">{t('interviewModal.date')}</Label>
                                     <Input
                                         id="date"
                                         type="date"
@@ -175,10 +177,10 @@ export function ScheduleInterviewModal({
                                         className="rounded-xl"
                                         required
                                     />
-                                    <p className="text-xs text-muted-foreground">Within 3 months</p>
+                                    <p className="text-xs text-muted-foreground">{t('interviewModal.within3Months')}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="time">Start Time</Label>
+                                    <Label htmlFor="time">{t('interviewModal.startTime')}</Label>
                                     <Input
                                         id="time"
                                         type="time"
@@ -194,7 +196,7 @@ export function ScheduleInterviewModal({
                             <div className="rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-4 space-y-3">
                                 <Label className="flex items-center gap-2 text-sm font-semibold">
                                     <MapPin className="h-4 w-4 text-blue-500" />
-                                    Interview Location
+                                    {t('interviewModal.interviewLocation')}
                                 </Label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <Button
@@ -207,7 +209,7 @@ export function ScheduleInterviewModal({
                                         )}
                                     >
                                         <Video className="h-4 w-4 mr-2" />
-                                        Video Call
+                                        {t('interviewModal.videoCall')}
                                     </Button>
                                     <Button
                                         type="button"
@@ -219,13 +221,13 @@ export function ScheduleInterviewModal({
                                         )}
                                     >
                                         <MapPin className="h-4 w-4 mr-2" />
-                                        In Person
+                                        {t('interviewModal.inPerson')}
                                     </Button>
                                 </div>
                                 {locationType === "video" ? (
                                     <div className="space-y-1.5">
                                         <Label htmlFor="location" className="text-xs text-muted-foreground">
-                                            Meeting Link (optional)
+                                            {t('interviewModal.meetingLink')}
                                         </Label>
                                         <Input
                                             id="location"
@@ -249,12 +251,12 @@ export function ScheduleInterviewModal({
 
                             {/* Notes */}
                             <div className="space-y-2">
-                                <Label htmlFor="notes">Notes for Candidate (optional)</Label>
+                                <Label htmlFor="notes">{t('interviewModal.notesForCandidate')}</Label>
                                 <Textarea
                                     id="notes"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="What to prepare, what to expect, dress code..."
+                                    placeholder={t('interviewModal.notesPlaceholder')}
                                     className="rounded-xl min-h-[80px] resize-none"
                                     maxLength={500}
                                 />
@@ -271,7 +273,7 @@ export function ScheduleInterviewModal({
                                 ) : (
                                     <Calendar className="h-5 w-5 mr-2" />
                                 )}
-                                {isSubmitting ? "Scheduling..." : "Schedule Interview"}
+                                {isSubmitting ? t('interviewModal.scheduling') : t('interviewModal.scheduleInterview')}
                             </Button>
                         </form>
                     </motion.div>

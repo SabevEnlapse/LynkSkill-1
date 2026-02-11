@@ -30,6 +30,7 @@ import {
 import { format, startOfDay } from "date-fns"
 import { cn } from "@/lib/utils"
 import { LocationPicker, type LocationData } from "@/components/location-picker"
+import { useTranslation } from "@/lib/i18n"
 
 interface InternshipModalProps {
     open: boolean
@@ -89,6 +90,7 @@ const steps = [
 ]
 
 export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {
+    const { t } = useTranslation()
     const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_STATE)
     const [errors, setErrors] = useState<Errors>({})
     const [isLoading, setIsLoading] = useState(false)
@@ -117,39 +119,39 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
         if (step === 1) {
             if (!formValues.title || formValues.title.length < 3) {
-                newErrors.title = ["Title must be at least 3 characters"]
+                newErrors.title = [t("internshipModal.titleMinChars")]
             }
             if (!formValues.description || formValues.description.length < 10) {
-                newErrors.description = ["Description must be at least 10 characters"]
+                newErrors.description = [t("internshipModal.descriptionMinChars")]
             }
         }
 
         if (step === 2) {
             if (!formValues.location.address || formValues.location.address.length < 2) {
-                newErrors.location = ["Location must be at least 2 characters"]
+                newErrors.location = [t("internshipModal.locationMinChars")]
             }
             if (!formValues.applicationStart) {
-                newErrors.applicationStart = ["Start date is required"]
+                newErrors.applicationStart = [t("internshipModal.startDateRequired")]
             }
             if (!formValues.applicationEnd) {
-                newErrors.applicationEnd = ["End date is required"]
+                newErrors.applicationEnd = [t("internshipModal.endDateRequired")]
             }
             const start = formValues.applicationStart ? startOfDay(formValues.applicationStart) : undefined
             const end = formValues.applicationEnd ? startOfDay(formValues.applicationEnd) : undefined
             if (start && start < today) {
-                newErrors.applicationStart = ["Start date cannot be in the past"]
+                newErrors.applicationStart = [t("internshipModal.startDatePast")]
             }
             if (end && end < today) {
-                newErrors.applicationEnd = ["End date cannot be in the past"]
+                newErrors.applicationEnd = [t("internshipModal.endDatePast")]
             }
             if (start && end && start > end) {
-                newErrors.applicationEnd = ["End date must be after start date"]
+                newErrors.applicationEnd = [t("internshipModal.endAfterStart")]
             }
         }
 
         if (step === 3) {
             if (formValues.paid && (!formValues.salary || Number.parseFloat(formValues.salary) <= 0)) {
-                newErrors.salary = ["Salary is required and must be positive"]
+                newErrors.salary = [t("internshipModal.salaryRequired")]
             }
         }
 
@@ -213,11 +215,11 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             } else {
                 const errData = await res.json().catch(() => ({}))
                 console.error("API Error:", errData)
-                alert(errData.message || errData.errors ? JSON.stringify(errData.errors) : "Failed to create internship")
+                alert(errData.message || errData.errors ? JSON.stringify(errData.errors) : t("internshipModal.failedToCreate"))
             }
         } catch (error) {
             console.error(error)
-            alert("Failed to create internship")
+            alert(t("internshipModal.failedToCreate"))
         } finally {
             setIsLoading(false)
         }
@@ -290,20 +292,20 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 mb-4">
                     <Briefcase className="h-8 w-8 text-purple-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Basic Information</h3>
-                <p className="text-sm text-muted-foreground">Tell us about the internship position</p>
+                <h3 className="text-xl font-semibold">{t("internshipModal.basicInformation")}</h3>
+                <p className="text-sm text-muted-foreground">{t("internshipModal.tellUsAbout")}</p>
             </div>
 
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <Briefcase className="h-4 w-4 text-purple-500" />
-                        Internship Title <span className="text-red-500">*</span>
+                        {t("internshipModal.internshipTitle")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                         value={formValues.title}
                         onChange={(e) => updateField("title", e.target.value)}
-                        placeholder="e.g., Software Development Intern"
+                        placeholder={t("internshipModal.titlePlaceholder")}
                         className={cn(
                             "h-12 rounded-xl border-2 transition-all",
                             errors.title ? "border-red-500" : "border-border focus:border-purple-500"
@@ -319,12 +321,12 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <FileText className="h-4 w-4 text-purple-500" />
-                        Description <span className="text-red-500">*</span>
+                        {t("internshipModal.description")} <span className="text-red-500">*</span>
                     </Label>
                     <Textarea
                         value={formValues.description}
                         onChange={(e) => updateField("description", e.target.value)}
-                        placeholder="Describe the internship role, responsibilities, and what the intern will learn..."
+                        placeholder={t("internshipModal.descriptionPlaceholder")}
                         className={cn(
                             "min-h-[150px] rounded-xl border-2 transition-all resize-none",
                             errors.description ? "border-red-500" : "border-border focus:border-purple-500"
@@ -351,15 +353,15 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 mb-3">
                     <MapPin className="h-7 w-7 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Location & Timeline</h3>
-                <p className="text-sm text-muted-foreground">Where and when will this internship take place?</p>
+                <h3 className="text-xl font-semibold">{t("internshipModal.locationTimeline")}</h3>
+                <p className="text-sm text-muted-foreground">{t("internshipModal.whereAndWhen")}</p>
             </div>
 
             {/* Location Section */}
             <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 p-4 space-y-2">
                 <Label className="flex items-center gap-2 text-sm font-semibold">
                     <MapPin className="h-4 w-4 text-blue-500" />
-                    Internship Location <span className="text-red-500">*</span>
+                    {t("internshipModal.internshipLocation")} <span className="text-red-500">*</span>
                 </Label>
                 <LocationPicker
                     value={formValues.location}
@@ -379,12 +381,12 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-sm font-medium">
                     <GraduationCap className="h-4 w-4 text-blue-500" />
-                    Qualifications
+                    {t("internshipModal.qualifications")}
                 </Label>
                 <Input
                     value={formValues.qualifications}
                     onChange={(e) => updateField("qualifications", e.target.value)}
-                    placeholder="e.g., Computer Science student, 3rd year or above"
+                    placeholder={t("internshipModal.qualificationsPlaceholder")}
                     className="h-11 rounded-xl border-2 border-border focus:border-blue-500 transition-all"
                 />
             </div>
@@ -394,7 +396,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <CalendarIcon className="h-4 w-4 text-blue-500" />
-                        Applications Open <span className="text-red-500">*</span>
+                        {t("internshipModal.applicationsOpen")} <span className="text-red-500">*</span>
                     </Label>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -409,7 +411,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 {formValues.applicationStart ? (
                                     format(formValues.applicationStart, "PPP")
                                 ) : (
-                                    <span className="text-muted-foreground">Pick a date</span>
+                                    <span className="text-muted-foreground">{t("internshipModal.pickDate")}</span>
                                 )}
                             </Button>
                         </PopoverTrigger>
@@ -433,7 +435,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <CalendarIcon className="h-4 w-4 text-blue-500" />
-                        Applications Close <span className="text-red-500">*</span>
+                        {t("internshipModal.applicationsClose")} <span className="text-red-500">*</span>
                     </Label>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -448,7 +450,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 {formValues.applicationEnd ? (
                                     format(formValues.applicationEnd, "PPP")
                                 ) : (
-                                    <span className="text-muted-foreground">Pick a date</span>
+                                    <span className="text-muted-foreground">{t("internshipModal.pickDate")}</span>
                                 )}
                             </Button>
                         </PopoverTrigger>
@@ -483,8 +485,8 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 mb-4">
                     <DollarSign className="h-8 w-8 text-emerald-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Compensation</h3>
-                <p className="text-sm text-muted-foreground">Is this a paid internship?</p>
+                <h3 className="text-xl font-semibold">{t("internshipModal.compensation")}</h3>
+                <p className="text-sm text-muted-foreground">{t("internshipModal.isPaidInternship")}</p>
             </div>
 
             <div className="space-y-6">
@@ -506,10 +508,10 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
                                 <DollarSign className="h-5 w-5 text-emerald-500" />
-                                <span className="font-semibold">Paid Internship</span>
+                                <span className="font-semibold">{t("internshipModal.paidInternship")}</span>
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">
-                                Interns will receive monetary compensation
+                                {t("internshipModal.internsReceiveCompensation")}
                             </p>
                         </div>
                     </div>
@@ -525,13 +527,13 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         >
                             <Label className="flex items-center gap-2 text-sm font-medium">
                                 <DollarSign className="h-4 w-4 text-emerald-500" />
-                                Monthly Salary (BGN) <span className="text-red-500">*</span>
+                                {t("internshipModal.monthlySalaryBGN")} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 value={formValues.salary}
                                 onChange={(e) => updateField("salary", e.target.value)}
                                 type="number"
-                                placeholder="e.g., 1500"
+                                placeholder={t("internshipModal.salaryPlaceholder")}
                                 className={cn(
                                     "h-12 rounded-xl border-2 transition-all",
                                     errors.salary ? "border-red-500" : "border-border focus:border-emerald-500"
@@ -549,7 +551,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 {!formValues.paid && (
                     <div className="p-4 rounded-xl bg-muted/50 border border-border">
                         <p className="text-sm text-muted-foreground text-center">
-                            💡 Unpaid internships can still provide valuable experience and learning opportunities
+                            {t("internshipModal.unpaidTip")}
                         </p>
                     </div>
                 )}
@@ -568,8 +570,8 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 mb-4">
                     <ClipboardList className="h-8 w-8 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Requirements & Assignment</h3>
-                <p className="text-sm text-muted-foreground">Cover letter and optional test assignment</p>
+                <h3 className="text-xl font-semibold">{t("internshipModal.requirementsAndAssignment")}</h3>
+                <p className="text-sm text-muted-foreground">{t("internshipModal.coverLetterAndTest")}</p>
             </div>
 
             {/* Cover Letter Requirement Toggle */}
@@ -584,10 +586,10 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                     <div>
                         <Label htmlFor="requiresCoverLetter" className="flex items-center gap-2 cursor-pointer font-medium">
                             <ScrollText className="h-4 w-4 text-indigo-500" />
-                            Require Cover Letter
+                            {t("internshipModal.requireCoverLetter")}
                         </Label>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Students must write a cover letter when applying to this internship
+                            {t("internshipModal.coverLetterDescription")}
                         </p>
                     </div>
                 </div>
@@ -599,7 +601,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                     <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                    <span className="bg-background px-3 text-muted-foreground">Test Assignment (Optional)</span>
+                    <span className="bg-background px-3 text-muted-foreground">{t("internshipModal.testAssignmentOptional")}</span>
                 </div>
             </div>
 
@@ -607,12 +609,12 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <FileText className="h-4 w-4 text-orange-500" />
-                        Assignment Title
+                        {t("internshipModal.assignmentTitle")}
                     </Label>
                     <Input
                         value={formValues.testAssignmentTitle}
                         onChange={(e) => updateField("testAssignmentTitle", e.target.value)}
-                        placeholder="e.g., Coding Challenge"
+                        placeholder={t("internshipModal.assignmentTitlePlaceholder")}
                         className="h-12 rounded-xl border-2 border-border focus:border-orange-500 transition-all"
                     />
                 </div>
@@ -620,12 +622,12 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <FileText className="h-4 w-4 text-orange-500" />
-                        Assignment Description
+                        {t("internshipModal.assignmentDescription")}
                     </Label>
                     <Textarea
                         value={formValues.testAssignmentDescription}
                         onChange={(e) => updateField("testAssignmentDescription", e.target.value)}
-                        placeholder="Describe the assignment for applicants..."
+                        placeholder={t("internshipModal.assignmentDescPlaceholder")}
                         className="min-h-[120px] rounded-xl border-2 border-border focus:border-orange-500 transition-all resize-none"
                     />
                 </div>
@@ -633,7 +635,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                         <CalendarIcon className="h-4 w-4 text-orange-500" />
-                        Due Date
+                        {t("internshipModal.dueDate")}
                     </Label>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -645,7 +647,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 {formValues.testAssignmentDueDate ? (
                                     format(formValues.testAssignmentDueDate, "PPP")
                                 ) : (
-                                    <span className="text-muted-foreground">Pick a date (optional)</span>
+                                    <span className="text-muted-foreground">{t("internshipModal.pickDateOptional")}</span>
                                 )}
                             </Button>
                         </PopoverTrigger>
@@ -670,7 +672,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 {!formValues.testAssignmentTitle && (
                     <div className="p-4 rounded-xl bg-muted/50 border border-border">
                         <p className="text-sm text-muted-foreground text-center">
-                            ✨ Adding a test assignment helps you evaluate candidates better
+                            {t("internshipModal.assignmentTip")}
                         </p>
                     </div>
                 )}
@@ -688,9 +690,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                             <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
                                 <Sparkles className="h-6 w-6" />
                             </div>
-                            Create New Internship
+                            {t("internshipModal.createNewInternship")}
                         </DialogTitle>
-                        <p className="text-white/80 text-sm">Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}</p>
+                        <p className="text-white/80 text-sm">{t("internshipModal.step")} {currentStep} {t("internshipModal.of")} {steps.length}: {steps[currentStep - 1].title}</p>
                     </DialogHeader>
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                 </div>
@@ -717,7 +719,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                             disabled={isLoading}
                         >
                             <ChevronLeft className="h-4 w-4 mr-2" />
-                            Back
+                            {t("internshipModal.back")}
                         </Button>
                     )}
                     <div className="flex-1" />
@@ -727,14 +729,14 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         className="h-12 px-6 rounded-xl"
                         disabled={isLoading}
                     >
-                        Cancel
+                        {t("internshipModal.cancel")}
                     </Button>
                     {currentStep < 4 ? (
                         <Button
                             onClick={handleNext}
                             className="h-12 px-8 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90"
                         >
-                            Next
+                            {t("internshipModal.next")}
                             <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
                     ) : (
@@ -746,12 +748,12 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                             {isLoading ? (
                                 <div className="flex items-center gap-2">
                                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                    Creating...
+                                    {t("internshipModal.creating")}
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <CheckCircle className="h-4 w-4" />
-                                    Create Internship
+                                    {t("internshipModal.createInternship")}
                                 </div>
                             )}
                         </Button>

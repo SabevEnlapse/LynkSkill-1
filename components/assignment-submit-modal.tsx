@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
+import { useTranslation } from "@/lib/i18n"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -111,6 +112,7 @@ export function AssignmentSubmitModal({
     assignmentId,
     onSubmitted 
 }: AssignmentSubmitModalProps) {
+    const { t } = useTranslation()
     const [assignment, setAssignment] = useState<Assignment | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -282,7 +284,7 @@ export function AssignmentSubmitModal({
                             </div>
                             <div className="flex-1">
                                 <DialogTitle className="text-xl font-bold text-white">
-                                    {loading ? "Loading..." : assignment?.title || "Assignment"}
+                                    {loading ? t("assignmentSubmit.loading") : assignment?.title || t("assignmentSubmit.assignment")}
                                 </DialogTitle>
                                 {assignment && (
                                     <p className="text-white/80 text-sm mt-1">
@@ -318,7 +320,7 @@ export function AssignmentSubmitModal({
                                         )}
                                     </div>
                                     <span className="text-sm font-medium hidden sm:block">
-                                        {s === 'details' ? 'Review' : s === 'upload' ? 'Upload' : 'Complete'}
+                                        {s === 'details' ? t("assignmentSubmit.stepReview") : s === 'upload' ? t("assignmentSubmit.stepUpload") : t("assignmentSubmit.stepComplete")}
                                     </span>
                                 </div>
                                 {i < 2 && <div className="w-8 h-0.5 bg-border" />}
@@ -338,7 +340,7 @@ export function AssignmentSubmitModal({
                             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
                             <p className="text-red-500">{error}</p>
                             <Button onClick={onClose} variant="outline" className="mt-4">
-                                Close
+                                {t("assignmentSubmit.close")}
                             </Button>
                         </div>
                     ) : assignment ? (
@@ -361,14 +363,14 @@ export function AssignmentSubmitModal({
                                         <Clock className={`h-5 w-5 ${isOverdue ? 'text-red-500' : 'text-amber-500'}`} />
                                         <div className="flex-1">
                                             <p className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                                                {isOverdue ? 'Assignment Overdue' : 'Due Date'}
+                                                {isOverdue ? t("assignmentSubmit.assignmentOverdue") : t("assignmentSubmit.dueDate")}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
                                                 {safeFormatDate(assignment.dueDate, "MMMM d, yyyy 'at' h:mm a")} ({safeFormatDistance(assignment.dueDate)})
                                             </p>
                                         </div>
                                         {isOverdue && (
-                                            <Badge variant="destructive" className="shrink-0">Overdue</Badge>
+                                            <Badge variant="destructive" className="shrink-0">{t("assignmentSubmit.overdue")}</Badge>
                                         )}
                                     </div>
 
@@ -376,7 +378,7 @@ export function AssignmentSubmitModal({
                                     <div className="space-y-2">
                                         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                             <Info className="h-4 w-4 text-muted-foreground" />
-                                            Assignment Description
+                                            {t("assignmentSubmit.assignmentDescription")}
                                         </h3>
                                         <div className="p-4 rounded-xl bg-muted/50 border border-border">
                                             <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
@@ -390,7 +392,7 @@ export function AssignmentSubmitModal({
                                         <div className="space-y-3">
                                             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                                 <FileCheck className="h-4 w-4 text-emerald-500" />
-                                                Previous Submissions ({uploadedFiles.length})
+                                                {t("assignmentSubmit.previousSubmissions")} ({uploadedFiles.length})
                                             </h3>
                                             <div className="space-y-2">
                                                 {uploadedFiles.map((file) => (
@@ -404,7 +406,7 @@ export function AssignmentSubmitModal({
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-sm font-medium truncate">{file.name}</p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                {formatFileSize(file.size)} • Submitted {safeFormatDistance(file.createdAt)}
+                                                                {formatFileSize(file.size)} • {t("assignmentSubmit.submittedAt")} {safeFormatDistance(file.createdAt)}
                                                             </p>
                                                         </div>
                                                         <a
@@ -424,13 +426,13 @@ export function AssignmentSubmitModal({
                                     {/* Action Buttons */}
                                     <div className="flex gap-3 pt-4">
                                         <Button variant="outline" onClick={onClose} className="flex-1">
-                                            Cancel
+                                            {t("assignmentSubmit.cancel")}
                                         </Button>
                                         <Button 
                                             onClick={() => setStep('upload')} 
                                             className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:opacity-90"
                                         >
-                                            {uploadedFiles.length > 0 ? 'Submit More Files' : 'Submit Assignment'}
+                                            {uploadedFiles.length > 0 ? t("assignmentSubmit.submitMoreFiles") : t("assignmentSubmit.submitAssignment")}
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </div>
@@ -471,10 +473,10 @@ export function AssignmentSubmitModal({
                                             </div>
                                             <div>
                                                 <p className="font-medium">
-                                                    Drop files here or <span className="text-purple-500">browse</span>
+                                                    {t("assignmentSubmit.dropFilesHere")} <span className="text-purple-500">{t("assignmentSubmit.browse")}</span>
                                                 </p>
                                                 <p className="text-sm text-muted-foreground mt-1">
-                                                    PDF, DOC, DOCX, ZIP, PNG, JPG • Max 25MB
+                                                    {t("assignmentSubmit.allowedFileTypes")}
                                                 </p>
                                             </div>
                                         </div>
@@ -494,7 +496,7 @@ export function AssignmentSubmitModal({
                                         <div className="space-y-2">
                                             <h4 className="text-sm font-medium flex items-center gap-2">
                                                 <Sparkles className="h-4 w-4 text-purple-500" />
-                                                Selected Files ({files.length})
+                                                {t("assignmentSubmit.selectedFiles")} ({files.length})
                                             </h4>
                                             {files.map((file, index) => (
                                                 <div
@@ -523,7 +525,7 @@ export function AssignmentSubmitModal({
                                     {uploading && (
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-muted-foreground">Uploading...</span>
+                                                <span className="text-muted-foreground">{t("assignmentSubmit.uploading")}</span>
                                                 <span className="font-medium">{uploadProgress}%</span>
                                             </div>
                                             <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -538,7 +540,7 @@ export function AssignmentSubmitModal({
                                     {/* Security Notice */}
                                     <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
                                         <Shield className="h-4 w-4" />
-                                        <span>Files are encrypted and securely stored</span>
+                                        <span>{t("assignmentSubmit.filesEncrypted")}</span>
                                     </div>
 
                                     {/* Action Buttons */}
@@ -548,7 +550,7 @@ export function AssignmentSubmitModal({
                                             onClick={() => setStep('details')}
                                             disabled={uploading}
                                         >
-                                            Back
+                                            {t("assignmentSubmit.back")}
                                         </Button>
                                         <Button
                                             onClick={handleSubmit}
@@ -558,12 +560,12 @@ export function AssignmentSubmitModal({
                                             {uploading ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Uploading...
+                                                    {t("assignmentSubmit.uploading")}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Upload className="mr-2 h-4 w-4" />
-                                                    Submit {files.length} File{files.length !== 1 ? 's' : ''}
+                                                    {t("assignmentSubmit.submitFilesCount", { count: files.length })}
                                                 </>
                                             )}
                                         </Button>
@@ -583,18 +585,18 @@ export function AssignmentSubmitModal({
                                         <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-foreground">Submission Successful!</h3>
+                                        <h3 className="text-xl font-bold text-foreground">{t("assignmentSubmit.submissionSuccessful")}</h3>
                                         <p className="text-muted-foreground mt-2">
-                                            Your assignment has been submitted successfully.
+                                            {t("assignmentSubmit.submissionSuccessfulDesc")}
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-xl bg-muted/30 border border-border">
                                         <p className="text-sm text-muted-foreground">
-                                            {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''} submitted for review
+                                            {t("assignmentSubmit.filesSubmittedForReview", { count: uploadedFiles.length })}
                                         </p>
                                     </div>
                                     <Button onClick={onClose} className="w-full">
-                                        Done
+                                        {t("assignmentSubmit.done")}
                                     </Button>
                                 </motion.div>
                             )}

@@ -22,6 +22,7 @@ import {
     SheetFooter,
 } from "@/components/ui/sheet"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTranslation } from "@/lib/i18n"
 
 export interface InternshipFilters {
     search: string
@@ -50,6 +51,7 @@ export function InternshipFiltersComponent({
     locations,
     allSkills
 }: InternshipFiltersProps) {
+    const { t } = useTranslation()
     const [localFilters, setLocalFilters] = useState<InternshipFilters>(filters)
     const [isOpen, setIsOpen] = useState(false)
     const [searchDebounce, setSearchDebounce] = useState(filters.search)
@@ -114,7 +116,7 @@ export function InternshipFiltersComponent({
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="text"
-                        placeholder="Search internships by title, skills, or location..."
+                        placeholder={t("filters.searchInternships")}
                         value={searchDebounce}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-11 pr-10 h-11 rounded-xl md:rounded-2xl border-2 border-border/50 focus:border-purple-500 bg-background/80 backdrop-blur-sm shadow-md focus:shadow-lg transition-all text-sm"
@@ -139,7 +141,7 @@ export function InternshipFiltersComponent({
                             className="gap-2 h-11 px-5 rounded-xl md:rounded-2xl border-2 border-border/50 hover:border-purple-500/50 bg-background/80 backdrop-blur-sm shadow-md hover:shadow-lg transition-all font-semibold"
                         >
                             <Filter className="h-4 w-4" />
-                            <span className="hidden sm:inline">Filters</span>
+                            <span className="hidden sm:inline">{t("filters.filters")}</span>
                             {activeFilterCount > 0 && (
                                 <span className="ml-1 h-5 min-w-5 px-1.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold flex items-center justify-center">
                                     {activeFilterCount}
@@ -153,7 +155,7 @@ export function InternshipFiltersComponent({
                                 <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20">
                                     <Filter className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                 </div>
-                                Filter Internships
+                                {t("filters.filters")}
                             </SheetTitle>
                         </SheetHeader>
 
@@ -164,7 +166,7 @@ export function InternshipFiltersComponent({
                                     <div className="p-1.5 rounded-lg bg-purple-500/10">
                                         <MapPin className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                                     </div>
-                                    Location
+                                    {t("filters.location")}
                                 </Label>
                                 <Select
                                     value={localFilters.location}
@@ -177,7 +179,7 @@ export function InternshipFiltersComponent({
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
                                         <SelectItem value="all">🌍 All locations</SelectItem>
-                                        <SelectItem value="remote">🏠 Remote</SelectItem>
+                                        <SelectItem value="remote">{t("filters.remote")}</SelectItem>
                                         {locations.map(loc => (
                                             <SelectItem key={loc} value={loc.toLowerCase()}>
                                                 📍 {loc}
@@ -193,7 +195,7 @@ export function InternshipFiltersComponent({
                                     <div className="p-1.5 rounded-lg bg-green-500/10">
                                         <Briefcase className="h-4 w-4 text-green-600 dark:text-green-400" />
                                     </div>
-                                    Compensation
+                                    {t("filters.compensation")}
                                 </Label>
                                 <Select
                                     value={localFilters.paid}
@@ -205,9 +207,9 @@ export function InternshipFiltersComponent({
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
-                                        <SelectItem value="all">📋 All types</SelectItem>
-                                        <SelectItem value="paid">💰 Paid only</SelectItem>
-                                        <SelectItem value="unpaid">🎓 Unpaid only</SelectItem>
+                                        <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
+                                        <SelectItem value="paid">{t("filters.paidOnly")}</SelectItem>
+                                        <SelectItem value="unpaid">{t("filters.unpaidOnly")}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -219,7 +221,7 @@ export function InternshipFiltersComponent({
                                         <div className="p-1.5 rounded-lg bg-emerald-500/10">
                                             <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
-                                        Salary Range (Monthly)
+                                        {t("filters.salaryRange")}
                                     </Label>
                                     <div className="px-3 py-4 bg-muted/30 rounded-xl border border-border/30">
                                         <Slider
@@ -238,7 +240,7 @@ export function InternshipFiltersComponent({
                                         />
                                         <div className="flex justify-between mt-3 text-sm font-semibold">
                                             <span className="px-2 py-1 rounded-lg bg-background border border-border/50">${localFilters.minSalary}</span>
-                                            <span className="text-muted-foreground">to</span>
+                                            <span className="text-muted-foreground">{t("filters.to")}</span>
                                             <span className="px-2 py-1 rounded-lg bg-background border border-border/50">${localFilters.maxSalary}+</span>
                                         </div>
                                     </div>
@@ -251,7 +253,7 @@ export function InternshipFiltersComponent({
                                     <div className="p-1.5 rounded-lg bg-blue-500/10">
                                         <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    Required Skills
+                                    {t("filters.requiredSkills")}
                                     {localFilters.skills.length > 0 && (
                                         <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400">
                                             {localFilters.skills.length} selected
@@ -286,14 +288,14 @@ export function InternshipFiltersComponent({
                                 className="w-full sm:w-auto h-11 rounded-xl border-2 font-semibold"
                             >
                                 <X className="h-4 w-4 mr-2" />
-                                Clear All
+                                {t("filters.clearAll")}
                             </Button>
                             <Button 
                                 onClick={handleApplyFilters}
                                 className="w-full sm:w-auto h-11 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg hover:shadow-xl transition-all"
                             >
                                 <Sparkles className="h-4 w-4 mr-2" />
-                                Apply Filters
+                                {t("filters.applyFilters")}
                             </Button>
                         </SheetFooter>
                     </SheetContent>
@@ -308,7 +310,7 @@ export function InternshipFiltersComponent({
                         className="text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <X className="h-4 w-4 mr-1" />
-                        Clear all
+                        {t("filters.clearAll")}
                     </Button>
                 )}
             </div>
@@ -323,7 +325,7 @@ export function InternshipFiltersComponent({
                         transition={{ duration: 0.2 }}
                         className="flex flex-wrap gap-2 items-center"
                     >
-                        <span className="text-xs text-muted-foreground font-medium mr-1">Active:</span>
+                        <span className="text-xs text-muted-foreground font-medium mr-1">{t("filters.active")}</span>
                         
                         {filters.location !== "all" && (
                             <div className="group">
@@ -349,7 +351,7 @@ export function InternshipFiltersComponent({
                                     }`}
                                 >
                                     <DollarSign className="h-3 w-3" />
-                                    <span>{filters.paid === "paid" ? "Paid" : "Unpaid"}</span>
+                                    <span>{filters.paid === "paid" ? t("filters.paid") : t("filters.unpaid")}</span>
                                     <X className="h-3 w-3 ml-0.5 opacity-60 group-hover:opacity-100" />
                                 </button>
                             </div>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import AIMascotScene from "./AIMascotScene"
 import { MarkdownRenderer } from "./MarkdownRenderer"
+import { useTranslation } from "@/lib/i18n"
 
 interface ChatMessage {
     id: string
@@ -30,6 +31,7 @@ interface AIAssistantProps {
 type AssistantMode = 'audit' | 'chat'
 
 export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) {
+    const { t } = useTranslation()
     const [mode, setMode] = useState<AssistantMode>('audit')
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [loading, setLoading] = useState(false)
@@ -46,12 +48,12 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
     const handleGenerateAudit = async () => {
         setLoading(true)
         setShowMascot(true)
-        setCurrentReply("Analyzing your portfolio...")
+        setCurrentReply(t("aiAssistant.analyzingPortfolio"))
 
         try {
             // Validate required fields
             if (!portfolio?.fullName) {
-                setCurrentReply("Please provide your full name in your portfolio to generate a report.")
+                setCurrentReply(t("aiAssistant.provideFullName"))
                 setLoading(false)
                 return
             }
@@ -75,7 +77,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
 
             // Validate payload size (max 10KB)
             if (payload.length > 10240) {
-                setCurrentReply("Portfolio data is too large. Please reduce content and try again.")
+                setCurrentReply(t("aiAssistant.dataTooLarge"))
                 setLoading(false)
                 return
             }
@@ -105,11 +107,11 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
             } else if (data.error) {
                 setCurrentReply(data.error)
             } else {
-                setCurrentReply("No valid response received from AI.")
+                setCurrentReply(t("aiAssistant.noValidResponse"))
             }
         } catch (err) {
             console.error("AI error:", err)
-            setCurrentReply("Something went wrong while generating the portfolio report. Please try again.")
+            setCurrentReply(t("aiAssistant.somethingWentWrongReport"))
         } finally {
             setLoading(false)
         }
@@ -130,7 +132,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
         setInputValue("")
         setLoading(true)
         setShowMascot(true)
-        setCurrentReply("Thinking...")
+        setCurrentReply(t("aiAssistant.thinking"))
 
         try {
             const payload = JSON.stringify({
@@ -153,7 +155,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
 
             // Validate payload size (max 10KB)
             if (payload.length > 10240) {
-                setCurrentReply("Message is too large. Please try again.")
+                setCurrentReply(t("aiAssistant.messageTooLarge"))
                 setLoading(false)
                 return
             }
@@ -180,11 +182,11 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
             } else if (data.error) {
                 setCurrentReply(data.error)
             } else {
-                setCurrentReply("No valid response received from AI.")
+                setCurrentReply(t("aiAssistant.noValidResponse"))
             }
         } catch (err) {
             console.error("AI error:", err)
-            setCurrentReply("Something went wrong. Please try again.")
+            setCurrentReply(t("aiAssistant.somethingWentWrong"))
         } finally {
             setLoading(false)
         }
@@ -207,13 +209,13 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
     return (
         <div className="p-6 border rounded-xl max-w-xl mx-auto mt-10">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">AI Portfolio Assistant</h2>
+                <h2 className="text-xl font-semibold">{t("aiAssistant.portfolioAssistant")}</h2>
                 {mode === 'chat' && (
                     <button
                         onClick={handleResetAudit}
                         className="text-sm text-gray-500 hover:text-gray-700 underline"
                     >
-                        Generate New Audit
+                        {t("aiAssistant.generateNewAudit")}
                     </button>
                 )}
             </div>
@@ -226,10 +228,10 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
                         className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-2xl font-semibold disabled:opacity-50 transition-all hover:scale-105"
                         disabled={loading}
                     >
-                        {loading ? "Generating report..." : "Generate Portfolio Report"}
+                        {loading ? t("aiAssistant.generatingReport") : t("aiAssistant.generatePortfolioReport")}
                     </button>
                     <p className="text-sm text-gray-500 mt-3">
-                        Get a comprehensive analysis of your portfolio
+                        {t("aiAssistant.comprehensiveAnalysis")}
                     </p>
                 </div>
             ) : (
@@ -239,7 +241,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto">
                         {messages.length === 0 ? (
                             <p className="text-gray-500 text-center py-4">
-                                No messages yet. Start a conversation!
+                                {t("aiAssistant.noMessagesYet")}
                             </p>
                         ) : (
                             <div className="space-y-3">
@@ -277,7 +279,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Ask Linky anything about your portfolio..."
+                            placeholder={t("aiAssistant.askLinky")}
                             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                             disabled={loading}
                         />
@@ -286,7 +288,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
                             className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold disabled:opacity-50 hover:bg-purple-700 transition-colors"
                             disabled={loading || !inputValue.trim()}
                         >
-                            {loading ? "..." : "Send"}
+                            {loading ? "..." : t("aiAssistant.send")}
                         </button>
                     </div>
                 </div>
@@ -295,7 +297,7 @@ export default function AIAssistant({ portfolio, studentId }: AIAssistantProps) 
             {/* Show the mascot overlay */}
             {showMascot && (
                 <AIMascotScene
-                    aiReply={currentReply || "Thinking..."}
+                    aiReply={currentReply || t("aiAssistant.thinking")}
                     onClose={() => setShowMascot(false)}
                 />
             )}

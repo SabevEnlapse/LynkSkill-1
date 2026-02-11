@@ -58,6 +58,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 // Sample data for apps
 const apps = [
@@ -430,6 +431,7 @@ const sidebarItems = [
 ]
 
 export function DesignaliCreative() {
+  const { t } = useTranslation()
   const [_progress, setProgress] = useState(0)
   const [notifications] = useState(5)
   const [activeTab, setActiveTab] = useState("home")
@@ -486,7 +488,7 @@ export function DesignaliCreative() {
               </div>
               <div>
                 <h2 className="font-semibold">Designali</h2>
-                <p className="text-xs text-muted-foreground">Creative Suite</p>
+                <p className="text-xs text-muted-foreground">{t("creative.creativeSuite")}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
@@ -497,7 +499,7 @@ export function DesignaliCreative() {
           <div className="px-3 py-2">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+              <Input type="search" placeholder={t("creative.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
             </div>
           </div>
 
@@ -558,7 +560,7 @@ export function DesignaliCreative() {
             <div className="space-y-1">
               <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <Settings className="h-5 w-5" />
-                <span>Settings</span>
+                <span>{t("creative.settings")}</span>
               </button>
               <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <div className="flex items-center gap-3">
@@ -592,7 +594,7 @@ export function DesignaliCreative() {
               </div>
               <div>
                 <h2 className="font-semibold">Designali</h2>
-                <p className="text-xs text-muted-foreground">Creative Suite</p>
+                <p className="text-xs text-muted-foreground">{t("creative.creativeSuite")}</p>
               </div>
             </div>
           </div>
@@ -600,7 +602,7 @@ export function DesignaliCreative() {
           <div className="px-3 py-2">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+              <Input type="search" placeholder={t("creative.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
             </div>
           </div>
 
@@ -661,7 +663,7 @@ export function DesignaliCreative() {
             <div className="space-y-1">
               <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <Settings className="h-5 w-5" />
-                <span>Settings</span>
+                <span>{t("creative.settings")}</span>
               </button>
               <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <div className="flex items-center gap-3">
@@ -690,7 +692,7 @@ export function DesignaliCreative() {
             <PanelLeft className="h-5 w-5" />
           </Button>
           <div className="flex flex-1 items-center justify-between">
-            <h1 className="text-xl font-semibold">Designali Creative</h1>
+            <h1 className="text-xl font-semibold">{t("creative.designaliCreative")}</h1>
             <div className="flex items-center gap-3">
               <TooltipProvider>
                 <Tooltip>
@@ -699,7 +701,7 @@ export function DesignaliCreative() {
                       <Cloud className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Cloud Storage</TooltipContent>
+                  <TooltipContent>{t("creative.cloudStorage")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
@@ -710,7 +712,7 @@ export function DesignaliCreative() {
                       <MessageSquare className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Messages</TooltipContent>
+                  <TooltipContent>{t("creative.messages")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
@@ -726,7 +728,7 @@ export function DesignaliCreative() {
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Notifications</TooltipContent>
+                  <TooltipContent>{t("creative.notifications")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
@@ -743,29 +745,29 @@ export function DesignaliCreative() {
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
                 <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
-                  Home
+                  {t("creative.home")}
                 </TabsTrigger>
                 <TabsTrigger value="apps" className="rounded-xl data-[state=active]:rounded-xl">
-                  Apps
+                  {t("creative.apps")}
                 </TabsTrigger>
                 <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
-                  Files
+                  {t("creative.files")}
                 </TabsTrigger>
                 <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
-                  Projects
+                  {t("creative.projects")}
                 </TabsTrigger>
                 <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
-                  Learn
+                  {t("creative.learn")}
                 </TabsTrigger>
               </TabsList>
               <div className="hidden md:flex gap-2">
                 <Button variant="outline" className="rounded-2xl">
                   <Download className="mr-2 h-4 w-4" />
-                  Install App
+                  {t("creative.installApp")}
                 </Button>
                 <Button className="rounded-2xl">
                   <Plus className="mr-2 h-4 w-4" />
-                  New Project
+                  {t("creative.newProject")}
                 </Button>
               </div>
             </div>
@@ -789,20 +791,19 @@ export function DesignaliCreative() {
                       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-4">
                           <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Premium</Badge>
-                          <h2 className="text-3xl font-bold">Welcome to DesignAli Creative Suite</h2>
+                          <h2 className="text-3xl font-bold">{t("creative.welcomeTitle")}</h2>
                           <p className="max-w-[600px] text-white/80">
-                            Unleash your creativity with our comprehensive suite of professional design tools and
-                            resources.
+                            {t("creative.welcomeDescription")}
                           </p>
                           <div className="flex flex-wrap gap-3">
                             <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
-                              Explore Plans
+                              {t("creative.explorePlans")}
                             </Button>
                             <Button
                               variant="outline"
                               className="rounded-2xl bg-transparent border-white text-white hover:bg-white/10"
                             >
-                              Take a Tour
+                              {t("creative.takeATour")}
                             </Button>
                           </div>
                         </div>
@@ -825,9 +826,9 @@ export function DesignaliCreative() {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-semibold">Recent Apps</h2>
+                      <h2 className="text-2xl font-semibold">{t("creative.recentApps")}</h2>
                       <Button variant="ghost" className="rounded-2xl">
-                        View All
+                        {t("creative.viewAll")}
                       </Button>
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -852,7 +853,7 @@ export function DesignaliCreative() {
                               </CardContent>
                               <CardFooter>
                                 <Button variant="secondary" className="w-full rounded-2xl">
-                                  Open
+                                  {t("creative.open")}
                                 </Button>
                               </CardFooter>
                             </Card>
@@ -864,9 +865,9 @@ export function DesignaliCreative() {
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     <section className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold">Recent Files</h2>
+                        <h2 className="text-2xl font-semibold">{t("creative.recentFiles")}</h2>
                         <Button variant="ghost" className="rounded-2xl">
-                          View All
+                          {t("creative.viewAll")}
                         </Button>
                       </div>
                       <div className="rounded-3xl border">
@@ -896,7 +897,7 @@ export function DesignaliCreative() {
                                   </Badge>
                                 )}
                                 <Button variant="ghost" size="sm" className="rounded-xl">
-                                  Open
+                                  {t("creative.open")}
                                 </Button>
                               </div>
                             </motion.div>
@@ -907,9 +908,9 @@ export function DesignaliCreative() {
 
                     <section className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold">Active Projects</h2>
+                        <h2 className="text-2xl font-semibold">{t("creative.activeProjects")}</h2>
                         <Button variant="ghost" className="rounded-2xl">
-                          View All
+                          {t("creative.viewAll")}
                         </Button>
                       </div>
                       <div className="rounded-3xl border">
@@ -929,7 +930,7 @@ export function DesignaliCreative() {
                               <p className="text-sm text-muted-foreground mb-3">{project.description}</p>
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                  <span>Progress</span>
+                                  <span>{t("creative.progress")}</span>
                                   <span>{project.progress}%</span>
                                 </div>
                                 <Progress value={project.progress} className="h-2 rounded-xl" />
@@ -937,11 +938,11 @@ export function DesignaliCreative() {
                               <div className="flex items-center justify-between mt-3 text-sm text-muted-foreground">
                                 <div className="flex items-center">
                                   <Users className="mr-1 h-4 w-4" />
-                                  {project.members} members
+                                  {project.members} {t("creative.members")}
                                 </div>
                                 <div className="flex items-center">
                                   <FileText className="mr-1 h-4 w-4" />
-                                  {project.files} files
+                                  {project.files} {t("creative.files")}
                                 </div>
                               </div>
                             </motion.div>
@@ -953,9 +954,9 @@ export function DesignaliCreative() {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-semibold">Community Highlights</h2>
+                      <h2 className="text-2xl font-semibold">{t("creative.communityHighlights")}</h2>
                       <Button variant="ghost" className="rounded-2xl">
-                        Explore
+                        {t("creative.explore")}
                       </Button>
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -999,14 +1000,14 @@ export function DesignaliCreative() {
                     >
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
-                          <h2 className="text-3xl font-bold">Creative Apps Collection</h2>
+                          <h2 className="text-3xl font-bold">{t("creative.creativeAppsCollection")}</h2>
                           <p className="max-w-[600px] text-white/80">
-                            Discover our full suite of professional design and creative applications.
+                            {t("creative.creativeAppsDescription")}
                           </p>
                         </div>
                         <Button className="w-fit rounded-2xl bg-white text-red-700 hover:bg-white/90">
                           <Download className="mr-2 h-4 w-4" />
-                          Install Desktop App
+                          {t("creative.installDesktopApp")}
                         </Button>
                       </div>
                     </motion.div>
@@ -1014,7 +1015,7 @@ export function DesignaliCreative() {
 
                   <div className="flex flex-wrap gap-3 mb-6">
                     <Button variant="outline" className="rounded-2xl">
-                      All Categories
+                      {t("creative.allCategories")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       Creative
@@ -1033,14 +1034,14 @@ export function DesignaliCreative() {
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search apps..."
+                        placeholder={t("creative.searchApps")}
                         className="w-full rounded-2xl pl-9 md:w-[200px]"
                       />
                     </div>
                   </div>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">New Releases</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.newReleases")}</h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       {apps
                         .filter((app) => app.new)
@@ -1060,7 +1061,7 @@ export function DesignaliCreative() {
                                 <CardDescription>{app.description}</CardDescription>
                                 <div className="mt-2">
                                   <div className="flex items-center justify-between text-sm">
-                                    <span>Installation</span>
+                                    <span>{t("creative.installation")}</span>
                                     <span>{app.progress}%</span>
                                   </div>
                                   <Progress value={app.progress} className="h-2 mt-1 rounded-xl" />
@@ -1068,7 +1069,7 @@ export function DesignaliCreative() {
                               </CardContent>
                               <CardFooter>
                                 <Button variant="secondary" className="w-full rounded-2xl">
-                                  {app.progress < 100 ? "Continue Install" : "Open"}
+                                  {app.progress < 100 ? t("creative.continueInstall") : t("creative.open")}
                                 </Button>
                               </CardFooter>
                             </Card>
@@ -1078,7 +1079,7 @@ export function DesignaliCreative() {
                   </section>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">All Apps</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.allApps")}</h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       {apps.map((app) => (
                         <motion.div key={app.name} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1099,7 +1100,7 @@ export function DesignaliCreative() {
                             </CardContent>
                             <CardFooter className="flex gap-2">
                               <Button variant="secondary" className="flex-1 rounded-2xl">
-                                {app.progress < 100 ? "Install" : "Open"}
+                                {app.progress < 100 ? t("creative.install") : t("creative.open")}
                               </Button>
                               <Button variant="outline" size="icon" className="rounded-2xl">
                                 <Star className="h-4 w-4" />
@@ -1122,19 +1123,19 @@ export function DesignaliCreative() {
                     >
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
-                          <h2 className="text-3xl font-bold">Your Creative Files</h2>
+                          <h2 className="text-3xl font-bold">{t("creative.yourCreativeFiles")}</h2>
                           <p className="max-w-[600px] text-white/80">
-                            Access, manage, and share all your design files in one place.
+                            {t("creative.yourCreativeFilesDescription")}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
                           <Button className="rounded-2xl bg-white/20 backdrop-blur-md hover:bg-white/30">
                             <Cloud className="mr-2 h-4 w-4" />
-                            Cloud Storage
+                            {t("creative.cloudStorage")}
                           </Button>
                           <Button className="rounded-2xl bg-white text-blue-700 hover:bg-white/90">
                             <Plus className="mr-2 h-4 w-4" />
-                            Upload Files
+                            {t("creative.uploadFiles")}
                           </Button>
                         </div>
                       </div>
@@ -1144,30 +1145,30 @@ export function DesignaliCreative() {
                   <div className="flex flex-wrap gap-3 mb-6">
                     <Button variant="outline" className="rounded-2xl">
                       <FileText className="mr-2 h-4 w-4" />
-                      All Files
+                      {t("creative.allFiles")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Clock className="mr-2 h-4 w-4" />
-                      Recent
+                      {t("creative.recent")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Users className="mr-2 h-4 w-4" />
-                      Shared
+                      {t("creative.shared")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Star className="mr-2 h-4 w-4" />
-                      Favorites
+                      {t("creative.favorites")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Trash className="mr-2 h-4 w-4" />
-                      Trash
+                      {t("creative.trash")}
                     </Button>
                     <div className="flex-1"></div>
                     <div className="relative w-full md:w-auto mt-3 md:mt-0">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search files..."
+                        placeholder={t("creative.searchFiles")}
                         className="w-full rounded-2xl pl-9 md:w-[200px]"
                       />
                     </div>
@@ -1175,25 +1176,25 @@ export function DesignaliCreative() {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-semibold">All Files</h2>
+                      <h2 className="text-2xl font-semibold">{t("creative.allFiles")}</h2>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" className="rounded-2xl">
                           <PanelLeft className="mr-2 h-4 w-4" />
-                          Filter
+                          {t("creative.filter")}
                         </Button>
                         <Button variant="outline" size="sm" className="rounded-2xl">
                           <ArrowUpDown className="mr-2 h-4 w-4" />
-                          Sort
+                          {t("creative.sort")}
                         </Button>
                       </div>
                     </div>
 
                     <div className="rounded-3xl border overflow-hidden">
                       <div className="bg-muted/50 p-3 hidden md:grid md:grid-cols-12 text-sm font-medium">
-                        <div className="col-span-6">Name</div>
-                        <div className="col-span-2">App</div>
-                        <div className="col-span-2">Size</div>
-                        <div className="col-span-2">Modified</div>
+                        <div className="col-span-6">{t("creative.name")}</div>
+                        <div className="col-span-2">{t("creative.app")}</div>
+                        <div className="col-span-2">{t("creative.size")}</div>
+                        <div className="col-span-2">{t("creative.modified")}</div>
                       </div>
                       <div className="divide-y">
                         {recentFiles.map((file) => (
@@ -1211,7 +1212,7 @@ export function DesignaliCreative() {
                                 {file.shared && (
                                   <div className="flex items-center text-xs text-muted-foreground">
                                     <Users className="mr-1 h-3 w-3" />
-                                    Shared with {file.collaborators} people
+                                    {t("creative.sharedWith")} {file.collaborators}
                                   </div>
                                 )}
                               </div>
@@ -1246,14 +1247,14 @@ export function DesignaliCreative() {
                     >
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
-                          <h2 className="text-3xl font-bold">Project Management</h2>
+                          <h2 className="text-3xl font-bold">{t("creative.projectManagement")}</h2>
                           <p className="max-w-[600px] text-white/80">
-                            Organize your creative work into projects and collaborate with your team.
+                            {t("creative.projectManagementDescription")}
                           </p>
                         </div>
                         <Button className="w-fit rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
                           <Plus className="mr-2 h-4 w-4" />
-                          New Project
+                          {t("creative.newProject")}
                         </Button>
                       </div>
                     </motion.div>
@@ -1262,33 +1263,33 @@ export function DesignaliCreative() {
                   <div className="flex flex-wrap gap-3 mb-6">
                     <Button variant="outline" className="rounded-2xl">
                       <Layers className="mr-2 h-4 w-4" />
-                      All Projects
+                      {t("creative.allProjects")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Clock className="mr-2 h-4 w-4" />
-                      Recent
+                      {t("creative.recent")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Users className="mr-2 h-4 w-4" />
-                      Shared
+                      {t("creative.shared")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Archive className="mr-2 h-4 w-4" />
-                      Archived
+                      {t("creative.archived")}
                     </Button>
                     <div className="flex-1"></div>
                     <div className="relative w-full md:w-auto mt-3 md:mt-0">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search projects..."
+                        placeholder={t("creative.searchProjects")}
                         className="w-full rounded-2xl pl-9 md:w-[200px]"
                       />
                     </div>
                   </div>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">Active Projects</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.activeProjects")}</h2>
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                       {projects.map((project) => (
                         <motion.div key={project.name} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1305,7 +1306,7 @@ export function DesignaliCreative() {
                             <CardContent className="space-y-4">
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                  <span>Progress</span>
+                                  <span>{t("creative.progress")}</span>
                                   <span>{project.progress}%</span>
                                 </div>
                                 <Progress value={project.progress} className="h-2 rounded-xl" />
@@ -1313,17 +1314,17 @@ export function DesignaliCreative() {
                               <div className="flex items-center justify-between text-sm text-muted-foreground">
                                 <div className="flex items-center">
                                   <Users className="mr-1 h-4 w-4" />
-                                  {project.members} members
+                                  {project.members} {t("creative.members")}
                                 </div>
                                 <div className="flex items-center">
                                   <FileText className="mr-1 h-4 w-4" />
-                                  {project.files} files
+                                  {project.files} {t("creative.files")}
                                 </div>
                               </div>
                             </CardContent>
                             <CardFooter className="flex gap-2">
                               <Button variant="secondary" className="flex-1 rounded-2xl">
-                                Open Project
+                                {t("creative.openProject")}
                               </Button>
                               <Button variant="outline" size="icon" className="rounded-2xl">
                                 <Share2 className="h-4 w-4" />
@@ -1337,72 +1338,72 @@ export function DesignaliCreative() {
                           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                             <Plus className="h-6 w-6" />
                           </div>
-                          <h3 className="text-lg font-medium">Create New Project</h3>
+                          <h3 className="text-lg font-medium">{t("creative.createNewProject")}</h3>
                           <p className="mb-4 text-center text-sm text-muted-foreground">
-                            Start a new creative project from scratch or use a template
+                            {t("creative.createNewProjectDescription")}
                           </p>
-                          <Button className="rounded-2xl">New Project</Button>
+                          <Button className="rounded-2xl">{t("creative.newProject")}</Button>
                         </Card>
                       </motion.div>
                     </div>
                   </section>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">Project Templates</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.projectTemplates")}</h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       <Card className="overflow-hidden rounded-3xl">
                         <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 p-6 text-white">
-                          <h3 className="text-lg font-medium">Brand Identity</h3>
-                          <p className="text-sm text-white/80">Complete brand design package</p>
+                          <h3 className="text-lg font-medium">{t("creative.brandIdentity")}</h3>
+                          <p className="text-sm text-white/80">{t("creative.brandIdentityDesc")}</p>
                         </div>
                         <CardFooter className="flex justify-between p-4">
                           <Badge variant="outline" className="rounded-xl">
-                            Popular
+                            {t("creative.popular")}
                           </Badge>
                           <Button variant="ghost" size="sm" className="rounded-xl">
-                            Use Template
+                            {t("creative.useTemplate")}
                           </Button>
                         </CardFooter>
                       </Card>
                       <Card className="overflow-hidden rounded-3xl">
                         <div className="aspect-video bg-gradient-to-br from-amber-500 to-red-600 p-6 text-white">
-                          <h3 className="text-lg font-medium">Marketing Campaign</h3>
-                          <p className="text-sm text-white/80">Multi-channel marketing assets</p>
+                          <h3 className="text-lg font-medium">{t("creative.marketingCampaign")}</h3>
+                          <p className="text-sm text-white/80">{t("creative.marketingCampaignDesc")}</p>
                         </div>
                         <CardFooter className="flex justify-between p-4">
                           <Badge variant="outline" className="rounded-xl">
-                            New
+                            {t("creative.new")}
                           </Badge>
                           <Button variant="ghost" size="sm" className="rounded-xl">
-                            Use Template
+                            {t("creative.useTemplate")}
                           </Button>
                         </CardFooter>
                       </Card>
                       <Card className="overflow-hidden rounded-3xl">
                         <div className="aspect-video bg-gradient-to-br from-green-500 to-teal-600 p-6 text-white">
-                          <h3 className="text-lg font-medium">Website Redesign</h3>
-                          <p className="text-sm text-white/80">Complete website design workflow</p>
+                          <h3 className="text-lg font-medium">{t("creative.websiteRedesign")}</h3>
+                          <p className="text-sm text-white/80">{t("creative.websiteRedesignDesc")}</p>
                         </div>
                         <CardFooter className="flex justify-between p-4">
                           <Badge variant="outline" className="rounded-xl">
-                            Featured
+                            {t("creative.featured")}
                           </Badge>
                           <Button variant="ghost" size="sm" className="rounded-xl">
-                            Use Template
+                            {t("creative.useTemplate")}
                           </Button>
                         </CardFooter>
                       </Card>
                       <Card className="overflow-hidden rounded-3xl">
                         <div className="aspect-video bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white">
-                          <h3 className="text-lg font-medium">Product Launch</h3>
-                          <p className="text-sm text-white/80">Product launch campaign assets</p>
+                          <h3 className="text-lg font-medium">{t("creative.productLaunch")}</h3>
+                          <p className="text-sm text-white/80">{t("creative.productLaunchDesc")}</p>
                         </div>
                         <CardFooter className="flex justify-between p-4">
                           <Badge variant="outline" className="rounded-xl">
-                            Popular
+                            {t("creative.popular")}
                           </Badge>
                           <Button variant="ghost" size="sm" className="rounded-xl">
-                            Use Template
+                            {t("creative.useTemplate")}
                           </Button>
                         </CardFooter>
                       </Card>
@@ -1420,14 +1421,14 @@ export function DesignaliCreative() {
                     >
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
-                          <h2 className="text-3xl font-bold">Learn & Grow</h2>
+                          <h2 className="text-3xl font-bold">{t("creative.learnAndGrow")}</h2>
                           <p className="max-w-[600px] text-white/80">
-                            Expand your creative skills with tutorials, courses, and resources.
+                            {t("creative.learnAndGrowDescription")}
                           </p>
                         </div>
                         <Button className="w-fit rounded-2xl bg-white text-emerald-700 hover:bg-white/90">
                           <Crown className="mr-2 h-4 w-4" />
-                          Upgrade to Pro
+                          {t("creative.upgradeToPro")}
                         </Button>
                       </div>
                     </motion.div>
@@ -1436,37 +1437,37 @@ export function DesignaliCreative() {
                   <div className="flex flex-wrap gap-3 mb-6">
                     <Button variant="outline" className="rounded-2xl">
                       <Play className="mr-2 h-4 w-4" />
-                      All Tutorials
+                      {t("creative.allTutorials")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <BookOpen className="mr-2 h-4 w-4" />
-                      Courses
+                      {t("creative.courses")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Lightbulb className="mr-2 h-4 w-4" />
-                      Tips & Tricks
+                      {t("creative.tipsTricks")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <TrendingUp className="mr-2 h-4 w-4" />
-                      Trending
+                      {t("creative.trending")}
                     </Button>
                     <Button variant="outline" className="rounded-2xl">
                       <Bookmark className="mr-2 h-4 w-4" />
-                      Saved
+                      {t("creative.saved")}
                     </Button>
                     <div className="flex-1"></div>
                     <div className="relative w-full md:w-auto mt-3 md:mt-0">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search tutorials..."
+                        placeholder={t("creative.searchTutorials")}
                         className="w-full rounded-2xl pl-9 md:w-[200px]"
                       />
                     </div>
                   </div>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">Featured Tutorials</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.featuredTutorials")}</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {tutorials.slice(0, 3).map((tutorial) => (
                         <motion.div key={tutorial.title} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1505,7 +1506,7 @@ export function DesignaliCreative() {
                               </Badge>
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Eye className="h-4 w-4" />
-                                {tutorial.views} views
+                                {tutorial.views} {t("creative.views")}
                               </div>
                             </CardFooter>
                           </Card>
@@ -1516,9 +1517,9 @@ export function DesignaliCreative() {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-semibold">Popular Courses</h2>
+                      <h2 className="text-2xl font-semibold">{t("creative.popularCourses")}</h2>
                       <Button variant="ghost" className="rounded-2xl">
-                        View All
+                        {t("creative.viewAll")}
                       </Button>
                     </div>
                     <div className="rounded-3xl border overflow-hidden">
@@ -1550,13 +1551,13 @@ export function DesignaliCreative() {
                                 </div>
                                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                   <Eye className="h-3 w-3" />
-                                  {tutorial.views} views
+                                  {tutorial.views} {t("creative.views")}
                                 </div>
                               </div>
                             </div>
                             <div className="flex items-center">
                               <Button variant="ghost" size="sm" className="rounded-xl">
-                                Watch Now
+                                {t("creative.watchNow")}
                               </Button>
                             </div>
                           </motion.div>
@@ -1566,7 +1567,7 @@ export function DesignaliCreative() {
                   </section>
 
                   <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold">Learning Paths</h2>
+                    <h2 className="text-2xl font-semibold">{t("creative.learningPaths")}</h2>
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <Card className="overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300">
                         <CardHeader className="pb-2">

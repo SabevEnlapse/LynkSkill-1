@@ -18,13 +18,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
-const ROLE_DISPLAY: Record<string, { label: string; color: string; bgColor: string }> = {
-    OWNER: { label: "Owner", color: "text-purple-400", bgColor: "bg-purple-500/10 border-purple-500/30" },
-    ADMIN: { label: "Admin", color: "text-blue-400", bgColor: "bg-blue-500/10 border-blue-500/30" },
-    HR_MANAGER: { label: "HR Manager", color: "text-emerald-400", bgColor: "bg-emerald-500/10 border-emerald-500/30" },
-    HR_RECRUITER: { label: "HR Recruiter", color: "text-cyan-400", bgColor: "bg-cyan-500/10 border-cyan-500/30" },
-    VIEWER: { label: "Viewer", color: "text-gray-400", bgColor: "bg-gray-500/10 border-gray-500/30" },
-    MEMBER: { label: "Team Member", color: "text-indigo-400", bgColor: "bg-indigo-500/10 border-indigo-500/30" },
+const ROLE_DISPLAY_KEYS: Record<string, { labelKey: string; color: string; bgColor: string }> = {
+    OWNER: { labelKey: "teamMemberDashboard.roleOwner", color: "text-purple-400", bgColor: "bg-purple-500/10 border-purple-500/30" },
+    ADMIN: { labelKey: "teamMemberDashboard.roleAdmin", color: "text-blue-400", bgColor: "bg-blue-500/10 border-blue-500/30" },
+    HR_MANAGER: { labelKey: "teamMemberDashboard.roleHrManager", color: "text-emerald-400", bgColor: "bg-emerald-500/10 border-emerald-500/30" },
+    HR_RECRUITER: { labelKey: "teamMemberDashboard.roleHrRecruiter", color: "text-cyan-400", bgColor: "bg-cyan-500/10 border-cyan-500/30" },
+    VIEWER: { labelKey: "teamMemberDashboard.roleViewer", color: "text-gray-400", bgColor: "bg-gray-500/10 border-gray-500/30" },
+    MEMBER: { labelKey: "teamMemberDashboard.roleTeamMember", color: "text-indigo-400", bgColor: "bg-indigo-500/10 border-indigo-500/30" },
 }
 
 export default function TeamMemberDashboard() {
@@ -32,54 +32,55 @@ export default function TeamMemberDashboard() {
     const { user, company, internships, applications } = useDashboard()
     const { permissions, role, hasPermission, hasAnyPermission } = useTeamMemberPermissions()
 
-    const roleInfo = ROLE_DISPLAY[role] || ROLE_DISPLAY.MEMBER
-    const userName = user?.profile?.name || "Team Member"
+    const roleInfoKey = ROLE_DISPLAY_KEYS[role] || ROLE_DISPLAY_KEYS.MEMBER
+    const roleLabel = t(roleInfoKey.labelKey)
+    const userName = user?.profile?.name || t('teamMemberDashboard.roleTeamMember')
 
     // Quick actions based on permissions
     const quickActions = [
         ...(hasAnyPermission("CREATE_INTERNSHIPS", "EDIT_INTERNSHIPS") ? [{
-            label: "Internships",
-            description: "Manage company internship listings",
+            label: t('teamMemberDashboard.internships'),
+            description: t('teamMemberDashboard.internshipsDesc'),
             href: "/dashboard/team-member/internships",
             icon: <Briefcase className="h-6 w-6" />,
             color: "from-violet-500/20 to-purple-500/20 hover:from-violet-500/30 hover:to-purple-500/30",
             iconColor: "text-violet-400",
         }] : []),
         ...(hasAnyPermission("VIEW_APPLICATIONS", "MANAGE_APPLICATIONS") ? [{
-            label: "Applications",
-            description: "Review student applications",
+            label: t('teamMemberDashboard.applicationsLabel'),
+            description: t('teamMemberDashboard.applicationsDesc'),
             href: "/dashboard/team-member/applications",
             icon: <FileText className="h-6 w-6" />,
             color: "from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30",
             iconColor: "text-blue-400",
         }] : []),
         ...(hasAnyPermission("VIEW_CANDIDATES", "SEARCH_CANDIDATES") ? [{
-            label: "Candidates",
-            description: "Search and browse candidates",
+            label: t('teamMemberDashboard.candidatesLabel'),
+            description: t('teamMemberDashboard.candidatesDesc'),
             href: "/dashboard/team-member/candidates",
             icon: <Users className="h-6 w-6" />,
             color: "from-emerald-500/20 to-green-500/20 hover:from-emerald-500/30 hover:to-green-500/30",
             iconColor: "text-emerald-400",
         }] : []),
         ...(hasAnyPermission("VIEW_MESSAGES", "SEND_MESSAGES") ? [{
-            label: "Messages",
-            description: "Company messaging",
+            label: t('teamMemberDashboard.messagesLabel'),
+            description: t('teamMemberDashboard.messagesDesc'),
             href: "/dashboard/team-member/messages",
             icon: <MessageSquare className="h-6 w-6" />,
             color: "from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30",
             iconColor: "text-amber-400",
         }] : []),
         ...(hasAnyPermission("SCHEDULE_INTERVIEWS", "CONDUCT_INTERVIEWS") ? [{
-            label: "Interviews",
-            description: "Manage scheduled interviews",
+            label: t('teamMemberDashboard.interviewsLabel'),
+            description: t('teamMemberDashboard.interviewsDesc'),
             href: "/dashboard/team-member/interviews",
             icon: <Calendar className="h-6 w-6" />,
             color: "from-pink-500/20 to-rose-500/20 hover:from-pink-500/30 hover:to-rose-500/30",
             iconColor: "text-pink-400",
         }] : []),
         ...(hasAnyPermission("CREATE_ASSIGNMENTS", "GRADE_EXPERIENCES") ? [{
-            label: "Experience",
-            description: "Assignments & grading",
+            label: t('teamMemberDashboard.experienceLabel'),
+            description: t('teamMemberDashboard.experienceDesc'),
             href: "/dashboard/team-member/experience",
             icon: <Award className="h-6 w-6" />,
             color: "from-indigo-500/20 to-blue-500/20 hover:from-indigo-500/30 hover:to-blue-500/30",
@@ -87,8 +88,8 @@ export default function TeamMemberDashboard() {
         }] : []),
         // Team - always visible
         {
-            label: "Team",
-            description: "View your team members & roles",
+            label: t('teamMemberDashboard.teamLabel'),
+            description: t('teamMemberDashboard.teamDesc'),
             href: "/dashboard/team-member/team",
             icon: <Users className="h-6 w-6" />,
             color: "from-purple-500/20 to-violet-500/20 hover:from-purple-500/30 hover:to-violet-500/30",
@@ -110,21 +111,21 @@ export default function TeamMemberDashboard() {
                             <div className="flex items-center gap-3 mb-2">
                                 <Sparkles className="h-6 w-6 text-amber-300" />
                                 <h1 className="text-2xl md:text-3xl font-bold">
-                                    Welcome back, {userName}!
+                                    {t('teamMemberDashboard.welcomeBack', { name: userName })}
                                 </h1>
                             </div>
                             <p className="text-white/70 text-sm md:text-base max-w-xl">
-                                You&apos;re a team member at <span className="font-semibold text-white">{company?.name || "your company"}</span>. 
-                                Here&apos;s your dashboard with the tools you have access to.
+                                {t('teamMemberDashboard.teamMemberAt')} <span className="font-semibold text-white">{company?.name || t('teamMemberDashboard.yourCompany')}</span>. 
+                                {t('teamMemberDashboard.dashboardDesc')}
                             </p>
                         </div>
                         
                         {/* Role Badge */}
-                        <div className={`px-4 py-2 rounded-xl border ${roleInfo.bgColor} backdrop-blur-sm`}>
+                        <div className={`px-4 py-2 rounded-xl border ${roleInfoKey.bgColor} backdrop-blur-sm`}>
                             <div className="flex items-center gap-2">
-                                <Shield className={`h-4 w-4 ${roleInfo.color}`} />
-                                <span className={`text-sm font-semibold ${roleInfo.color}`}>
-                                    {roleInfo.label}
+                                <Shield className={`h-4 w-4 ${roleInfoKey.color}`} />
+                                <span className={`text-sm font-semibold ${roleInfoKey.color}`}>
+                                    {roleLabel}
                                 </span>
                             </div>
                         </div>
@@ -134,19 +135,19 @@ export default function TeamMemberDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
                             <p className="text-2xl font-bold">{internships?.length || 0}</p>
-                            <p className="text-xs text-white/70">Internships</p>
+                            <p className="text-xs text-white/70">{t('teamMemberDashboard.internshipsCount')}</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
                             <p className="text-2xl font-bold">{applications?.length || 0}</p>
-                            <p className="text-xs text-white/70">Applications</p>
+                            <p className="text-xs text-white/70">{t('teamMemberDashboard.applicationsCount')}</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
                             <p className="text-2xl font-bold">{permissions.length}</p>
-                            <p className="text-xs text-white/70">Permissions</p>
+                            <p className="text-xs text-white/70">{t('teamMemberDashboard.permissionsCount')}</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
                             <p className="text-2xl font-bold">{quickActions.length}</p>
-                            <p className="text-xs text-white/70">Available Tools</p>
+                            <p className="text-xs text-white/70">{t('teamMemberDashboard.availableTools')}</p>
                         </div>
                     </div>
                 </div>
@@ -157,7 +158,7 @@ export default function TeamMemberDashboard() {
                 <div>
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Building2 className="h-5 w-5 text-indigo-500" />
-                        Your Tools
+                        {t('teamMemberDashboard.yourTools')}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {quickActions.map((action) => (
@@ -181,10 +182,9 @@ export default function TeamMemberDashboard() {
             ) : (
                 <div className="rounded-2xl border border-border/50 bg-muted/30 p-8 text-center">
                     <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold">Limited Access</h3>
+                    <h3 className="text-lg font-semibold">{t('teamMemberDashboard.limitedAccess')}</h3>
                     <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-                        Your current role ({roleInfo.label}) has limited permissions. 
-                        Contact your company admin to request additional access.
+                        {t('teamMemberDashboard.limitedAccessDesc', { role: roleLabel })}
                     </p>
                 </div>
             )}
@@ -193,7 +193,7 @@ export default function TeamMemberDashboard() {
             <div className="rounded-2xl border border-border/50 bg-card/50 p-5">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Shield className="h-5 w-5 text-violet-500" />
-                    Your Permissions
+                    {t('teamMemberDashboard.yourPermissions')}
                 </h2>
                 <div className="flex flex-wrap gap-2">
                     {permissions.map((perm) => (
@@ -205,7 +205,7 @@ export default function TeamMemberDashboard() {
                         </span>
                     ))}
                     {permissions.length === 0 && (
-                        <span className="text-sm text-muted-foreground">No specific permissions assigned</span>
+                        <span className="text-sm text-muted-foreground">{t('teamMemberDashboard.noPermissions')}</span>
                     )}
                 </div>
             </div>

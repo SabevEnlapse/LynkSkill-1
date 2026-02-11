@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
+import { useTranslation } from "@/lib/i18n"
 
 interface InvitationData {
   email: string
@@ -44,12 +45,15 @@ interface InvitationData {
   expiresAt: string
 }
 
-const roleDisplayNames: Record<string, string> = {
-  OWNER: "Owner",
-  ADMIN: "Administrator",
-  HR_MANAGER: "HR Manager",
-  HR_RECRUITER: "HR Recruiter",
-  VIEWER: "Viewer",
+function useRoleDisplayNames() {
+  const { t } = useTranslation()
+  return {
+    OWNER: t('invitationsPage.owner'),
+    ADMIN: t('invitationsPage.administrator'),
+    HR_MANAGER: t('invitationsPage.hrManager'),
+    HR_RECRUITER: t('invitationsPage.hrRecruiter'),
+    VIEWER: t('invitationsPage.viewer'),
+  } as Record<string, string>
 }
 
 function InvitationSkeleton() {
@@ -74,6 +78,8 @@ function InvitationSkeleton() {
 }
 
 function InvitationContent() {
+  const { t } = useTranslation()
+  const roleDisplayNames = useRoleDisplayNames()
   const searchParams = useSearchParams()
   const router = useRouter()
   const { user, isLoaded: userLoaded } = useUser()
@@ -91,7 +97,7 @@ function InvitationContent() {
   React.useEffect(() => {
     async function fetchInvitation() {
       if (!token) {
-        setError("No invitation token provided")
+        setError(t('invitationsPage.noInvitationToken'))
         setLoading(false)
         return
       }
@@ -101,7 +107,7 @@ function InvitationContent() {
         const data = await res.json()
 
         if (!res.ok) {
-          setError(data.error || "Failed to load invitation")
+          setError(data.error || t('invitationsPage.failedToLoadInvitation'))
           setLoading(false)
           return
         }
@@ -109,13 +115,14 @@ function InvitationContent() {
         setInvitation(data.invitation)
       } catch (err) {
         console.error("Error fetching invitation:", err)
-        setError("Failed to load invitation")
+        setError(t('invitationsPage.failedToLoadInvitation'))
       } finally {
         setLoading(false)
       }
     }
 
     fetchInvitation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   const handleAccept = async () => {
@@ -132,12 +139,12 @@ function InvitationContent() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to accept invitation")
+        throw new Error(data.error || t('invitationsPage.failedToAccept'))
       }
 
       setAccepted(true)
-      toast.success("Welcome to the team!", {
-        description: `You've successfully joined ${data.membership.companyName}`,
+      toast.success(t('invitationsPage.welcomeToTeam'), {
+        description: t('invitationsPage.youveJoined', { company: data.membership.companyName }),
       })
 
       // Redirect to company dashboard after a short delay
@@ -146,7 +153,7 @@ function InvitationContent() {
         window.location.href = "/dashboard/company"
       }, 2000)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to accept invitation")
+      toast.error(err instanceof Error ? err.message : t('invitationsPage.failedToAccept'))
     } finally {
       setAccepting(false)
     }
@@ -163,10 +170,10 @@ function InvitationContent() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to decline invitation")
+        throw new Error(data.error || t('invitationsPage.failedToDecline'))
       }
 
-      toast.success("Invitation declined")
+      toast.success(t('invitationsPage.invitationDeclined'))
       
       // Redirect based on current user role
       const role = user?.publicMetadata?.role as string
@@ -176,7 +183,7 @@ function InvitationContent() {
         router.push("/dashboard/student")
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to decline invitation")
+      toast.error(err instanceof Error ? err.message : t('invitationsPage.failedToDecline'))
     } finally {
       setDeclining(false)
     }
@@ -195,12 +202,12 @@ function InvitationContent() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center py-8">
               <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Invalid Invitation Link</h2>
+              <h2 className="text-xl font-semibold mb-2">{t('invitationsPage.invalidInvitationLink')}</h2>
               <p className="text-muted-foreground mb-6">
-                This invitation link is invalid or incomplete. Please check the link and try again.
+                {t('invitationsPage.invalidLinkDesc')}
               </p>
               <Button onClick={() => router.push("/")}>
-                Go to Home
+                {t('invitationsPage.goToHome')}
               </Button>
             </div>
           </CardContent>
@@ -218,19 +225,19 @@ function InvitationContent() {
             <div className="flex flex-col items-center text-center py-8">
               <XCircle className="h-12 w-12 text-destructive mb-4" />
               <h2 className="text-xl font-semibold mb-2">
-                {error === "Invitation has expired" ? "Invitation Expired" : 
-                 error === "Invitation has already been accepted" ? "Already Accepted" :
-                 "Invitation Not Found"}
+                {error === "Invitation has expired" ? t('invitationsPage.invitationExpired') : 
+                 error === "Invitation has already been accepted" ? t('invitationsPage.alreadyAccepted') :
+                 t('invitationsPage.invitationNotFound')}
               </h2>
               <p className="text-muted-foreground mb-6">
                 {error === "Invitation has expired" 
-                  ? "This invitation has expired. Please ask the sender to send a new invitation."
+                  ? t('invitationsPage.expiredDesc')
                   : error === "Invitation has already been accepted"
-                  ? "This invitation has already been used."
+                  ? t('invitationsPage.alreadyUsed')
                   : error}
               </p>
               <Button onClick={() => router.push("/")}>
-                Go to Home
+                {t('invitationsPage.goToHome')}
               </Button>
             </div>
           </CardContent>
@@ -249,9 +256,9 @@ function InvitationContent() {
               <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">Welcome to the Team!</h2>
+              <h2 className="text-xl font-semibold mb-2">{t('invitationsPage.welcomeToTeam')}</h2>
               <p className="text-muted-foreground mb-6">
-                You&apos;ve successfully joined {invitation?.company.name}. Redirecting to your new dashboard...
+                {t('invitationsPage.youveJoined', { company: invitation?.company.name || '' })} {t('invitationsPage.redirectingToNewDashboard')}
               </p>
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
@@ -286,9 +293,9 @@ function InvitationContent() {
             )}
           </div>
           
-          <CardTitle className="text-2xl">Team Invitation</CardTitle>
+          <CardTitle className="text-2xl">{t('invitationsPage.teamInvitation')}</CardTitle>
           <CardDescription className="text-base">
-            You&apos;ve been invited to join <strong className="text-foreground">{invitation?.company.name}</strong>
+            {t('invitationsPage.youveBeenInvitedToJoin')} <strong className="text-foreground">{invitation?.company.name}</strong>
           </CardDescription>
         </CardHeader>
 
@@ -296,18 +303,18 @@ function InvitationContent() {
           {/* Invitation Details */}
           <div className="bg-muted/50 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Invited by</span>
+              <span className="text-sm text-muted-foreground">{t('invitationsPage.invitedBy')}</span>
               <span className="font-medium">{invitation?.invitedBy.name}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Your role</span>
+              <span className="text-sm text-muted-foreground">{t('invitationsPage.yourRole')}</span>
               <Badge variant="secondary">
                 {roleDisplayNames[invitation?.role || ""] || invitation?.role}
               </Badge>
             </div>
             {invitation?.company.location && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Location</span>
+                <span className="text-sm text-muted-foreground">{t('invitationsPage.location')}</span>
                 <span className="flex items-center gap-1 text-sm">
                   <MapPin className="h-3 w-3" />
                   {invitation.company.location}
@@ -315,7 +322,7 @@ function InvitationContent() {
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Expires</span>
+              <span className="text-sm text-muted-foreground">{t('invitationsPage.expires')}</span>
               <span className="flex items-center gap-1 text-sm">
                 <Clock className="h-3 w-3" />
                 {invitation?.expiresAt 
@@ -339,13 +346,13 @@ function InvitationContent() {
                 <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-amber-800 dark:text-amber-200">
-                    Email Mismatch
+                    {t('invitationsPage.emailMismatch')}
                   </p>
                   <p className="text-amber-700 dark:text-amber-300 mt-1">
-                    This invitation was sent to <strong>{invitation?.email}</strong>, but you&apos;re signed in as <strong>{user?.primaryEmailAddress?.emailAddress}</strong>.
+                    {t('invitationsPage.emailMismatchDesc1')} <strong>{invitation?.email}</strong>, {t('invitationsPage.emailMismatchDesc2')} <strong>{user?.primaryEmailAddress?.emailAddress}</strong>.
                   </p>
                   <p className="text-amber-700 dark:text-amber-300 mt-2">
-                    Please sign in with the correct email to accept this invitation.
+                    {t('invitationsPage.emailMismatchDesc3')}
                   </p>
                 </div>
               </div>
@@ -361,7 +368,7 @@ function InvitationContent() {
               disabled={accepting || declining}
             >
               {declining && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Decline
+              {t('invitationsPage.decline')}
             </Button>
             <Button
               className="flex-1 gap-2"
@@ -373,14 +380,14 @@ function InvitationContent() {
               ) : (
                 <UserPlus className="h-4 w-4" />
               )}
-              Accept Invitation
+              {t('invitationsPage.acceptInvitation')}
               {!accepting && <ArrowRight className="h-4 w-4" />}
             </Button>
           </div>
 
           {/* Help Text */}
           <p className="text-xs text-center text-muted-foreground">
-            By accepting, you&apos;ll join {invitation?.company.name}&apos;s team and be able to access their company dashboard.
+            {t('invitationsPage.acceptDisclaimer', { company: invitation?.company.name || '' })}
           </p>
         </CardContent>
       </Card>

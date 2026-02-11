@@ -242,7 +242,7 @@ export function LeaderboardTabContent() {
                                                         <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground flex items-center gap-1.5 text-xs sm:text-sm">
                                 <ThumbsUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                <span className="font-medium">Endorsed</span>
+                                <span className="font-medium">{t('leaderboard.endorsed')}</span>
                               </span>
                                                             <div className="flex items-center gap-1">
                                                                 {student.highlyRecommended > 0 && (
@@ -288,7 +288,7 @@ export function LeaderboardTabContent() {
                     <div className="space-y-4 sm:space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-                            <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">Other Top Students</h3>
+                            <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">{t('leaderboard.otherTopStudents')}</h3>
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
                         </div>
 
@@ -323,19 +323,19 @@ export function LeaderboardTabContent() {
 
                                                 <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm flex-1">
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
-                                                        <p className="text-muted-foreground text-xs font-medium">Skill Score</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">{t('leaderboard.skillScore')}</p>
                                                         <p className="font-bold text-sm sm:text-base">{student.avgSkillScore}%</p>
                                                     </div>
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
-                                                        <p className="text-muted-foreground text-xs font-medium">Experiences</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">{t('leaderboard.experiences')}</p>
                                                         <p className="font-semibold text-sm sm:text-base">{student.totalExperiences}</p>
                                                     </div>
                                                     <div className="space-y-1 bg-muted/30 rounded-lg p-2 sm:p-3">
-                                                        <p className="text-muted-foreground text-xs font-medium">Companies</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">{t('leaderboard.companies')}</p>
                                                         <p className="font-semibold text-sm sm:text-base">{student.uniqueCompanies}</p>
                                                     </div>
                                                     <div className="space-y-1 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
-                                                        <p className="text-muted-foreground text-xs font-medium">Pro Score</p>
+                                                        <p className="text-muted-foreground text-xs font-medium">{t('leaderboard.proScore')}</p>
                                                         <p className="font-bold text-primary text-sm sm:text-base">{student.professionalScore}</p>
                                                     </div>
                                                 </div>

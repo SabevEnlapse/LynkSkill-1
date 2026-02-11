@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface CoverLetterModalProps {
     open: boolean
@@ -45,6 +46,7 @@ export function CoverLetterModal({
     requiresCoverLetter,
     onSubmit,
 }: CoverLetterModalProps) {
+    const { t } = useTranslation()
     const [coverLetter, setCoverLetter] = useState("")
     const [isGenerating, setIsGenerating] = useState(false)
     const [generatedByAI, setGeneratedByAI] = useState(false)
@@ -73,10 +75,10 @@ export function CoverLetterModal({
             setCoverLetter(data.coverLetter)
             setGeneratedByAI(true)
             setView("write")
-            toast.success("Cover letter generated! Feel free to edit it.")
+            toast.success(t("coverLetter.generatedSuccess"))
         } catch (error) {
             console.error("AI generation error:", error)
-            toast.error(error instanceof Error ? error.message : "Failed to generate cover letter")
+            toast.error(error instanceof Error ? error.message : t("coverLetter.failedToGenerate"))
         } finally {
             setIsGenerating(false)
         }
@@ -84,12 +86,12 @@ export function CoverLetterModal({
 
     const handleSubmit = async () => {
         if (requiresCoverLetter && !coverLetter.trim()) {
-            toast.error("A cover letter is required for this application")
+            toast.error(t("coverLetter.requiredError"))
             return
         }
 
         if (isOverLimit) {
-            toast.error("Cover letter exceeds the character limit")
+            toast.error(t("coverLetter.exceedsLimit"))
             return
         }
 
@@ -131,10 +133,10 @@ export function CoverLetterModal({
                             </div>
                             <div>
                                 <DialogTitle className="text-xl font-bold text-white">
-                                    Cover Letter
+                                    {t("coverLetter.title")}
                                 </DialogTitle>
                                 <DialogDescription className="text-white/70 mt-1 text-sm">
-                                    For <span className="text-white/90 font-medium">{internshipTitle}</span> at{" "}
+                                    {t("coverLetter.forPosition")} <span className="text-white/90 font-medium">{internshipTitle}</span> {t("coverLetter.atCompany")}{" "}
                                     <span className="text-white/90 font-medium">{companyName}</span>
                                 </DialogDescription>
                             </div>
@@ -142,7 +144,7 @@ export function CoverLetterModal({
                         <div className="flex items-center gap-2">
                             {requiresCoverLetter && (
                                 <Badge className="bg-amber-500/20 text-amber-200 border-amber-400/30 text-xs">
-                                    Required
+                                    {t("coverLetter.required")}
                                 </Badge>
                             )}
                             <button
@@ -168,7 +170,7 @@ export function CoverLetterModal({
                             )}
                         >
                             <Edit3 className="h-3.5 w-3.5" />
-                            Write
+                            {t("coverLetter.write")}
                         </button>
                         <button
                             onClick={() => setView("preview")}
@@ -182,7 +184,7 @@ export function CoverLetterModal({
                             )}
                         >
                             <Eye className="h-3.5 w-3.5" />
-                            Preview
+                            {t("coverLetter.preview")}
                         </button>
                     </div>
 
@@ -196,12 +198,12 @@ export function CoverLetterModal({
                         {isGenerating ? (
                             <>
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                Generating...
+                                {t("coverLetter.generating")}
                             </>
                         ) : (
                             <>
                                 <Wand2 className="h-3.5 w-3.5" />
-                                Generate with AI
+                                {t("coverLetter.generateWithAI")}
                             </>
                         )}
                     </Button>
@@ -219,7 +221,7 @@ export function CoverLetterModal({
                                         // Still mark as AI-generated even if edited
                                     }
                                 }}
-                                placeholder="Write your cover letter here... Introduce yourself, explain why you're interested in this role, and highlight your relevant skills and experiences."
+                                placeholder={t("coverLetter.placeholder")}
                                 className={cn(
                                     "min-h-[280px] rounded-xl border-2 resize-none transition-colors text-sm leading-relaxed",
                                     isOverLimit
@@ -234,19 +236,19 @@ export function CoverLetterModal({
                                     {generatedByAI && (
                                         <Badge variant="secondary" className="gap-1 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
                                             <Sparkles className="h-3 w-3" />
-                                            AI-Generated
+                                            {t("coverLetter.aiGenerated")}
                                         </Badge>
                                     )}
                                 </div>
                                 <span className={cn(isOverLimit && "text-red-500 font-medium")}>
-                                    {characterCount.toLocaleString()} / {maxChars.toLocaleString()} characters
+                                    {characterCount.toLocaleString()} / {maxChars.toLocaleString()} {t("coverLetter.characters")}
                                 </span>
                             </div>
 
                             {isOverLimit && (
                                 <div className="flex items-center gap-2 text-sm text-red-500 bg-red-500/10 p-3 rounded-xl">
                                     <AlertCircle className="h-4 w-4 shrink-0" />
-                                    <span>Cover letter exceeds the {maxChars.toLocaleString()} character limit. Please shorten it.</span>
+                                    <span>{t("coverLetter.exceedsLimitLong").replace("{max}", maxChars.toLocaleString())}</span>
                                 </div>
                             )}
                         </div>
@@ -264,7 +266,7 @@ export function CoverLetterModal({
                             {generatedByAI && (
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-xl">
                                     <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                                    <span>This cover letter was AI-generated. The company will be able to see this indicator.</span>
+                                    <span>{t("coverLetter.aiIndicator")}</span>
                                 </div>
                             )}
                         </div>
@@ -281,7 +283,7 @@ export function CoverLetterModal({
                                 className="text-muted-foreground hover:text-foreground gap-2"
                             >
                                 <SkipForward className="h-4 w-4" />
-                                Skip
+                                {t("coverLetter.skip")}
                             </Button>
                         )}
                     </div>
@@ -291,7 +293,7 @@ export function CoverLetterModal({
                             onClick={handleClose}
                             className="rounded-xl"
                         >
-                            Cancel
+                            {t("internshipDetails.cancel")}
                         </Button>
                         <Button
                             onClick={handleSubmit}
@@ -301,12 +303,12 @@ export function CoverLetterModal({
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Submitting...
+                                    {t("coverLetter.submitting")}
                                 </>
                             ) : (
                                 <>
                                     <Send className="h-4 w-4" />
-                                    {coverLetter.trim() ? "Apply with Cover Letter" : "Apply Without Cover Letter"}
+                                    {coverLetter.trim() ? t("coverLetter.applyWithCoverLetter") : t("coverLetter.applyWithoutCoverLetter")}
                                 </>
                             )}
                         </Button>

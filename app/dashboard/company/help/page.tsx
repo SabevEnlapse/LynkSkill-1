@@ -23,94 +23,101 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-const faqCategories = [
+function useCompanyFaqCategories() {
+    const { t } = useTranslation()
+    return [
     {
         id: "getting-started",
-        label: "Getting Started",
+        label: t('help.gettingStarted'),
         icon: Rocket,
         questions: [
             {
-                q: "How do I set up my company profile?",
-                a: "After signing up, complete the onboarding process to set up your company profile. Add your company logo, description, industry, and team members."
+                q: t('help.companyFaq.howSetUpProfile'),
+                a: t('help.companyFaq.howSetUpProfileAnswer')
             },
             {
-                q: "How do I invite team members?",
-                a: "Go to Settings > Team and click 'Invite Member'. Enter their email and assign a role (Admin, Recruiter, or Viewer). They'll receive an invitation email."
+                q: t('help.companyFaq.howInviteTeam'),
+                a: t('help.companyFaq.howInviteTeamAnswer')
             },
             {
-                q: "What is the AI Mode?",
-                a: "AI Mode is our intelligent assistant that helps you find matching candidates and streamline your recruitment process. It analyzes candidate profiles to provide personalized recommendations."
+                q: t('help.companyFaq.whatIsAiMode'),
+                a: t('help.companyFaq.whatIsAiModeAnswer')
             },
         ]
     },
     {
         id: "internships",
-        label: "Internships",
+        label: t('help.internships'),
         icon: Briefcase,
         questions: [
             {
-                q: "How do I create an internship listing?",
-                a: "Go to Internships > Create New. Fill in the job title, description, requirements, duration, and compensation details. You can also add assignments that candidates must complete."
+                q: t('help.companyFaq.howCreateListing'),
+                a: t('help.companyFaq.howCreateListingAnswer')
             },
             {
-                q: "How do I edit or close an internship?",
-                a: "Navigate to your internship listing and click 'Edit' to make changes or 'Close Applications' to stop accepting new applications."
+                q: t('help.companyFaq.howEditClose'),
+                a: t('help.companyFaq.howEditCloseAnswer')
             },
             {
-                q: "Can I feature my internship listing?",
-                a: "Featured listings are coming soon! Contact support to learn about early access to premium placement options."
+                q: t('help.companyFaq.canFeatureListing'),
+                a: t('help.companyFaq.canFeatureListingAnswer')
             },
         ]
     },
     {
         id: "candidates",
-        label: "Candidates",
+        label: t('help.candidates'),
         icon: Star,
         questions: [
             {
-                q: "How do I review applications?",
-                a: "Go to Applications to see all submissions. You can filter by status, sort by date, and click on any application to view the candidate's full portfolio."
+                q: t('help.companyFaq.howReviewApps'),
+                a: t('help.companyFaq.howReviewAppsAnswer')
             },
             {
-                q: "How do I contact candidates?",
-                a: "Use the built-in messaging system to communicate with candidates. You can also schedule interviews directly through the platform."
+                q: t('help.companyFaq.howContactCandidates'),
+                a: t('help.companyFaq.howContactCandidatesAnswer')
             },
             {
-                q: "How do I approve or reject applications?",
-                a: "Open an application and use the 'Approve' or 'Reject' buttons. You can also add notes for your team and send automated notifications to candidates."
+                q: t('help.companyFaq.howApproveReject'),
+                a: t('help.companyFaq.howApproveRejectAnswer')
             },
         ]
     },
     {
         id: "account",
-        label: "Account & Billing",
+        label: t('help.accountAndBilling'),
         icon: Shield,
         questions: [
             {
-                q: "How do I update company information?",
-                a: "Go to Settings > Company Profile to update your company name, logo, description, and other details."
+                q: t('help.companyFaq.howUpdateCompanyInfo'),
+                a: t('help.companyFaq.howUpdateCompanyInfoAnswer')
             },
             {
-                q: "How do I manage team permissions?",
-                a: "Navigate to Settings > Team to view and modify team member roles and permissions. Admins have full access, Recruiters can manage applications, and Viewers have read-only access."
+                q: t('help.companyFaq.howManagePermissions'),
+                a: t('help.companyFaq.howManagePermissionsAnswer')
             },
             {
-                q: "How do I delete my company account?",
-                a: "Contact our support team to request account deletion. We'll process your request within 30 days and remove all company data."
+                q: t('help.companyFaq.howDeleteAccount'),
+                a: t('help.companyFaq.howDeleteAccountAnswer')
             },
         ]
     },
 ]
 
-const quickLinks = [
-    { label: "Student Guide", href: "/dashboard/company/help/student-guide", icon: GraduationCap },
-    { label: "Company Guide", href: "/dashboard/company/help/company-guide", icon: Building2 },
-    { label: "Privacy Policy", href: "/privacy", icon: Shield },
-    { label: "Terms of Service", href: "/terms", icon: FileQuestion },
+function useQuickLinks() {
+    const { t } = useTranslation()
+    return [
+    { label: t('help.studentGuide'), href: "/dashboard/company/help/student-guide", icon: GraduationCap },
+    { label: t('help.companyGuide'), href: "/dashboard/company/help/company-guide", icon: Building2 },
+    { label: t('help.privacyPolicy'), href: "/privacy", icon: Shield },
+    { label: t('help.termsOfService'), href: "/terms", icon: FileQuestion },
 ]
+}
 
 export default function HelpPage() {
     const { t } = useTranslation()
+    const faqCategories = useCompanyFaqCategories()
+    const quickLinks = useQuickLinks()
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState("getting-started")
     const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" })
@@ -144,14 +151,14 @@ export default function HelpPage() {
                 throw new Error(data.error || 'Failed to send message')
             }
             
-            toast.success("Message sent!", {
-                description: "We'll get back to you within 24 hours.",
+            toast.success(t('help.messageSent'), {
+                description: t('help.weWillGetBack'),
             })
             
             setContactForm({ name: "", email: "", message: "" })
         } catch (error) {
-            toast.error("Failed to send message", {
-                description: error instanceof Error ? error.message : "Please try again later.",
+            toast.error(t('help.failedToSendMessage'), {
+                description: error instanceof Error ? error.message : t('help.pleaseTryAgainLater'),
             })
         } finally {
             setIsSending(false)
@@ -176,7 +183,7 @@ export default function HelpPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold">{t('navigation.help')}</h1>
-                            <p className="text-muted-foreground">Find answers and get support</p>
+                            <p className="text-muted-foreground">{t('help.findAnswersAndSupport')}</p>
                         </div>
                     </div>
 
@@ -184,7 +191,7 @@ export default function HelpPage() {
                     <div className="relative max-w-xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                            placeholder="Search for help..."
+                            placeholder={t('help.searchForHelp')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-12 h-12 rounded-xl bg-background/50 border-border/50 focus:border-violet-500/50"
@@ -226,7 +233,7 @@ export default function HelpPage() {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Book className="h-4 w-4 text-violet-500" />
-                                FAQ Categories
+                                {t('help.faqCategories')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-2">
@@ -263,10 +270,10 @@ export default function HelpPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileQuestion className="h-5 w-5 text-violet-500" />
-                                Frequently Asked Questions
+                                {t('help.frequentlyAskedQuestions')}
                             </CardTitle>
                             <CardDescription>
-                                Find quick answers to common questions
+                                {t('help.findQuickAnswers')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -308,8 +315,8 @@ export default function HelpPage() {
                                         ) : (
                                             <div className="text-center py-12">
                                                 <FileQuestion className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-muted-foreground">No results found for &ldquo;{searchQuery}&rdquo;</p>
-                                                <p className="text-sm text-muted-foreground mt-1">Try different keywords or contact support</p>
+                                                <p className="text-muted-foreground">{t('help.noResultsFor', { query: searchQuery })}</p>
+                                                <p className="text-sm text-muted-foreground mt-1">{t('help.tryDifferentKeywords')}</p>
                                             </div>
                                         )}
                                     </motion.div>
@@ -352,19 +359,19 @@ export default function HelpPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <MessageCircle className="h-5 w-5 text-violet-500" />
-                                Contact Support
+                                {t('help.contactSupport')}
                             </CardTitle>
                             <CardDescription>
-                                Can&apos;t find what you&apos;re looking for? Send us a message.
+                                {t('help.cantFindAnswer')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-6 md:grid-cols-2">
                                 <form onSubmit={handleContactSubmit} className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Name</label>
+                                        <label className="text-sm font-medium">{t('help.name')}</label>
                                         <Input
-                                            placeholder="Your name"
+                                            placeholder={t('help.yourName')}
                                             value={contactForm.name}
                                             onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
                                             required
@@ -372,7 +379,7 @@ export default function HelpPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Email</label>
+                                        <label className="text-sm font-medium">{t('help.email')}</label>
                                         <Input
                                             type="email"
                                             placeholder="your@email.com"
@@ -383,9 +390,9 @@ export default function HelpPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Message</label>
+                                        <label className="text-sm font-medium">{t('help.message')}</label>
                                         <Textarea
-                                            placeholder="How can we help you?"
+                                            placeholder={t('help.howCanWeHelp')}
                                             value={contactForm.message}
                                             onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
                                             required
@@ -398,11 +405,11 @@ export default function HelpPage() {
                                         disabled={isSending}
                                     >
                                         {isSending ? (
-                                            <>Sending...</>
+                                            <>{t('help.sending')}</>
                                         ) : (
                                             <>
                                                 <Send className="h-4 w-4 mr-2" />
-                                                Send Message
+                                                {t('help.sendMessage')}
                                             </>
                                         )}
                                     </Button>
@@ -412,28 +419,28 @@ export default function HelpPage() {
                                     <div className="p-4 rounded-xl bg-muted/50">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Mail className="h-4 w-4 text-violet-500" />
-                                            Email Us
+                                            {t('help.emailUs')}
                                         </h4>
                                         <a href="mailto:lynkskillweb@gmail.com" className="text-sm text-violet-600 dark:text-violet-400 hover:underline">lynkskillweb@gmail.com</a>
-                                        <p className="text-xs text-muted-foreground mt-1">We respond within 24 hours</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{t('help.weRespondWithin24h')}</p>
                                     </div>
 
                                     <div className="p-4 rounded-xl bg-muted/50">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Phone className="h-4 w-4 text-violet-500" />
-                                            Call Us
+                                            {t('help.callUs')}
                                         </h4>
                                         <a href="tel:+359885031865" className="text-sm text-violet-600 dark:text-violet-400 hover:underline">+359 885 031 865</a>
-                                        <p className="text-xs text-muted-foreground mt-1">Mon-Fri, 9:00 AM - 6:00 PM EET</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{t('help.monFri9to6')}</p>
                                     </div>
 
                                     <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Sparkles className="h-4 w-4 text-violet-500" />
-                                            Pro Tip
+                                            {t('help.proTip')}
                                         </h4>
                                         <p className="text-sm text-muted-foreground">
-                                            Use AI Mode to get instant answers to common questions about recruitment and candidate management!
+                                            {t('help.proTipCompany')}
                                         </p>
                                     </div>
                                 </div>

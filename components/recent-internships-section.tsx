@@ -73,19 +73,19 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                     toast.error(data.error)
                     return
                 }
-                toast.success(`"${internship.title}" deleted successfully`)
+                toast.success(t("recentInternships.deletedSuccessfully", { title: internship.title }))
                 window.dispatchEvent(new CustomEvent("internshipDeleted", { detail: internship.id }))
                 mutateInternships()
             } catch (err) {
                 console.error("Delete internship error:", err)
-                toast.error("Failed to delete internship")
+                toast.error(t("recentInternships.failedToDelete"))
             } finally {
                 setPendingDeleteId(null)
             }
         } else {
             // First click - show confirmation toast
             setPendingDeleteId(internship.id)
-            toast.warning(`Click delete again to confirm removing "${internship.title}"`, {
+            toast.warning(t("recentInternships.confirmDelete", { title: internship.title }), {
                 duration: 3000,
                 onDismiss: () => setPendingDeleteId(null),
                 onAutoClose: () => setPendingDeleteId(null),
@@ -291,7 +291,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                     </div>
                     <h3 className="font-semibold text-lg mb-1">{t('internships.noInternshipsFound')}</h3>
                     <p className="text-sm text-muted-foreground max-w-sm">
-                        Try adjusting your filters or check back later for new opportunities
+                        {t("recentInternships.tryAdjustingFilters")}
                     </p>
                 </div>
             ) : (
@@ -353,7 +353,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                 {isExpired && userType === "Company" && (
                                                     <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/90 text-white text-xs font-semibold shadow-lg">
                                                         <AlertTriangle className="h-3 w-3" />
-                                                        Expired
+                                                        {t("recentInternships.expired")}
                                                     </div>
                                                 )}
                                                 {/* Subtle gradient overlay on hover */}
@@ -424,29 +424,29 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                                 <span className="text-xs font-medium text-foreground">
                                                                     {item.applicationStart 
                                                                         ? new Date(item.applicationStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                                                                        : "Now"
+                                                                        : t("recentInternships.now")
                                                                     }
                                                                 </span>
                                                                 <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
                                                                 <span className={`text-xs font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}>
                                                                     {item.applicationEnd 
                                                                         ? new Date(item.applicationEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                                                                        : "Open"
+                                                                        : t("recentInternships.open")
                                                                     }
                                                                 </span>
                                                                 {isExpired ? (
                                                                     <span className="ml-auto text-[10px] font-semibold text-red-500 flex items-center gap-1">
                                                                         <AlertTriangle className="h-3 w-3" />
-                                                                        Closed
+                                                                        {t("recentInternships.closed")}
                                                                     </span>
                                                                 ) : daysLeft !== null && daysLeft <= 3 && daysLeft > 0 ? (
                                                                     <span className="ml-auto text-[10px] font-semibold text-amber-500 flex items-center gap-1">
                                                                         <Clock className="h-3 w-3" />
-                                                                        {daysLeft}d left
+                                                                        {t("recentInternships.daysLeft", { days: daysLeft ?? 0 })}
                                                                     </span>
                                                                 ) : daysLeft !== null && daysLeft > 3 ? (
                                                                     <span className="ml-auto text-[10px] font-medium text-muted-foreground">
-                                                                        {daysLeft}d left
+                                                                        {t("recentInternships.daysLeft", { days: daysLeft })}
                                                                     </span>
                                                                 ) : null}
                                                             </div>
@@ -472,20 +472,20 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                     <div className="grid grid-cols-3 gap-2">
                                                         <div className="p-2.5 rounded-lg bg-muted/50 text-center">
                                                             <MapPin className="h-4 w-4 text-purple-500 mx-auto mb-1" />
-                                                            <p className="text-xs font-medium text-foreground truncate">{item.location || "Remote"}</p>
-                                                            <p className="text-[10px] text-muted-foreground">Location</p>
+                                                            <p className="text-xs font-medium text-foreground truncate">{item.location || t("internships.remote")}</p>
+                                                            <p className="text-[10px] text-muted-foreground">{t("internships.location")}</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-muted/50 text-center">
                                                             <DollarSign className="h-4 w-4 text-blue-500 mx-auto mb-1" />
-                                                            <p className="text-xs font-medium text-foreground">{item.paid ? `$${item.salary || "Paid"}` : "Unpaid"}</p>
-                                                            <p className="text-[10px] text-muted-foreground">Salary</p>
+                                                            <p className="text-xs font-medium text-foreground">{item.paid ? `$${item.salary || t("common.paid")}` : t("common.unpaid")}</p>
+                                                            <p className="text-[10px] text-muted-foreground">{t("internships.salary")}</p>
                                                         </div>
                                                         <div className={`p-2.5 rounded-lg text-center ${isExpired ? "bg-red-500/10" : "bg-muted/50"}`}>
                                                             <Clock className={`h-4 w-4 mx-auto mb-1 ${isExpired ? "text-red-500" : "text-emerald-500"}`} />
                                                             <p className={`text-xs font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}>
-                                                                {isExpired ? "Expired" : daysLeft !== null ? `${daysLeft}d` : "Open"}
+                                                                {isExpired ? t("recentInternships.expired") : daysLeft !== null ? t("recentInternships.daysShort", { days: daysLeft }) : t("recentInternships.open")}
                                                             </p>
-                                                            <p className="text-[10px] text-muted-foreground">{isExpired ? "Closed" : "Time Left"}</p>
+                                                            <p className="text-[10px] text-muted-foreground">{isExpired ? t("recentInternships.closed") : t("recentInternships.timeLeft")}</p>
                                                         </div>
                                                     </div>
 
@@ -519,9 +519,9 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                                     app.status === "REJECTED" ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30" :
                                                                     "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                                                                 }`}>
-                                                                    {app.status === "PENDING" && <><Clock3 className="h-4 w-4" />Applied</>}
-                                                                    {app.status === "APPROVED" && <><CheckCircle2 className="h-4 w-4" />Approved</>}
-                                                                    {app.status === "REJECTED" && <><XCircle className="h-4 w-4" />Not Selected</>}
+                                                                    {app.status === "PENDING" && <><Clock3 className="h-4 w-4" />{t("common.applied")}</>}
+                                                                    {app.status === "APPROVED" && <><CheckCircle2 className="h-4 w-4" />{t("common.approved")}</>}
+                                                                    {app.status === "REJECTED" && <><XCircle className="h-4 w-4" />{t("recentInternships.notSelected")}</>}
                                                                 </div>
                                                             ) : (
                                                                 <ApplyButton
@@ -554,7 +554,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                             }}
                                                         >
                                                             <Settings className="h-4 w-4" />
-                                                            Manage
+                                                            {t("recentInternships.manage")}
                                                             <ArrowRight className="h-4 w-4 ml-auto" />
                                                         </Button>
                                                     )}
@@ -581,7 +581,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                 className="gap-2 rounded-xl px-6 py-5 border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-500/10 shadow-lg"
                             >
                                 <Sparkles className="h-4 w-4 text-purple-500" />
-                                Load More
+                                {t("common.loadMore")}
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </div>

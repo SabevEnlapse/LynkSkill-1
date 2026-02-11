@@ -23,6 +23,7 @@ import {
     X,
 } from "lucide-react"
 import {format} from "date-fns"
+import { useTranslation } from "@/lib/i18n"
 
 interface CompanyRating {
     avgRating: number
@@ -82,7 +83,7 @@ function SkeletonLine({
 
 function SkeletonLoader() {
     return (
-        <div className="p-6 space-y-6" aria-busy="true" aria-label="Loading internship details">
+        <div className="p-6 space-y-6" aria-busy="true" aria-label="Loading">
             {/* Header */}
             <div className="flex items-start gap-4">
                 <SkeletonLine width="w-14" height="h-14" rounded="rounded-xl" />
@@ -114,23 +115,25 @@ function SkeletonLoader() {
 }
 
 function ErrorState({onRetry}: { onRetry: () => void }) {
+    const { t } = useTranslation()
     return (
         <div className="flex flex-col items-center justify-center py-12 px-6 space-y-4">
             <div className="p-3 rounded-full bg-destructive/10">
                 <AlertCircle className="h-8 w-8 text-destructive"/>
             </div>
             <div className="text-center space-y-1">
-                <h3 className="font-semibold text-foreground">Failed to Load</h3>
-                <p className="text-sm text-muted-foreground">There was an error loading the internship details.</p>
+                <h3 className="font-semibold text-foreground">{t("internshipDetails.failedToLoad")}</h3>
+                <p className="text-sm text-muted-foreground">{t("internshipDetails.errorLoading")}</p>
             </div>
             <Button onClick={onRetry} variant="outline" size="sm">
-                Try Again
+                {t("internshipDetails.tryAgain")}
             </Button>
         </div>
     )
 }
 
 export default function InternshipDetailsModal({internshipId, open, onClose}: InternshipDetailsModalProps) {
+    const { t } = useTranslation()
     const [internship, setInternship] = useState<Internship | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
@@ -245,16 +248,16 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                     <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 space-y-1">
                                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                                             <DollarSign className="h-3 w-3 text-purple-500"/>
-                                            Compensation
+                                            {t("internshipDetails.compensation")}
                                         </p>
                                         <p className="font-bold text-sm">
-                                            {internship.paid && internship.salary ? `$${internship.salary}/mo` : "Volunteer"}
+                                            {internship.paid && internship.salary ? `$${internship.salary}/mo` : t("internshipDetails.volunteer")}
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 space-y-1">
                                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                                             <Calendar className="h-3 w-3 text-blue-500"/>
-                                            Opens
+                                            {t("internshipDetails.opens")}
                                         </p>
                                         <p className="font-bold text-sm">
                                             {format(new Date(internship.applicationStart), "MMM d")}
@@ -263,7 +266,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                     <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500/10 to-teal-500/10 border border-cyan-500/20 space-y-1">
                                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                                             <Clock className="h-3 w-3 text-cyan-500"/>
-                                            Deadline
+                                            {t("internshipDetails.deadline")}
                                         </p>
                                         <p className="font-bold text-sm">
                                             {format(new Date(internship.applicationEnd), "MMM d")}
@@ -273,7 +276,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                         <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 space-y-1">
                                             <p className="text-xs text-muted-foreground flex items-center gap-1">
                                                 <Star className="h-3 w-3 text-amber-500"/>
-                                                Rating
+                                                {t("internshipDetails.rating")}
                                             </p>
                                             <p className="font-bold text-sm flex items-center gap-1">
                                                 <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500"/>
@@ -288,7 +291,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                         <Building2 className="h-4 w-4 text-purple-500"/>
-                                        About the Company
+                                        {t("internshipDetails.aboutCompany")}
                                     </h3>
                                     <div className="p-4 rounded-xl border bg-gradient-to-br from-card to-card/80 hover:border-purple-500/30 transition-colors">
                                         <p className="text-sm text-muted-foreground leading-relaxed">
@@ -307,7 +310,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                                     className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-400 transition-colors"
                                                 >
                                                     <Globe className="h-3 w-3"/>
-                                                    Visit Website
+                                                    {t("internshipDetails.visitWebsite")}
                                                     <ExternalLink className="h-3 w-3"/>
                                                 </a>
                                             )}
@@ -321,7 +324,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-blue-500"/>
-                                        About This Role
+                                        {t("internshipDetails.aboutThisRole")}
                                     </h3>
                                     <div className="p-4 rounded-xl bg-muted/30 border">
                                         <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
@@ -335,7 +338,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                     <div className="space-y-3">
                                         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                             <GraduationCap className="h-4 w-4 text-cyan-500"/>
-                                            Qualifications
+                                            {t("internshipDetails.qualifications")}
                                         </h3>
                                         <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500/5 to-blue-500/5 border border-cyan-500/20">
                                             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -350,7 +353,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                     <div className="space-y-3">
                                         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                             <ClipboardList className="h-4 w-4 text-amber-500"/>
-                                            Test Assignment
+                                            {t("internshipDetails.testAssignment")}
                                         </h3>
                                         <div className="p-4 rounded-xl border bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
                                             <h4 className="font-semibold text-sm mb-2">{internship.testAssignmentTitle}</h4>
@@ -361,7 +364,7 @@ export default function InternshipDetailsModal({internshipId, open, onClose}: In
                                                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-amber-500/20">
                                                     <Clock className="h-4 w-4 text-amber-600"/>
                                                     <span className="text-sm text-amber-600 dark:text-amber-400">
-                                                        Due by {format(new Date(internship.testAssignmentDueDate), "MMM d, yyyy")}
+                                                        {t("internshipDetails.dueBy")} {format(new Date(internship.testAssignmentDueDate), "MMM d, yyyy")}
                                                     </span>
                                                 </div>
                                             )}

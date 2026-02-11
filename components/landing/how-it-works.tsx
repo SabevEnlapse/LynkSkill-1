@@ -2,39 +2,39 @@
 
 import { motion } from "framer-motion"
 import { Users, Target, MessageSquare, Trophy } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
-const steps = [
+const stepsMeta = [
     {
         number: "01",
-        title: "Create Your Profile",
-        description:
-            "Sign up in seconds and build your professional profile. Add your skills, education, projects, and what you're looking for.",
+        key: "step1",
         icon: <Users className="w-8 h-8 md:w-10 md:h-10" />,
     },
     {
         number: "02",
-        title: "Discover Opportunities",
-        description:
-            "Browse through curated internships from verified companies. Our smart matching system shows you the best fits first.",
+        key: "step2",
         icon: <Target className="w-8 h-8 md:w-10 md:h-10" />,
     },
     {
         number: "03",
-        title: "Apply & Connect",
-        description:
-            "Apply with one click using your LynkSkill portfolio. Chat directly with employers and schedule interviews seamlessly.",
+        key: "step3",
         icon: <MessageSquare className="w-8 h-8 md:w-10 md:h-10" />,
     },
     {
         number: "04",
-        title: "Grow Your Career",
-        description:
-            "Land your dream internship, share your experiences, and build a portfolio that opens doors to future opportunities.",
+        key: "step4",
         icon: <Trophy className="w-8 h-8 md:w-10 md:h-10" />,
     },
 ]
 
 export function HowItWorks() {
+    const { t } = useTranslation()
+
+    const steps = stepsMeta.map((s) => ({
+        ...s,
+        title: t(`landing.howItWorks.${s.key}.title`),
+        description: t(`landing.howItWorks.${s.key}.description`),
+    }))
     return (
         <section className="relative py-16 md:py-32 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
@@ -46,11 +46,11 @@ export function HowItWorks() {
                     className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20"
                 >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                        How It{" "}
-                        <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Works</span>
+                        {t("landing.howItWorks.title")}{" "}
+                        <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{t("landing.howItWorks.titleHighlight")}</span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Getting started with LynkSkill is simple. Follow these four steps to launch your career journey.
+                        {t("landing.howItWorks.subtitle")}
                     </p>
                 </motion.div>
 

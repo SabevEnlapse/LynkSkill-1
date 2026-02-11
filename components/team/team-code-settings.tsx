@@ -36,6 +36,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 interface TeamCodeSettingsProps {
     companyId: string
@@ -63,6 +64,7 @@ interface JoinHistoryItem {
 }
 
 export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
+    const { t } = useTranslation()
     const [codeData, setCodeData] = React.useState<CodeData | null>(null)
     const [loading, setLoading] = React.useState(true)
     const [showCode, setShowCode] = React.useState(false)
@@ -84,7 +86,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
             setMaxMembers(data.maxTeamMembers?.toString() || "")
         } catch (error) {
             console.error("Error fetching code:", error)
-            toast.error("Failed to load invitation code")
+            toast.error(t("team.failedToLoadCode"))
         } finally {
             setLoading(false)
         }
@@ -99,9 +101,9 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
         if (!codeData) return
         try {
             await navigator.clipboard.writeText(codeData.code)
-            toast.success("Invitation code copied to clipboard!")
+            toast.success(t("team.codeCopied"))
         } catch {
-            toast.error("Failed to copy code")
+            toast.error(t("team.copyCodeFailed"))
         }
     }
 
@@ -117,14 +119,14 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
             
             if (!res.ok) {
                 const data = await res.json()
-                throw new Error(data.error || "Failed to regenerate code")
+                throw new Error(data.error || t("team.failedToRegenerateCode"))
             }
             
             const data = await res.json()
             setCodeData(prev => prev ? { ...prev, code: data.code, maskedCode: data.maskedCode } : null)
-            toast.success("Invitation code regenerated successfully!")
+            toast.success(t("team.codeRegeneratedSuccess"))
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to regenerate code")
+            toast.error(error instanceof Error ? error.message : t("team.failedToRegenerateCode"))
         } finally {
             setRegenerating(false)
         }
@@ -141,12 +143,12 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                 body: JSON.stringify({ companyId, enabled: !codeData.enabled }),
             })
             
-            if (!res.ok) throw new Error("Failed to update settings")
+            if (!res.ok) throw new Error(t("team.failedToUpdateSettings"))
             
             setCodeData(prev => prev ? { ...prev, enabled: !prev.enabled } : null)
-            toast.success(codeData.enabled ? "Invitation code disabled" : "Invitation code enabled")
+            toast.success(codeData.enabled ? t("team.codeDisabled") : t("team.codeEnabled"))
         } catch {
-            toast.error("Failed to update settings")
+            toast.error(t("team.failedToUpdateSettings"))
         } finally {
             setUpdatingSettings(false)
         }
@@ -165,13 +167,13 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                 }),
             })
             
-            if (!res.ok) throw new Error("Failed to update settings")
+            if (!res.ok) throw new Error(t("team.failedToUpdateSettings"))
             
             await fetchCodeData()
-            toast.success("Settings updated successfully")
+            toast.success(t("team.settingsUpdated"))
             setShowSettingsDialog(false)
         } catch {
-            toast.error("Failed to update settings")
+            toast.error(t("team.failedToUpdateSettings"))
         } finally {
             setUpdatingSettings(false)
         }
@@ -186,7 +188,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
             const data = await res.json()
             setHistory(data.history)
         } catch {
-            toast.error("Failed to load join history")
+            toast.error(t("team.failedToLoadHistory"))
         } finally {
             setHistoryLoading(false)
         }
@@ -206,7 +208,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
         return (
             <Card className="border border-border/50">
                 <CardContent className="flex items-center justify-center py-12">
-                    <p className="text-muted-foreground">Failed to load invitation code</p>
+                    <p className="text-muted-foreground">{t("team.failedToLoadCode")}</p>
                 </CardContent>
             </Card>
         )
@@ -222,9 +224,9 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                             <Users className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <CardTitle className="text-lg">Team Invitation Code</CardTitle>
+                            <CardTitle className="text-lg">{t("team.teamInvitationCode")}</CardTitle>
                             <CardDescription>
-                                Share this unique code with team members to join your company
+                                {t("team.shareCodeDescription")}
                             </CardDescription>
                         </div>
                     </div>
@@ -234,7 +236,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-medium" 
                             : "bg-muted text-muted-foreground"}
                     >
-                        {codeData.enabled ? "✓ Active" : "Disabled"}
+                        {codeData.enabled ? `✓ ${t("team.active")}` : t("team.disabled")}
                     </Badge>
                 </div>
             </CardHeader>
@@ -259,7 +261,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {showCode ? "Hide code" : "Show code"}
+                                        {showCode ? t("team.hideCode") : t("team.showCode")}
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -275,7 +277,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                                             <Copy className="w-4 h-4" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Copy code</TooltipContent>
+                                    <TooltipContent>{t("team.copyCode")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
@@ -285,36 +287,36 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-3.5 bg-violet-50/50 dark:bg-violet-950/20 rounded-xl border border-violet-200/30 dark:border-violet-800/20">
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Used</div>
-                        <div className="text-lg font-bold text-violet-700 dark:text-violet-300">{codeData.usageCount} times</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("team.used")}</div>
+                        <div className="text-lg font-bold text-violet-700 dark:text-violet-300">{codeData.usageCount} {t("team.times")}</div>
                     </div>
                     <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200/30 dark:border-blue-800/20">
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Team Size</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("team.teamSize")}</div>
                         <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
                             {codeData.currentMembers}
                             {codeData.maxTeamMembers && <span className="text-muted-foreground font-normal"> / {codeData.maxTeamMembers}</span>}
                         </div>
                     </div>
                     <div className="p-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/30 dark:border-emerald-800/20">
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Status</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("team.status")}</div>
                         <div className="text-lg font-bold flex items-center gap-1.5">
                             {codeData.enabled ? (
                                 <>
                                     <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                    <span className="text-emerald-600 dark:text-emerald-400">Active</span>
+                                    <span className="text-emerald-600 dark:text-emerald-400">{t("team.active")}</span>
                                 </>
                             ) : (
                                 <>
                                     <AlertCircle className="w-4 h-4 text-amber-500" />
-                                    <span className="text-amber-600 dark:text-amber-400">Disabled</span>
+                                    <span className="text-amber-600 dark:text-amber-400">{t("team.disabled")}</span>
                                 </>
                             )}
                         </div>
                     </div>
                     <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200/30 dark:border-indigo-800/20">
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Expiration</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("team.expiration")}</div>
                         <div className="text-lg font-bold text-indigo-700 dark:text-indigo-300">
-                            {codeData.timeUntilExpiry || "Never"}
+                            {codeData.timeUntilExpiry || t("team.never")}
                         </div>
                     </div>
                 </div>
@@ -332,7 +334,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                         ) : (
                             <RefreshCw className="w-4 h-4 mr-2" />
                         )}
-                        Regenerate Code
+                        {t("team.regenerateCode")}
                     </Button>
 
                     <div className="flex items-center gap-2">
@@ -342,7 +344,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                             disabled={updatingSettings}
                         />
                         <Label className="text-sm">
-                            {codeData.enabled ? "Enabled" : "Disabled"}
+                            {codeData.enabled ? t("team.enabled") : t("team.disabled")}
                         </Label>
                     </div>
 
@@ -357,14 +359,14 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                                 }}
                             >
                                 <History className="w-4 h-4 mr-2" />
-                                View History
+                                {t("team.viewHistory")}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
                             <DialogHeader>
-                                <DialogTitle>Join History</DialogTitle>
+                                <DialogTitle>{t("team.joinHistory")}</DialogTitle>
                                 <DialogDescription>
-                                    Team members who joined using the invitation code
+                                    {t("team.joinHistoryDescription")}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="max-h-64 overflow-y-auto">
@@ -374,7 +376,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                                     </div>
                                 ) : history.length === 0 ? (
                                     <p className="text-center text-muted-foreground py-8">
-                                        No one has joined using this code yet
+                                        {t("team.noOneJoinedYet")}
                                     </p>
                                 ) : (
                                     <div className="space-y-3">
@@ -400,38 +402,38 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                         <DialogTrigger asChild>
                             <Button variant="ghost" size="sm">
                                 <Settings className="w-4 h-4 mr-2" />
-                                Settings
+                                {t("team.settings")}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Code Settings</DialogTitle>
+                                <DialogTitle>{t("team.codeSettings")}</DialogTitle>
                                 <DialogDescription>
-                                    Configure invitation code settings
+                                    {t("team.configureCodeSettings")}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="maxMembers">Maximum Team Members</Label>
+                                    <Label htmlFor="maxMembers">{t("team.maximumTeamMembers")}</Label>
                                     <Input
                                         id="maxMembers"
                                         type="number"
-                                        placeholder="No limit"
+                                        placeholder={t("team.noLimit")}
                                         value={maxMembers}
                                         onChange={(e) => setMaxMembers(e.target.value)}
                                     />
                                     <p className="text-sm text-muted-foreground">
-                                        Leave empty for unlimited team size
+                                        {t("team.leaveEmptyForUnlimited")}
                                     </p>
                                 </div>
                             </div>
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
-                                    Cancel
+                                    {t("team.cancel")}
                                 </Button>
                                 <Button onClick={updateMaxMembers} disabled={updatingSettings}>
                                     {updatingSettings && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                    Save Changes
+                                    {t("team.saveChanges")}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -443,9 +445,9 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
                     <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 rounded-xl">
                         <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Code Disabled</p>
+                            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("team.codeDisabledTitle")}</p>
                             <p className="text-sm text-amber-600/80 dark:text-amber-500/80 mt-0.5">
-                                Team members cannot join using this code until it&apos;s enabled again.
+                                {t("team.codeDisabledDescription")}
                             </p>
                         </div>
                     </div>

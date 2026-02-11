@@ -1,8 +1,13 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ShieldCheck, Database, Eye, Lock, Cookie, AlertCircle } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 export default function PrivacyPage() {
+    const { t } = useTranslation()
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-6">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -14,27 +19,22 @@ export default function PrivacyPage() {
                             <ShieldCheck className="w-12 h-12 text-primary" />
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-balance">Privacy Policy – LynkSkill</h1>
-                    <p className="text-muted-foreground text-lg">Last updated: January 2025</p>
+                    <h1 className="text-4xl font-bold text-balance">{t("privacy.title")}</h1>
+                    <p className="text-muted-foreground text-lg">{t("privacy.lastUpdated")}</p>
                 </div>
 
                 {/* Introduction */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Privacy for LynkSkill Users</CardTitle>
+                        <CardTitle>{t("privacy.introTitle")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill is a national digital platform designed to connect students, companies, 
-                            organizations, and schools across Bulgaria. Because we process educational, 
-                            organizational, and potentially sensitive personal information, your privacy 
-                            and data protection are foundational responsibilities for us.
+                            {t("privacy.introText1")}
                         </p>
 
                         <p className="text-muted-foreground">
-                            This Privacy Policy explains how LynkSkill collects, uses, stores, and safeguards 
-                            your personal information when you create an account, browse the platform, 
-                            apply for internships, publish opportunities, or interact with any LynkSkill service.
+                            {t("privacy.introText2")}
                         </p>
                     </CardContent>
                 </Card>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Database className="w-5 h-5" />
-                            Information We Collect
+                            {t("privacy.informationWeCollect")}
                         </CardTitle>
                     </CardHeader>
 
@@ -52,17 +52,16 @@ export default function PrivacyPage() {
 
                         {/* Personal Information */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-3">Personal Information</h3>
+                            <h3 className="font-semibold text-lg mb-3">{t("privacy.personalInformation")}</h3>
                             <p className="text-muted-foreground mb-3">
-                                We collect information you voluntarily provide during registration or when 
-                                completing your profile. Examples include:
+                                {t("privacy.personalInformationText")}
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                <li>Name and email address</li>
-                                <li>Account credentials (via Clerk authentication)</li>
-                                <li>Profile information (skills, bio, school, interests)</li>
-                                <li>Company details for business accounts</li>
-                                <li>Date of birth for student verification</li>
+                                <li>{t("privacy.personalInfo1")}</li>
+                                <li>{t("privacy.personalInfo2")}</li>
+                                <li>{t("privacy.personalInfo3")}</li>
+                                <li>{t("privacy.personalInfo4")}</li>
+                                <li>{t("privacy.personalInfo5")}</li>
                             </ul>
                         </div>
 
@@ -70,15 +69,15 @@ export default function PrivacyPage() {
 
                         {/* Automatic data */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-3">Automatically Collected Information</h3>
+                            <h3 className="font-semibold text-lg mb-3">{t("privacy.automaticInformation")}</h3>
                             <p className="text-muted-foreground mb-3">
-                                When you access LynkSkill, the system may automatically collect:
+                                {t("privacy.automaticInformationText")}
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                <li>Device and browser information</li>
-                                <li>IP address and approximate location</li>
-                                <li>Usage behavior and analytics</li>
-                                <li>Cookie data and tracking identifiers</li>
+                                <li>{t("privacy.autoInfo1")}</li>
+                                <li>{t("privacy.autoInfo2")}</li>
+                                <li>{t("privacy.autoInfo3")}</li>
+                                <li>{t("privacy.autoInfo4")}</li>
                             </ul>
                         </div>
                     </CardContent>
@@ -89,21 +88,21 @@ export default function PrivacyPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Eye className="w-5 h-5" />
-                            How We Use Your Information
+                            {t("privacy.howWeUseInfo")}
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill uses collected data to:
+                            {t("privacy.howWeUseInfoText")}
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                            <li>Create and authenticate user accounts</li>
-                            <li>Match students with relevant internships and opportunities</li>
-                            <li>Enable companies and schools to manage and publish listings</li>
-                            <li>Improve platform performance and user experience</li>
-                            <li>Ensure safety and prevent abuse or fraud</li>
-                            <li>Comply with Bulgarian and EU legal obligations (GDPR)</li>
+                            <li>{t("privacy.useInfo1")}</li>
+                            <li>{t("privacy.useInfo2")}</li>
+                            <li>{t("privacy.useInfo3")}</li>
+                            <li>{t("privacy.useInfo4")}</li>
+                            <li>{t("privacy.useInfo5")}</li>
+                            <li>{t("privacy.useInfo6")}</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -113,21 +112,18 @@ export default function PrivacyPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Lock className="w-5 h-5" />
-                            Data Security
+                            {t("privacy.dataSecurity")}
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill implements security measures such as encryption, access control, 
-                            secure authentication through Clerk, and continuous monitoring. However, 
-                            no method of transmission on the internet is fully secure.
+                            {t("privacy.dataSecurityText")}
                         </p>
 
                         <div className="bg-muted/50 p-4 rounded-lg border border-border">
                             <p className="text-sm">
-                                <strong>Includes:</strong> encrypted data storage, TLS protection, 
-                                security audits, and role-based access controls.
+                                <strong>{t("privacy.includes")}:</strong> {t("privacy.dataSecurityIncludes")}
                             </p>
                         </div>
                     </CardContent>
@@ -138,20 +134,20 @@ export default function PrivacyPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Cookie className="w-5 h-5" />
-                            Cookies and Tracking
+                            {t("privacy.cookiesAndTracking")}
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill uses cookies for authentication, session management, and analytics.
+                            {t("privacy.cookiesText")}
                         </p>
 
-                        <h3 className="font-semibold mb-2">Types of cookies:</h3>
+                        <h3 className="font-semibold mb-2">{t("privacy.typesOfCookies")}:</h3>
                         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                            <li><strong>Essential:</strong> login and session management</li>
-                            <li><strong>Analytics:</strong> usage measurement</li>
-                            <li><strong>Preference:</strong> theme and UI settings</li>
+                            <li><strong>{t("privacy.essential")}:</strong> {t("privacy.essentialDesc")}</li>
+                            <li><strong>{t("privacy.analytics")}:</strong> {t("privacy.analyticsDesc")}</li>
+                            <li><strong>{t("privacy.preference")}:</strong> {t("privacy.preferenceDesc")}</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -159,17 +155,17 @@ export default function PrivacyPage() {
                 {/* GDPR */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Your GDPR Rights</CardTitle>
+                        <CardTitle>{t("privacy.gdprRights")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground">EEA users have the following rights:</p>
+                        <p className="text-muted-foreground">{t("privacy.gdprRightsText")}</p>
                         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                            <li>Right to access</li>
-                            <li>Right to rectification</li>
-                            <li>Right to erasure</li>
-                            <li>Right to restrict processing</li>
-                            <li>Right to data portability</li>
-                            <li>Right to object</li>
+                            <li>{t("privacy.rightAccess")}</li>
+                            <li>{t("privacy.rightRectification")}</li>
+                            <li>{t("privacy.rightErasure")}</li>
+                            <li>{t("privacy.rightRestrict")}</li>
+                            <li>{t("privacy.rightPortability")}</li>
+                            <li>{t("privacy.rightObject")}</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -179,13 +175,13 @@ export default function PrivacyPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <AlertCircle className="w-5 h-5" />
-                            Contact Us
+                            {t("privacy.contactUs")}
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent>
                         <p className="text-muted-foreground">
-                            For privacy-related questions, please contact our team at{" "}
+                            {t("privacy.contactUsText")}{" "}
                             <a href="mailto:lynkskillweb@gmail.com" className="text-primary underline underline-offset-4">
                                 lynkskillweb@gmail.com
                             </a>

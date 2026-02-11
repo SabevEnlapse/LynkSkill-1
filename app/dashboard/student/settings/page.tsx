@@ -51,16 +51,16 @@ export default function SettingsPage() {
     const [showResetDialog, setShowResetDialog] = useState(false)
 
     const tabs = [
-        { id: "notifications" as const, label: "Notifications", icon: Bell },
-        { id: "privacy" as const, label: "Privacy", icon: Eye },
-        { id: "appearance" as const, label: "Appearance", icon: Palette },
-        { id: "language" as const, label: "Language", icon: Globe },
+        { id: "notifications" as const, label: t('settings.notifications'), icon: Bell },
+        { id: "privacy" as const, label: t('settings.privacy'), icon: Eye },
+        { id: "appearance" as const, label: t('settings.appearance'), icon: Palette },
+        { id: "language" as const, label: t('settings.language'), icon: Globe },
     ]
 
     const handleToggle = (key: keyof typeof settings, value: boolean) => {
         updateSetting(key, value)
-        toast.success("Setting updated", {
-            description: `${key} has been ${value ? "enabled" : "disabled"}`,
+        toast.success(t('settings.settingUpdated'), {
+            description: value ? t('settings.settingEnabled', { key }) : t('settings.settingDisabled', { key }),
             duration: 2000,
         })
     }
@@ -68,8 +68,8 @@ export default function SettingsPage() {
     const handleReset = () => {
         resetSettings()
         setShowResetDialog(false)
-        toast.success("Settings reset", {
-            description: "All settings have been restored to defaults",
+        toast.success(t('settings.settingsReset'), {
+            description: t('settings.allSettingsRestoredToDefaults'),
         })
     }
 
@@ -91,7 +91,7 @@ export default function SettingsPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold">{t('navigation.settings')}</h1>
-                            <p className="text-muted-foreground/70">Manage your account preferences</p>
+                            <p className="text-muted-foreground/70">{t('settings.manageAccountPreferences')}</p>
                         </div>
                     </div>
                     
@@ -99,7 +99,7 @@ export default function SettingsPage() {
                         {isSaving && (
                             <Badge variant="secondary" className="gap-1">
                                 <Loader2 className="h-3 w-3 animate-spin" />
-                                Saving...
+                                {t('settings.saving')}
                             </Badge>
                         )}
                         <Tooltip>
@@ -111,11 +111,11 @@ export default function SettingsPage() {
                                     className="hidden md:flex gap-2"
                                 >
                                     <RotateCcw className="h-4 w-4" />
-                                    Reset All
+                                    {t('settings.resetAll')}
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Reset all settings to defaults</p>
+                                <p>{t('settings.resetAllSettingsToDefaults')}</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
@@ -153,7 +153,7 @@ export default function SettingsPage() {
                                             </button>
                                         </TooltipTrigger>
                                         <TooltipContent side="right">
-                                            <p>Manage {tab.label.toLowerCase()} settings</p>
+                                            <p>{t('settings.manageSettings', { tab: tab.label.toLowerCase() })}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 ))}
@@ -170,26 +170,26 @@ export default function SettingsPage() {
                 >
                     <AnimatePresence mode="wait">
                         {activeTab === "notifications" && (
-                            <SettingsSection key="notifications" title="Notification Preferences" description="Choose what notifications you receive">
+                            <SettingsSection key="notifications" title={t('settings.notificationPreferences')} description={t('settings.chooseNotifications')}>
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Mail className="h-4 w-4 text-purple-400" />
-                                            Email Notifications
+                                            {t('settings.emailNotifications')}
                                         </h3>
                                         
                                         <SettingToggle
-                                            label="Email Notifications"
-                                            description="Receive important updates via email"
-                                            tooltip="Get notified about new opportunities and updates"
+                                            label={t('settings.emailNotifications')}
+                                            description={t('settings.receiveUpdatesViaEmail')}
+                                            tooltip={t('settings.getNotifiedAboutNewOpportunities')}
                                             checked={settings.emailNotifications}
                                             onChange={(v) => handleToggle("emailNotifications", v)}
                                         />
                                         
                                         <SettingToggle
-                                            label="Weekly Digest"
-                                            description="Get a weekly summary of your activity"
-                                            tooltip="Receive a summary email every week"
+                                            label={t('settings.weeklyDigest')}
+                                            description={t('settings.weeklyDigestDescStudent')}
+                                            tooltip={t('settings.receiveWeeklySummary')}
                                             checked={settings.weeklyDigest}
                                             onChange={(v) => handleToggle("weeklyDigest", v)}
                                         />
@@ -200,29 +200,29 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Bell className="h-4 w-4 text-purple-400" />
-                                            Push Notifications
+                                            {t('settings.pushNotifications')}
                                         </h3>
                                         
                                         <SettingToggle
-                                            label="Push Notifications"
-                                            description="Receive real-time push notifications"
-                                            tooltip="Get instant notifications in your browser"
+                                            label={t('settings.pushNotifications')}
+                                            description={t('settings.receiveRealTimePush')}
+                                            tooltip={t('settings.getInstantNotifications')}
                                             checked={settings.pushNotifications}
                                             onChange={(v) => handleToggle("pushNotifications", v)}
                                         />
                                         
                                         <SettingToggle
-                                            label="Application Updates"
-                                            description="Get notified about application status changes"
-                                            tooltip="Know when your applications are reviewed"
+                                            label={t('settings.applicationUpdates')}
+                                            description={t('settings.getNotifiedAboutStatusChanges')}
+                                            tooltip={t('settings.knowWhenApplicationsReviewed')}
                                             checked={settings.applicationUpdates}
                                             onChange={(v) => handleToggle("applicationUpdates", v)}
                                         />
                                         
                                         <SettingToggle
-                                            label="Interview Reminders"
-                                            description="Receive reminders for upcoming interviews"
-                                            tooltip="Never miss an interview with timely reminders"
+                                            label={t('settings.interviewReminders')}
+                                            description={t('settings.receiveRemindersForUpcoming')}
+                                            tooltip={t('settings.neverMissInterview')}
                                             checked={settings.interviewReminders}
                                             onChange={(v) => handleToggle("interviewReminders", v)}
                                         />
@@ -232,20 +232,20 @@ export default function SettingsPage() {
                         )}
 
                         {activeTab === "privacy" && (
-                            <SettingsSection key="privacy" title="Privacy Settings" description="Control who can see your information">
+                            <SettingsSection key="privacy" title={t('settings.privacySettings')} description={t('settings.controlWhoCanSeeInfo')}>
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Eye className="h-4 w-4 text-purple-400" />
-                                            Profile Visibility
+                                            {t('settings.profileVisibility')}
                                         </h3>
                                         
                                         <RadioGroup 
                                             value={settings.profileVisibility}
                                             onValueChange={(v) => {
                                                 updateSetting("profileVisibility", v as "public" | "private" | "connections")
-                                                toast.success("Visibility updated", {
-                                                    description: `Your profile is now ${v}`,
+                                                toast.success(t('settings.visibilityUpdated'), {
+                                                    description: t('settings.profileNow', { visibility: v }),
                                                 })
                                             }}
                                             className="space-y-3"
@@ -262,9 +262,9 @@ export default function SettingsPage() {
                                                         <Label htmlFor="public" className="flex-1 cursor-pointer">
                                                             <div className="flex items-center gap-2">
                                                                 <Eye className="h-4 w-4 text-purple-400" />
-                                                                <span className="font-medium text-foreground/80">Public</span>
+                                                                <span className="font-medium text-foreground/80">{t('settings.public')}</span>
                                                             </div>
-                                                            <p className="text-sm text-muted-foreground/60 mt-1">Anyone can view your profile and portfolio</p>
+                                                            <p className="text-sm text-muted-foreground/60 mt-1">{t('settings.anyoneCanViewProfile')}</p>
                                                         </Label>
                                                         {settings.profileVisibility === "public" && (
                                                             <Check className="h-5 w-5 text-purple-500" />
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p>Your profile is visible to everyone</p>
+                                                    <p>{t('settings.yourProfileVisibleToEveryone')}</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                             <Tooltip>
@@ -287,9 +287,9 @@ export default function SettingsPage() {
                                                         <Label htmlFor="connections" className="flex-1 cursor-pointer">
                                                             <div className="flex items-center gap-2">
                                                                 <Users className="h-4 w-4 text-blue-400" />
-                                                                <span className="font-medium text-foreground/80">Connections Only</span>
+                                                                <span className="font-medium text-foreground/80">{t('settings.connectionsOnly')}</span>
                                                             </div>
-                                                            <p className="text-sm text-muted-foreground/60 mt-1">Only companies you&apos;ve connected with can view</p>
+                                                            <p className="text-sm text-muted-foreground/60 mt-1">{t('settings.onlyConnectedCompaniesCanView')}</p>
                                                         </Label>
                                                         {settings.profileVisibility === "connections" && (
                                                             <Check className="h-5 w-5 text-purple-500" />
@@ -297,7 +297,7 @@ export default function SettingsPage() {
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p>Only your connections can see your profile</p>
+                                                    <p>{t('settings.onlyConnectionsCanSeeProfile')}</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                             <Tooltip>
@@ -312,9 +312,9 @@ export default function SettingsPage() {
                                                         <Label htmlFor="private" className="flex-1 cursor-pointer">
                                                             <div className="flex items-center gap-2">
                                                                 <EyeOff className="h-4 w-4 text-gray-400" />
-                                                                <span className="font-medium text-foreground/80">Private</span>
+                                                                <span className="font-medium text-foreground/80">{t('settings.private')}</span>
                                                             </div>
-                                                            <p className="text-sm text-muted-foreground/60 mt-1">Only you can view your profile</p>
+                                                            <p className="text-sm text-muted-foreground/60 mt-1">{t('settings.onlyYouCanViewProfile')}</p>
                                                         </Label>
                                                         {settings.profileVisibility === "private" && (
                                                             <Check className="h-5 w-5 text-purple-500" />
@@ -322,7 +322,7 @@ export default function SettingsPage() {
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p>Your profile is hidden from everyone</p>
+                                                    <p>{t('settings.profileHiddenFromEveryone')}</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </RadioGroup>
@@ -333,21 +333,21 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <MessageSquare className="h-4 w-4 text-purple-400" />
-                                            Communication
+                                            {t('settings.communication')}
                                         </h3>
                                         
                                         <SettingToggle
-                                            label="Show Online Status"
-                                            description="Let others see when you're online"
-                                            tooltip="Display a green dot when you're active"
+                                            label={t('settings.showOnlineStatus')}
+                                            description={t('settings.letOthersSeeOnline')}
+                                            tooltip={t('settings.displayGreenDot')}
                                             checked={settings.showOnlineStatus}
                                             onChange={(v) => handleToggle("showOnlineStatus", v)}
                                         />
                                         
                                         <SettingToggle
-                                            label="Allow Messages"
-                                            description="Allow companies to send you direct messages"
-                                            tooltip="Receive messages from potential employers"
+                                            label={t('settings.allowMessages')}
+                                            description={t('settings.allowCompaniesDirectMessages')}
+                                            tooltip={t('settings.receiveMessagesFromEmployers')}
                                             checked={settings.allowMessages}
                                             onChange={(v) => handleToggle("allowMessages", v)}
                                         />
@@ -357,19 +357,19 @@ export default function SettingsPage() {
                         )}
 
                         {activeTab === "appearance" && (
-                            <SettingsSection key="appearance" title="Appearance" description="Customize how LynkSkill looks">
+                            <SettingsSection key="appearance" title={t('settings.appearance')} description={t('settings.customizeLook')}>
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Palette className="h-4 w-4 text-purple-400" />
-                                            Theme
+                                            {t('settings.theme')}
                                         </h3>
                                         
                                         <div className="grid grid-cols-3 gap-3">
                                             {[
-                                                { value: "light", label: "Light", icon: Sun, tooltip: "Use light theme" },
-                                                { value: "dark", label: "Dark", icon: Moon, tooltip: "Use dark theme" },
-                                                { value: "system", label: "System", icon: Monitor, tooltip: "Follow system preference" },
+                                                { value: "light", label: t('settings.light'), icon: Sun, tooltip: t('settings.useLightTheme') },
+                                                { value: "dark", label: t('settings.dark'), icon: Moon, tooltip: t('settings.useDarkTheme') },
+                                                { value: "system", label: t('settings.system'), icon: Monitor, tooltip: t('settings.followSystemPreference') },
                                             ].map((option) => (
                                                 <Tooltip key={option.value}>
                                                     <TooltipTrigger asChild>
@@ -405,21 +405,21 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Sparkles className="h-4 w-4 text-purple-400" />
-                                            Display
+                                            {t('settings.display')}
                                         </h3>
                                         
                                         <SettingToggle
-                                            label="Compact View"
-                                            description="Use a more compact layout"
-                                            tooltip="Reduce spacing for more content"
+                                            label={t('settings.compactView')}
+                                            description={t('settings.useCompactLayout')}
+                                            tooltip={t('settings.reduceSpacing')}
                                             checked={settings.compactView}
                                             onChange={(v) => handleToggle("compactView", v)}
                                         />
                                         
                                         <SettingToggle
-                                            label="Animations"
-                                            description="Enable smooth animations and transitions"
-                                            tooltip="Turn off for better performance"
+                                            label={t('settings.animations')}
+                                            description={t('settings.enableAnimations')}
+                                            tooltip={t('settings.turnOffForPerformance')}
                                             checked={settings.animationsEnabled}
                                             onChange={(v) => handleToggle("animationsEnabled", v)}
                                         />
@@ -429,12 +429,12 @@ export default function SettingsPage() {
                         )}
 
                         {activeTab === "language" && (
-                            <SettingsSection key="language" title="Language & Region" description="Set your language and regional preferences">
+                            <SettingsSection key="language" title={t('settings.languageAndRegion')} description={t('settings.setLanguagePreferences')}>
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Globe className="h-4 w-4 text-purple-400" />
-                                            Language
+                                            {t('settings.language')}
                                         </h3>
                                         
                                         <Tooltip>
@@ -442,12 +442,12 @@ export default function SettingsPage() {
                                                 <div>
                                                     <Select value={locale} onValueChange={(v) => {
                                                         setLocale(v as "en" | "bg")
-                                                        toast.success("Language updated", {
-                                                            description: v === "en" ? "Language set to English" : "Езикът е зададен на български",
+                                                        toast.success(t('settings.languageUpdated'), {
+                                                            description: v === "en" ? t('settings.languageSetToEnglish') : "Езикът е зададен на български",
                                                         })
                                                     }}>
                                                         <SelectTrigger className="w-full h-12 rounded-xl">
-                                                            <SelectValue placeholder="Select language" />
+                                                            <SelectValue placeholder={t('settings.selectLanguage')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="en">
@@ -467,7 +467,7 @@ export default function SettingsPage() {
                                                 </div>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>Change the interface language</p>
+                                                <p>{t('settings.changeInterfaceLanguage')}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -477,7 +477,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-medium flex items-center gap-2 text-foreground/60">
                                             <Clock className="h-4 w-4 text-purple-400" />
-                                            Time Zone
+                                            {t('settings.timeZone')}
                                         </h3>
                                         
                                         <Tooltip>
@@ -485,7 +485,7 @@ export default function SettingsPage() {
                                                 <div>
                                                     <Select defaultValue="Europe/Sofia">
                                                         <SelectTrigger className="w-full h-12 rounded-xl">
-                                                            <SelectValue placeholder="Select timezone" />
+                                                            <SelectValue placeholder={t('settings.selectTimezone')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="Europe/Sofia">(UTC+02:00) Sofia</SelectItem>
@@ -498,7 +498,7 @@ export default function SettingsPage() {
                                                 </div>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>Set your local timezone</p>
+                                                <p>{t('settings.setLocalTimezone')}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -513,17 +513,17 @@ export default function SettingsPage() {
             <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Reset All Settings</DialogTitle>
+                        <DialogTitle>{t('settings.resetAllSettings')}</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to reset all settings to their default values? This action cannot be undone.
+                            {t('settings.resetAllSettingsConfirm')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowResetDialog(false)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button variant="destructive" onClick={handleReset}>
-                            Reset All
+                            {t('settings.resetAllButton')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

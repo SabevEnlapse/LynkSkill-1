@@ -59,6 +59,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 import {ModeToggle} from "@/components/theme-toggle";
 import {SignedIn} from "@clerk/nextjs";
 import {LynkSkillUserButton} from "@/components/clerk-theme";
@@ -434,6 +435,7 @@ const sidebarItems = [
 ]
 
 export default function StudentDashboardPage() {
+    const { t } = useTranslation()
     const [, setProgress] = useState(0)
     const [notifications,] = useState(5)
     const [activeTab, setActiveTab] = useState("home")
@@ -489,8 +491,8 @@ export default function StudentDashboardPage() {
                                 <Wand2 className="size-5" />
                             </div>
                             <div>
-                                <h2 className="font-semibold">Designali</h2>
-                                <p className="text-xs text-foreground">Creative Suite</p>
+                                <h2 className="font-semibold">{t("dashboardStudent.designali")}</h2>
+                                <p className="text-xs text-foreground">{t("dashboardStudent.creativeSuite")}</p>
                             </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
@@ -501,7 +503,7 @@ export default function StudentDashboardPage() {
                     <div className="px-3 py-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
-                            <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+                            <Input type="search" placeholder={t("dashboardStudent.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
                         </div>
                     </div>
 
@@ -562,12 +564,12 @@ export default function StudentDashboardPage() {
                         <div className="space-y-1">
                             <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                                 <Settings className="h-5 w-5" />
-                                <span>Settings</span>
+                                <span>{t("dashboardStudent.settings")}</span>
                             </button>
                             <SignedIn>
                                 <div className="flex items-center justify-start gap-3 sm:gap-4 ml-2">
                                     <LynkSkillUserButton />
-                                    <div className="text-foreground text-sm font-semibold">User</div>
+                                    <div className="text-foreground text-sm font-semibold">{t("dashboardStudent.user")}</div>
                                 </div>
                             </SignedIn>
                         </div>
@@ -589,8 +591,8 @@ export default function StudentDashboardPage() {
                                 <Wand2 className="size-5" />
                             </div>
                             <div>
-                                <h2 className="font-semibold text-foreground">Student</h2>
-                                <p className="text-xs text-foreground">Creative Suite</p>
+                                <h2 className="font-semibold text-foreground">{t("dashboardStudent.student")}</h2>
+                                <p className="text-xs text-foreground">{t("dashboardStudent.creativeSuite")}</p>
                             </div>
                         </div>
                     </div>
@@ -598,7 +600,7 @@ export default function StudentDashboardPage() {
                     <div className="px-3 py-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
-                            <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+                            <Input type="search" placeholder={t("dashboardStudent.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
                         </div>
                     </div>
 
@@ -659,12 +661,12 @@ export default function StudentDashboardPage() {
                         <div className="space-y-1 text-foreground">
                             <button className="flex w-full text-foreground items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                                 <Settings className="h-5 w-5" />
-                                <span>Settings</span>
+                                <span>{t("dashboardStudent.settings")}</span>
                             </button>
                             <SignedIn>
                                 <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 ml-2">
                                     <LynkSkillUserButton />
-                                    <div className="text-foreground text-sm font-medium">User</div>
+                                    <div className="text-foreground text-sm font-medium">{t("dashboardStudent.user")}</div>
                                 </div>
                             </SignedIn>
                         </div>
@@ -682,7 +684,7 @@ export default function StudentDashboardPage() {
                         <PanelLeft className="h-5 w-5 text-foreground" />
                     </Button>
                     <div className="flex flex-1 items-center justify-between">
-                        <h1 className="text-xl font-semibold text-foreground">Designali Creative</h1>
+                        <h1 className="text-xl font-semibold text-foreground">{t("dashboardStudent.designaliCreative")}</h1>
                         <div className="flex items-center text-foreground gap-3">
                             <TooltipProvider>
                                 <Tooltip>
@@ -691,7 +693,7 @@ export default function StudentDashboardPage() {
                                             <Cloud className="h-5 w-5" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Cloud Storage</TooltipContent>
+                                    <TooltipContent>{t("dashboardStudent.cloudStorage")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -702,7 +704,7 @@ export default function StudentDashboardPage() {
                                             <MessageSquare className="h-5 w-5" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Messages</TooltipContent>
+                                    <TooltipContent>{t("dashboardStudent.messages")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -718,7 +720,7 @@ export default function StudentDashboardPage() {
                                             )}
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Notifications</TooltipContent>
+                                    <TooltipContent>{t("dashboardStudent.notifications")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -729,7 +731,7 @@ export default function StudentDashboardPage() {
                                             <ModeToggle/>
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Toggle theme</TooltipContent>
+                                    <TooltipContent>{t("dashboardStudent.toggleTheme")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -747,29 +749,29 @@ export default function StudentDashboardPage() {
                         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
                                 <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Home
+                                    {t("dashboardStudent.home")}
                                 </TabsTrigger>
                                 <TabsTrigger value="apps" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Apps
+                                    {t("dashboardStudent.apps")}
                                 </TabsTrigger>
                                 <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Files
+                                    {t("dashboardStudent.files")}
                                 </TabsTrigger>
                                 <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Projects
+                                    {t("dashboardStudent.projects")}
                                 </TabsTrigger>
                                 <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Learn
+                                    {t("dashboardStudent.learn")}
                                 </TabsTrigger>
                             </TabsList>
                             <div className="hidden md:flex gap-2">
                                 <Button variant="outline" className="rounded-2xl">
                                     <Download className="mr-2 h-4 w-4" />
-                                    Install App
+                                    {t("dashboardStudent.installApp")}
                                 </Button>
                                 <Button className="rounded-2xl">
                                     <Plus className="mr-2 h-4 w-4" />
-                                    New Project
+                                    {t("dashboardStudent.newProject")}
                                 </Button>
                             </div>
                         </div>
@@ -792,21 +794,20 @@ export default function StudentDashboardPage() {
                                         >
                                             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-4">
-                                                    <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Premium</Badge>
-                                                    <h2 className="text-3xl font-bold">Welcome to DesignAli Creative Suite</h2>
+                                                    <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">{t("dashboardStudent.premium")}</Badge>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardStudent.welcomeTitle")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Unleash your creativity with our comprehensive suite of professional design tools and
-                                                        resources.
+                                                        {t("dashboardStudent.welcomeSubtitle")}
                                                     </p>
                                                     <div className="flex flex-wrap gap-3">
                                                         <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
-                                                            Explore Plans
+                                                            {t("dashboardStudent.explorePlans")}
                                                         </Button>
                                                         <Button
                                                             variant="outline"
                                                             className="rounded-2xl bg-transparent border-white text-white hover:bg-white/10"
                                                         >
-                                                            Take a Tour
+                                                            {t("dashboardStudent.takeATour")}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -829,9 +830,9 @@ export default function StudentDashboardPage() {
 
                                     <section className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-semibold">Recent Apps</h2>
+                                            <h2 className="text-2xl font-semibold">{t("dashboardStudent.recentApps")}</h2>
                                             <Button variant="ghost" className="rounded-2xl">
-                                                View All
+                                                {t("dashboardStudent.viewAll")}
                                             </Button>
                                         </div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -856,7 +857,7 @@ export default function StudentDashboardPage() {
                                                             </CardContent>
                                                             <CardFooter>
                                                                 <Button variant="secondary" className="w-full rounded-2xl">
-                                                                    Open
+                                                                    {t("dashboardStudent.open")}
                                                                 </Button>
                                                             </CardFooter>
                                                         </Card>
@@ -868,9 +869,9 @@ export default function StudentDashboardPage() {
                                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                         <section className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h2 className="text-2xl font-semibold">Recent Files</h2>
+                                                <h2 className="text-2xl font-semibold">{t("dashboardStudent.recentFiles")}</h2>
                                                 <Button variant="ghost" className="rounded-2xl">
-                                                    View All
+                                                    {t("dashboardStudent.viewAll")}
                                                 </Button>
                                             </div>
                                             <div className="rounded-3xl border">

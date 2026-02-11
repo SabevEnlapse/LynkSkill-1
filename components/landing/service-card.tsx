@@ -4,6 +4,7 @@ import type React from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { CheckCircle2 } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 interface ServiceCardProps {
     icon: React.ReactNode
@@ -15,6 +16,7 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ icon, title, description, features, linkyPosition, gradient }: ServiceCardProps) {
+    const { t } = useTranslation()
     return (
         <div
             className={`grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center ${linkyPosition === "left" ? "" : ""}`}
@@ -33,7 +35,7 @@ export function ServiceCard({ icon, title, description, features, linkyPosition,
                     >
                         <Image
                             src="/linky-mascot.png"
-                            alt="Linky mascot"
+                            alt={t("landing.services.linkyMascotAlt")}
                             width={400}
                             height={400}
                             className="w-full h-auto drop-shadow-2xl"

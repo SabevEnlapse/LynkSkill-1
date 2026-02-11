@@ -33,6 +33,7 @@ import { Progress } from "@/components/ui/progress"
 import { useAIMode } from "@/lib/ai-mode-context"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 export function StudentAIChat() {
     const { 
@@ -56,6 +57,7 @@ export function StudentAIChat() {
         deleteSession
     } = useAIMode()
 
+    const { t } = useTranslation()
     const [inputValue, setInputValue] = useState("")
     const [isTyping, setIsTyping] = useState(false)
     const [isSavingPortfolio, setIsSavingPortfolio] = useState(false)
@@ -114,7 +116,7 @@ export function StudentAIChat() {
             if (data.error) {
                 addMessage({
                     role: "assistant",
-                    content: "I apologize, but I encountered an issue. Please try again or rephrase your message."
+                    content: t("ai.errorEncountered")
                 })
             } else {
                 addMessage({
@@ -140,7 +142,7 @@ export function StudentAIChat() {
             console.error("AI Mode error:", error)
             addMessage({
                 role: "assistant",
-                content: "I'm having trouble connecting. Please check your connection and try again."
+                content: t("ai.connectionTrouble")
             })
         } finally {
             setIsLoading(false)
@@ -188,13 +190,13 @@ export function StudentAIChat() {
 
             if (data.success) {
                 setPortfolioSaved(true)
-                toast.success("Portfolio saved to your profile!")
+                toast.success(t("ai.portfolioSavedToProfile"))
             } else {
-                toast.error(data.error || "Failed to save portfolio")
+                toast.error(data.error || t("ai.failedToSavePortfolio"))
             }
         } catch (error) {
             console.error("Error saving portfolio:", error)
-            toast.error("Failed to save portfolio")
+            toast.error(t("ai.failedToSavePortfolio"))
         } finally {
             setIsSavingPortfolio(false)
         }
@@ -222,12 +224,12 @@ export function StudentAIChat() {
                                 <Zap className="h-6 w-6 text-violet-500" />
                             </div>
                             <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:via-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
-                                AI Career Assistant
+                                {t("ai.careerAssistant")}
                             </h2>
                         </div>
                         <p className="text-muted-foreground text-sm md:text-base font-medium flex items-center gap-2">
                             <Sparkles className="h-4 w-4 text-violet-500" />
-                            Build your portfolio & find your perfect internship match
+                            {t("ai.buildPortfolio")}
                         </p>
                     </div>
 
@@ -238,7 +240,7 @@ export function StudentAIChat() {
                             className="rounded-xl px-3 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-colors duration-150"
                         >
                             {showSessionsSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-                            <span className="ml-2 hidden sm:inline">Sessions</span>
+                            <span className="ml-2 hidden sm:inline">{t("ai.sessions")}</span>
                             {studentSessions.length > 0 && (
                                 <Badge variant="secondary" className="ml-2 bg-violet-500/20 text-violet-600">
                                     {studentSessions.length}
@@ -251,7 +253,7 @@ export function StudentAIChat() {
                             className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50 transition-colors duration-150"
                         >
                             <Plus className="h-4 w-4 mr-2" />
-                            New Chat
+                            {t("ai.newChat")}
                         </Button>
                     </div>
                 </div>
@@ -260,16 +262,16 @@ export function StudentAIChat() {
                 <div className="relative z-10 mt-6">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", chatPhase !== "intro" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <User className="h-3 w-3" /> About You
+                            <User className="h-3 w-3" /> {t("ai.aboutYou")}
                         </span>
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", ["portfolio", "matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <FileText className="h-3 w-3" /> Portfolio
+                            <FileText className="h-3 w-3" /> {t("ai.portfolio")}
                         </span>
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", ["matching", "results"].includes(chatPhase) && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <Target className="h-3 w-3" /> Matching
+                            <Target className="h-3 w-3" /> {t("ai.matching")}
                         </span>
                         <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full transition-colors duration-150", chatPhase === "results" && "bg-violet-500/10 text-violet-600 dark:text-violet-400")}>
-                            <CheckCircle2 className="h-3 w-3" /> Results
+                            <CheckCircle2 className="h-3 w-3" /> {t("ai.results")}
                         </span>
                     </div>
                     <Progress 
@@ -297,7 +299,7 @@ export function StudentAIChat() {
                             <div className="p-4 border-b border-violet-500/20">
                                 <h3 className="font-semibold flex items-center gap-2">
                                     <History className="h-4 w-4 text-violet-500" />
-                                    Chat Sessions
+                                    {t("ai.chatSessions")}
                                 </h3>
                             </div>
                             <ScrollArea className="h-[calc(100%-60px)]">
@@ -305,7 +307,7 @@ export function StudentAIChat() {
                                     {studentSessions.length === 0 ? (
                                         <div className="text-center py-8 text-muted-foreground text-sm">
                                             <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                            No previous sessions
+                                            {t("ai.noPreviousSessions")}
                                         </div>
                                     ) : (
                                         studentSessions.map((session) => (
@@ -432,7 +434,7 @@ export function StudentAIChat() {
                                 ref={inputRef}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Tell me about yourself..."
+                                placeholder={t("ai.tellMeAboutYourself")}
                                 className="flex-1 rounded-xl border-2 border-border/50 focus:border-violet-500/50 bg-background/80 h-11 transition-colors duration-150"
                                 disabled={isLoading}
                             />
@@ -466,20 +468,20 @@ export function StudentAIChat() {
                                             <FileText className="h-5 w-5 text-violet-500" />
                                         </div>
                                         <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
-                                            Your Portfolio
+                                            {t("ai.yourPortfolio")}
                                         </span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {Boolean(generatedPortfolio.headline) && (
                                         <div>
-                                            <p className="text-xs text-muted-foreground">Headline</p>
+                                            <p className="text-xs text-muted-foreground">{t("ai.headline")}</p>
                                             <p className="text-sm font-medium">{String(generatedPortfolio.headline)}</p>
                                         </div>
                                     )}
                                     {Boolean(generatedPortfolio.skills) && Array.isArray(generatedPortfolio.skills) && (
                                         <div>
-                                            <p className="text-xs text-muted-foreground mb-1">Skills</p>
+                                            <p className="text-xs text-muted-foreground mb-1">{t("portfolio.skills")}</p>
                                             <div className="flex flex-wrap gap-1">
                                                 {(generatedPortfolio.skills as string[]).slice(0, 5).map((skill, i) => (
                                                     <Badge key={i} variant="secondary" className="text-xs">
@@ -514,7 +516,7 @@ export function StudentAIChat() {
                                             ) : (
                                                 <Save className="h-4 w-4 mr-2" />
                                             )}
-                                            {portfolioSaved ? "Saved!" : "Save to Profile"}
+                                            {portfolioSaved ? t("ai.savedToProfile") : t("ai.saveToProfile")}
                                         </Button>
                                     </div>
                                     <Button 
@@ -522,7 +524,7 @@ export function StudentAIChat() {
                                         size="sm" 
                                         className="w-full mt-2 rounded-xl text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10 hover:border-violet-500/50 transition-colors duration-150"
                                     >
-                                        View Full Portfolio
+                                        {t("ai.viewFullPortfolio")}
                                         <ArrowRight className="h-4 w-4 ml-2" />
                                     </Button>
                                 </CardContent>
@@ -544,7 +546,7 @@ export function StudentAIChat() {
                                             <Briefcase className="h-5 w-5 text-violet-500" />
                                         </div>
                                         <span className="bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent font-semibold">
-                                            Top Matches
+                                            {t("ai.topMatches")}
                                         </span>
                                     </CardTitle>
                                 </CardHeader>
@@ -591,7 +593,7 @@ export function StudentAIChat() {
                                     <TrendingUp className="h-8 w-8 text-violet-500" />
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Chat with the AI to build your portfolio and discover matching internships
+                                    {t("ai.chatToDiscover")}
                                 </p>
                             </CardContent>
                         </Card>

@@ -394,7 +394,7 @@ export function SidebarNav({
                     </button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                    <p>Go to {item.label}</p>
+                    <p>{t('navigation.goTo', { label: item.label })}</p>
                 </TooltipContent>
             </Tooltip>
         )
@@ -465,7 +465,7 @@ export function SidebarNav({
                         </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
-                        <p>{isAIMode ? "Disable AI assistance" : "Enable AI assistance"}</p>
+                        <p>{isAIMode ? t('navigation.disableAI') : t('navigation.enableAI')}</p>
                     </TooltipContent>
                 </Tooltip>
             </div>
@@ -494,7 +494,7 @@ export function SidebarNav({
                         </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
-                        <p>Manage your preferences</p>
+                        <p>{t('navigation.managePreferences')}</p>
                     </TooltipContent>
                 </Tooltip>
 
@@ -509,7 +509,7 @@ export function SidebarNav({
                         </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
-                        <p>Get help and support</p>
+                        <p>{t('navigation.getHelpAndSupport')}</p>
                     </TooltipContent>
                 </Tooltip>
 

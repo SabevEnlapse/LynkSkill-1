@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Upload, X, File, ImageIcon, FileText, Download, AlertCircle } from "lucide-react"
 import { validateFile, formatFileSize, uploadFile, deleteFile, type FileAttachment } from "@/lib/file-utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface FileUploadProps {
     section: "projects" | "education" | "certifications"
@@ -27,10 +28,11 @@ export function FileUpload({
     const [uploadProgress, setUploadProgress] = useState(0)
     const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { t } = useTranslation()
 
     const handleFileSelect = async (files: FileList) => {
         if (attachments.length + files.length > maxFiles) {
-            setError(`Maximum ${maxFiles} files allowed`)
+            setError(t('fileUpload.maxFilesAllowed', { max: maxFiles }))
             return
         }
 
@@ -53,7 +55,7 @@ export function FileUpload({
             const newAttachments = await Promise.all(uploadPromises)
             onAttachmentsChange([...attachments, ...newAttachments])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Upload failed")
+            setError(err instanceof Error ? err.message : t('fileUpload.uploadFailed'))
         } finally {
             setUploading(false)
             setUploadProgress(0)
@@ -71,7 +73,7 @@ export function FileUpload({
             const newAttachments = attachments.filter((_, i) => i !== index)
             onAttachmentsChange(newAttachments)
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Delete failed")
+            setError(err instanceof Error ? err.message : t('fileUpload.deleteFailed'))
         }
     }
 
@@ -109,8 +111,8 @@ export function FileUpload({
                 }}
             >
                 <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h4 className="font-semibold text-lg mb-2">Upload Files</h4>
-                <p className="text-muted-foreground mb-4">Drag and drop files here, or click to browse</p>
+                <h4 className="font-semibold text-lg mb-2">{t('fileUpload.uploadFiles')}</h4>
+                <p className="text-muted-foreground mb-4">{t('fileUpload.dragAndDrop')}</p>
                 <p className="text-sm text-muted-foreground">
                     Supports images, PDFs, and documents (max 10MB each, {maxFiles} files total)
                 </p>
@@ -139,7 +141,7 @@ export function FileUpload({
                         className="space-y-2"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Uploading...</span>
+                            <span className="text-sm font-medium">{t('fileUpload.uploading')}</span>
                             <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
                         </div>
                         <Progress value={uploadProgress} className="h-2" />
@@ -175,7 +177,7 @@ export function FileUpload({
                         className="space-y-3"
                     >
                         <h5 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                            Attached Files ({attachments.length}/{maxFiles})
+                            {t('fileUpload.attachedFiles')} ({attachments.length}/{maxFiles})
                         </h5>
                         <div className="space-y-2">
                             {attachments.map((attachment, index) => (

@@ -169,7 +169,7 @@ export function SavedInternshipsTab() {
                                                 {item.paid && (
                                                     <div className="flex items-center gap-1.5 md:gap-2 text-green-600 dark:text-green-400 font-semibold">
                                                         <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-                                                        <span>${item.salary ?? "Negotiable"}</span>
+                                                        <span>${item.salary ?? t('savedInternships.negotiable')}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -182,9 +182,9 @@ export function SavedInternshipsTab() {
                                                     app.status === "REJECTED" ? "bg-red-500/20 text-red-600" :
                                                     "bg-amber-500/20 text-amber-600"
                                                 }`}>
-                                                    {app.status === "PENDING" && "⏳ Applied - Pending"}
-                                                    {app.status === "APPROVED" && "✅ Approved"}
-                                                    {app.status === "REJECTED" && "❌ Rejected"}
+                                                    {app.status === "PENDING" && `⏳ ${t('common.applied')} - ${t('common.pending')}`}
+                                                    {app.status === "APPROVED" && `✅ ${t('common.approved')}`}
+                                                    {app.status === "REJECTED" && `❌ ${t('common.rejected')}`}
                                                 </div>
                                             ) : (
                                                 <ApplyButton
@@ -204,7 +204,7 @@ export function SavedInternshipsTab() {
                                                     setOpen(true)
                                                 }}
                                             >
-                                                View Details
+                                                {t('common.viewDetails')}
                                                 <ArrowRight className="ml-2 h-3.5 w-3.5 md:h-4 md:w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                         </CardFooter>

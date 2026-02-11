@@ -59,6 +59,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 import {ModeToggle} from "@/components/theme-toggle";
 import {SignedIn} from "@clerk/nextjs";
 import {LynkSkillUserButton} from "@/components/clerk-theme";
@@ -434,6 +435,7 @@ const sidebarItems = [
 ]
 
 export default function CompanyDashboardPagee() {
+    const { t } = useTranslation()
     const [, setProgress] = useState(0)
     const [notifications,] = useState(5)
     const [activeTab, setActiveTab] = useState("home")
@@ -489,8 +491,8 @@ export default function CompanyDashboardPagee() {
                                 <Wand2 className="size-5" />
                             </div>
                             <div>
-                                <h2 className="font-semibold">Designali</h2>
-                                <p className="text-xs text-foreground">Creative Suite</p>
+                                <h2 className="font-semibold">{t("dashboardCompany.designali")}</h2>
+                                <p className="text-xs text-foreground">{t("dashboardCompany.creativeSuite")}</p>
                             </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
@@ -501,7 +503,7 @@ export default function CompanyDashboardPagee() {
                     <div className="px-3 py-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
-                            <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+                            <Input type="search" placeholder={t("dashboardCompany.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
                         </div>
                     </div>
 
@@ -562,12 +564,12 @@ export default function CompanyDashboardPagee() {
                         <div className="space-y-1">
                             <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                                 <Settings className="h-5 w-5" />
-                                <span>Settings</span>
+                                <span>{t("dashboardCompany.settings")}</span>
                             </button>
                             <SignedIn>
                                 <div className="flex items-center justify-start gap-3 sm:gap-4 ml-2">
                                     <LynkSkillUserButton />
-                                    <div className="text-foreground text-sm font-semibold">User</div>
+                                    <div className="text-foreground text-sm font-semibold">{t("dashboardCompany.user")}</div>
                                 </div>
                             </SignedIn>
                         </div>
@@ -589,8 +591,8 @@ export default function CompanyDashboardPagee() {
                                 <Wand2 className="size-5" />
                             </div>
                             <div>
-                                <h2 className="font-semibold text-foreground">Company</h2>
-                                <p className="text-xs text-foreground">Creative Suite</p>
+                                <h2 className="font-semibold text-foreground">{t("dashboardCompany.company")}</h2>
+                                <p className="text-xs text-foreground">{t("dashboardCompany.creativeSuite")}</p>
                             </div>
                         </div>
                     </div>
@@ -598,7 +600,7 @@ export default function CompanyDashboardPagee() {
                     <div className="px-3 py-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
-                            <Input type="search" placeholder="Search..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+                            <Input type="search" placeholder={t("dashboardCompany.search")} className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
                         </div>
                     </div>
 
@@ -659,12 +661,12 @@ export default function CompanyDashboardPagee() {
                         <div className="space-y-1 text-foreground">
                             <button className="flex w-full text-foreground items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                                 <Settings className="h-5 w-5" />
-                                <span>Settings</span>
+                                <span>{t("dashboardCompany.settings")}</span>
                             </button>
                             <SignedIn>
                                 <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 ml-2">
                                     <LynkSkillUserButton />
-                                    <div className="text-foreground text-sm font-medium">User</div>
+                                    <div className="text-foreground text-sm font-medium">{t("dashboardCompany.user")}</div>
                                 </div>
                             </SignedIn>
                         </div>
@@ -682,7 +684,7 @@ export default function CompanyDashboardPagee() {
                         <PanelLeft className="h-5 w-5 text-foreground" />
                     </Button>
                     <div className="flex flex-1 items-center justify-between">
-                        <h1 className="text-xl font-semibold text-foreground">Designali Creative</h1>
+                        <h1 className="text-xl font-semibold text-foreground">{t("dashboardCompany.designaliCreative")}</h1>
                         <div className="flex items-center text-foreground gap-3">
                             <TooltipProvider>
                                 <Tooltip>
@@ -691,7 +693,7 @@ export default function CompanyDashboardPagee() {
                                             <Cloud className="h-5 w-5" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Cloud Storage</TooltipContent>
+                                    <TooltipContent>{t("dashboardCompany.cloudStorage")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -702,7 +704,7 @@ export default function CompanyDashboardPagee() {
                                             <MessageSquare className="h-5 w-5" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Messages</TooltipContent>
+                                    <TooltipContent>{t("dashboardCompany.messages")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -718,7 +720,7 @@ export default function CompanyDashboardPagee() {
                                             )}
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Notifications</TooltipContent>
+                                    <TooltipContent>{t("dashboardCompany.notifications")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -729,7 +731,7 @@ export default function CompanyDashboardPagee() {
                                             <ModeToggle/>
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Toggle theme</TooltipContent>
+                                    <TooltipContent>{t("dashboardCompany.toggleTheme")}</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
 
@@ -747,29 +749,29 @@ export default function CompanyDashboardPagee() {
                         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
                                 <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Home
+                                    {t("dashboardCompany.home")}
                                 </TabsTrigger>
                                 <TabsTrigger value="apps" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Apps
+                                    {t("dashboardCompany.apps")}
                                 </TabsTrigger>
                                 <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Files
+                                    {t("dashboardCompany.files")}
                                 </TabsTrigger>
                                 <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Projects
+                                    {t("dashboardCompany.projects")}
                                 </TabsTrigger>
                                 <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
-                                    Learn
+                                    {t("dashboardCompany.learn")}
                                 </TabsTrigger>
                             </TabsList>
                             <div className="hidden md:flex gap-2">
                                 <Button variant="outline" className="rounded-2xl">
                                     <Download className="mr-2 h-4 w-4" />
-                                    Install App
+                                    {t("dashboardCompany.installApp")}
                                 </Button>
                                 <Button className="rounded-2xl">
                                     <Plus className="mr-2 h-4 w-4" />
-                                    New Project
+                                    {t("dashboardCompany.newProject")}
                                 </Button>
                             </div>
                         </div>
@@ -792,21 +794,20 @@ export default function CompanyDashboardPagee() {
                                         >
                                             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-4">
-                                                    <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Premium</Badge>
-                                                    <h2 className="text-3xl font-bold">Welcome to DesignAli Creative Suite</h2>
+                                                    <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">{t("dashboardCompany.premium")}</Badge>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardCompany.welcomeTitle")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Unleash your creativity with our comprehensive suite of professional design tools and
-                                                        resources.
+                                                        {t("dashboardCompany.welcomeSubtitle")}
                                                     </p>
                                                     <div className="flex flex-wrap gap-3">
                                                         <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
-                                                            Explore Plans
+                                                            {t("dashboardCompany.explorePlans")}
                                                         </Button>
                                                         <Button
                                                             variant="outline"
                                                             className="rounded-2xl bg-transparent border-white text-white hover:bg-white/10"
                                                         >
-                                                            Take a Tour
+                                                            {t("dashboardCompany.takeATour")}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -829,9 +830,9 @@ export default function CompanyDashboardPagee() {
 
                                     <section className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-semibold"> My Recent Internship  </h2>
+                                            <h2 className="text-2xl font-semibold"> {t("dashboardCompany.myRecentInternship")}  </h2>
                                             <Button variant="ghost" className="rounded-2xl">
-                                                View All
+                                                {t("dashboardCompany.viewAll")}
                                             </Button>
                                         </div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -856,7 +857,7 @@ export default function CompanyDashboardPagee() {
                                                             </CardContent>
                                                             <CardFooter>
                                                                 <Button variant="secondary" className="w-full rounded-2xl">
-                                                                    Open
+                                                                    {t("dashboardCompany.open")}
                                                                 </Button>
                                                             </CardFooter>
                                                         </Card>
@@ -868,9 +869,9 @@ export default function CompanyDashboardPagee() {
                                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                         <section className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h2 className="text-2xl font-semibold">All My Internships</h2>
+                                                <h2 className="text-2xl font-semibold">{t("dashboardCompany.allMyInternships")}</h2>
                                                 <Button variant="ghost" className="rounded-2xl">
-                                                    View All
+                                                    {t("dashboardCompany.viewAll")}
                                                 </Button>
                                             </div>
                                             <div className="rounded-3xl border">
@@ -900,7 +901,7 @@ export default function CompanyDashboardPagee() {
                                                                     </Badge>
                                                                 )}
                                                                 <Button variant="ghost" size="sm" className="rounded-xl">
-                                                                    Open
+                                                                    {t("dashboardCompany.open")}
                                                                 </Button>
                                                             </div>
                                                         </motion.div>
@@ -911,9 +912,9 @@ export default function CompanyDashboardPagee() {
 
                                         <section className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h2 className="text-2xl font-semibold">Active Projects</h2>
+                                                <h2 className="text-2xl font-semibold">{t("dashboardCompany.activeProjects")}</h2>
                                                 <Button variant="ghost" className="rounded-2xl">
-                                                    View All
+                                                    {t("dashboardCompany.viewAll")}
                                                 </Button>
                                             </div>
                                             <div className="rounded-3xl border">
@@ -933,7 +934,7 @@ export default function CompanyDashboardPagee() {
                                                             <p className="text-sm text-foreground mb-3">{project.description}</p>
                                                             <div className="space-y-2">
                                                                 <div className="flex items-center justify-between text-sm">
-                                                                    <span>Progress</span>
+                                                                    <span>{t("dashboardCompany.progress")}</span>
                                                                     <span>{project.progress}%</span>
                                                                 </div>
                                                                 <Progress value={project.progress} className="h-2 rounded-xl" />
@@ -941,11 +942,11 @@ export default function CompanyDashboardPagee() {
                                                             <div className="flex items-center justify-between mt-3 text-sm text-foreground">
                                                                 <div className="flex items-center">
                                                                     <Users className="mr-1 h-4 w-4" />
-                                                                    {project.members} members
+                                                                    {project.members} {t("dashboardCompany.members")}
                                                                 </div>
                                                                 <div className="flex items-center">
                                                                     <FileText className="mr-1 h-4 w-4" />
-                                                                    {project.files} files
+                                                                    {project.files} {t("dashboardCompany.filesCount")}
                                                                 </div>
                                                             </div>
                                                         </motion.div>
@@ -957,9 +958,9 @@ export default function CompanyDashboardPagee() {
 
                                     <section className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-semibold">Community Highlights</h2>
+                                            <h2 className="text-2xl font-semibold">{t("dashboardCompany.communityHighlights")}</h2>
                                             <Button variant="ghost" className="rounded-2xl">
-                                                Explore
+                                                {t("dashboardCompany.explore")}
                                             </Button>
                                         </div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1004,14 +1005,14 @@ export default function CompanyDashboardPagee() {
                                         >
                                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl font-bold">Creative Apps Collection</h2>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardCompany.creativeAppsCollection")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Discover our full suite of professional design and creative applications.
+                                                        {t("dashboardCompany.creativeAppsDesc")}
                                                     </p>
                                                 </div>
                                                 <Button className="w-fit rounded-2xl bg-white text-red-700 hover:bg-white/90">
                                                     <Download className="mr-2 h-4 w-4" />
-                                                    Install Desktop App
+                                                    {t("dashboardCompany.installDesktopApp")}
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -1019,33 +1020,33 @@ export default function CompanyDashboardPagee() {
 
                                     <div className="flex flex-wrap gap-3 mb-6">
                                         <Button variant="outline" className="rounded-2xl">
-                                            All Categories
+                                            {t("dashboardCompany.allCategories")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
-                                            Creative
+                                            {t("dashboardCompany.creative")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
-                                            Video
+                                            {t("dashboardCompany.video")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
-                                            Web
+                                            {t("dashboardCompany.web")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
-                                            3D
+                                            {t("dashboardCompany.threeD")}
                                         </Button>
                                         <div className="flex-1"></div>
                                         <div className="relative w-full md:w-auto mt-3 md:mt-0">
                                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                                             <Input
                                                 type="search"
-                                                placeholder="Search apps..."
+                                                placeholder={t("dashboardCompany.searchApps")}
                                                 className="w-full rounded-2xl pl-9 md:w-[200px]"
                                             />
                                         </div>
                                     </div>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">New Releases</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.newReleases")}</h2>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                             {apps
                                                 .filter((app) => app.new)
@@ -1057,7 +1058,7 @@ export default function CompanyDashboardPagee() {
                                                                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
                                                                         {app.icon}
                                                                     </div>
-                                                                    <Badge className="rounded-xl bg-amber-500">New</Badge>
+                                                                    <Badge className="rounded-xl bg-amber-500">{t("dashboardCompany.new")}</Badge>
                                                                 </div>
                                                             </CardHeader>
                                                             <CardContent className="pb-2">
@@ -1065,7 +1066,7 @@ export default function CompanyDashboardPagee() {
                                                                 <CardDescription>{app.description}</CardDescription>
                                                                 <div className="mt-2">
                                                                     <div className="flex items-center justify-between text-sm">
-                                                                        <span>Installation</span>
+                                                                        <span>{t("dashboardCompany.installation")}</span>
                                                                         <span>{app.progress}%</span>
                                                                     </div>
                                                                     <Progress value={app.progress} className="h-2 mt-1 rounded-xl" />
@@ -1073,7 +1074,7 @@ export default function CompanyDashboardPagee() {
                                                             </CardContent>
                                                             <CardFooter>
                                                                 <Button variant="secondary" className="w-full rounded-2xl">
-                                                                    {app.progress < 100 ? "Continue Install" : "Open"}
+                                                                    {app.progress < 100 ? t("dashboardCompany.continueInstall") : t("dashboardCompany.open")}
                                                                 </Button>
                                                             </CardFooter>
                                                         </Card>
@@ -1083,7 +1084,7 @@ export default function CompanyDashboardPagee() {
                                     </section>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">All Apps</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.allApps")}</h2>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                             {apps.map((app) => (
                                                 <motion.div key={app.name} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1104,7 +1105,7 @@ export default function CompanyDashboardPagee() {
                                                         </CardContent>
                                                         <CardFooter className="flex gap-2">
                                                             <Button variant="secondary" className="flex-1 rounded-2xl">
-                                                                {app.progress < 100 ? "Install" : "Open"}
+                                                                {app.progress < 100 ? t("dashboardCompany.install") : t("dashboardCompany.open")}
                                                             </Button>
                                                             <Button variant="outline" size="icon" className="rounded-2xl">
                                                                 <Star className="h-4 w-4" />
@@ -1127,19 +1128,19 @@ export default function CompanyDashboardPagee() {
                                         >
                                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl font-bold">Your Creative Files</h2>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardCompany.yourCreativeFiles")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Access, manage, and share all your design files in one place.
+                                                        {t("dashboardCompany.yourCreativeFilesDesc")}
                                                     </p>
                                                 </div>
                                                 <div className="flex flex-wrap gap-3">
                                                     <Button className="rounded-2xl bg-white/20 backdrop-blur-md hover:bg-white/30">
                                                         <Cloud className="mr-2 h-4 w-4" />
-                                                        Cloud Storage
+                                                        {t("dashboardCompany.cloudStorage")}
                                                     </Button>
                                                     <Button className="rounded-2xl bg-white text-blue-700 hover:bg-white/90">
                                                         <Plus className="mr-2 h-4 w-4" />
-                                                        Upload Files
+                                                        {t("dashboardCompany.uploadFiles")}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -1149,30 +1150,30 @@ export default function CompanyDashboardPagee() {
                                     <div className="flex flex-wrap gap-3 mb-6">
                                         <Button variant="outline" className="rounded-2xl">
                                             <FileText className="mr-2 h-4 w-4" />
-                                            All Files
+                                            {t("dashboardCompany.allFiles")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Clock className="mr-2 h-4 w-4" />
-                                            Recent
+                                            {t("dashboardCompany.recent")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Users className="mr-2 h-4 w-4" />
-                                            Shared
+                                            {t("dashboardCompany.shared")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Star className="mr-2 h-4 w-4" />
-                                            Favorites
+                                            {t("dashboardCompany.favorites")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Trash className="mr-2 h-4 w-4" />
-                                            Trash
+                                            {t("dashboardCompany.trash")}
                                         </Button>
                                         <div className="flex-1"></div>
                                         <div className="relative w-full md:w-auto mt-3 md:mt-0">
                                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                                             <Input
                                                 type="search"
-                                                placeholder="Search files..."
+                                                placeholder={t("dashboardCompany.searchFiles")}
                                                 className="w-full rounded-2xl pl-9 md:w-[200px]"
                                             />
                                         </div>
@@ -1180,25 +1181,25 @@ export default function CompanyDashboardPagee() {
 
                                     <section className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-semibold">All Files</h2>
+                                            <h2 className="text-2xl font-semibold">{t("dashboardCompany.allFiles")}</h2>
                                             <div className="flex gap-2">
                                                 <Button variant="outline" size="sm" className="rounded-2xl">
                                                     <PanelLeft className="mr-2 h-4 w-4" />
-                                                    Filter
+                                                    {t("dashboardCompany.filter")}
                                                 </Button>
                                                 <Button variant="outline" size="sm" className="rounded-2xl">
                                                     <ArrowUpDown className="mr-2 h-4 w-4" />
-                                                    Sort
+                                                    {t("dashboardCompany.sort")}
                                                 </Button>
                                             </div>
                                         </div>
 
                                         <div className="rounded-3xl border overflow-hidden">
                                             <div className="bg-muted/50 p-3 hidden md:grid md:grid-cols-12 text-sm font-medium">
-                                                <div className="col-span-6">Name</div>
-                                                <div className="col-span-2">App</div>
-                                                <div className="col-span-2">Size</div>
-                                                <div className="col-span-2">Modified</div>
+                                                <div className="col-span-6">{t("dashboardCompany.name")}</div>
+                                                <div className="col-span-2">{t("dashboardCompany.app")}</div>
+                                                <div className="col-span-2">{t("dashboardCompany.size")}</div>
+                                                <div className="col-span-2">{t("dashboardCompany.modified")}</div>
                                             </div>
                                             <div className="divide-y">
                                                 {recentFiles.map((file) => (
@@ -1216,7 +1217,7 @@ export default function CompanyDashboardPagee() {
                                                                 {file.shared && (
                                                                     <div className="flex items-center text-xs text-foreground">
                                                                         <Users className="mr-1 h-3 w-3" />
-                                                                        Shared with {file.collaborators} people
+                                                                        {t("dashboardCompany.sharedWith")} {file.collaborators} {t("dashboardCompany.people")}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1251,14 +1252,14 @@ export default function CompanyDashboardPagee() {
                                         >
                                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl font-bold">Project Management</h2>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardCompany.projectManagement")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Organize your creative work into projects and collaborate with your team.
+                                                        {t("dashboardCompany.projectManagementDesc")}
                                                     </p>
                                                 </div>
                                                 <Button className="w-fit rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
                                                     <Plus className="mr-2 h-4 w-4" />
-                                                    New Project
+                                                    {t("dashboardCompany.newProject")}
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -1267,33 +1268,33 @@ export default function CompanyDashboardPagee() {
                                     <div className="flex flex-wrap gap-3 mb-6">
                                         <Button variant="outline" className="rounded-2xl">
                                             <Layers className="mr-2 h-4 w-4" />
-                                            All Projects
+                                            {t("dashboardCompany.allProjects")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Clock className="mr-2 h-4 w-4" />
-                                            Recent
+                                            {t("dashboardCompany.recent")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Users className="mr-2 h-4 w-4" />
-                                            Shared
+                                            {t("dashboardCompany.shared")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Archive className="mr-2 h-4 w-4" />
-                                            Archived
+                                            {t("dashboardCompany.archived")}
                                         </Button>
                                         <div className="flex-1"></div>
                                         <div className="relative w-full md:w-auto mt-3 md:mt-0">
                                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                                             <Input
                                                 type="search"
-                                                placeholder="Search projects..."
+                                                placeholder={t("dashboardCompany.searchProjects")}
                                                 className="w-full rounded-2xl pl-9 md:w-[200px]"
                                             />
                                         </div>
                                     </div>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">Active Projects</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.activeProjects")}</h2>
                                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                                             {projects.map((project) => (
                                                 <motion.div key={project.name} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1310,7 +1311,7 @@ export default function CompanyDashboardPagee() {
                                                         <CardContent className="space-y-4">
                                                             <div className="space-y-2">
                                                                 <div className="flex items-center justify-between text-sm">
-                                                                    <span>Progress</span>
+                                                                    <span>{t("dashboardCompany.progress")}</span>
                                                                     <span>{project.progress}%</span>
                                                                 </div>
                                                                 <Progress value={project.progress} className="h-2 rounded-xl" />
@@ -1318,17 +1319,17 @@ export default function CompanyDashboardPagee() {
                                                             <div className="flex items-center justify-between text-sm text-foreground">
                                                                 <div className="flex items-center">
                                                                     <Users className="mr-1 h-4 w-4" />
-                                                                    {project.members} members
+                                                                    {project.members} {t("dashboardCompany.members")}
                                                                 </div>
                                                                 <div className="flex items-center">
                                                                     <FileText className="mr-1 h-4 w-4" />
-                                                                    {project.files} files
+                                                                    {project.files} {t("dashboardCompany.filesCount")}
                                                                 </div>
                                                             </div>
                                                         </CardContent>
                                                         <CardFooter className="flex gap-2">
                                                             <Button variant="secondary" className="flex-1 rounded-2xl">
-                                                                Open Project
+                                                                {t("dashboardCompany.openProject")}
                                                             </Button>
                                                             <Button variant="outline" size="icon" className="rounded-2xl">
                                                                 <Share2 className="h-4 w-4" />
@@ -1342,72 +1343,72 @@ export default function CompanyDashboardPagee() {
                                                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                                                         <Plus className="h-6 w-6" />
                                                     </div>
-                                                    <h3 className="text-lg font-medium">Create New Project</h3>
+                                                    <h3 className="text-lg font-medium">{t("dashboardCompany.createNewProject")}</h3>
                                                     <p className="mb-4 text-center text-sm text-foreground">
-                                                        Start a new creative project from scratch or use a template
+                                                        {t("dashboardCompany.createNewProjectDesc")}
                                                     </p>
-                                                    <Button className="rounded-2xl">New Project</Button>
+                                                    <Button className="rounded-2xl">{t("dashboardCompany.newProject")}</Button>
                                                 </Card>
                                             </motion.div>
                                         </div>
                                     </section>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">Project Templates</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.projectTemplates")}</h2>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                             <Card className="overflow-hidden rounded-3xl">
                                                 <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 p-6 text-white">
-                                                    <h3 className="text-lg font-medium">Brand Identity</h3>
-                                                    <p className="text-sm text-white/80">Complete brand design package</p>
+                                                    <h3 className="text-lg font-medium">{t("dashboardCompany.brandIdentity")}</h3>
+                                                    <p className="text-sm text-white/80">{t("dashboardCompany.brandIdentityDesc")}</p>
                                                 </div>
                                                 <CardFooter className="flex justify-between p-4">
                                                     <Badge variant="outline" className="rounded-xl">
-                                                        Popular
+                                                        {t("dashboardCompany.popular")}
                                                     </Badge>
                                                     <Button variant="ghost" size="sm" className="rounded-xl">
-                                                        Use Template
+                                                        {t("dashboardCompany.useTemplate")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
                                             <Card className="overflow-hidden rounded-3xl">
                                                 <div className="aspect-video bg-gradient-to-br from-amber-500 to-red-600 p-6 text-white">
-                                                    <h3 className="text-lg font-medium">Marketing Campaign</h3>
-                                                    <p className="text-sm text-white/80">Multi-channel marketing assets</p>
+                                                    <h3 className="text-lg font-medium">{t("dashboardCompany.marketingCampaign")}</h3>
+                                                    <p className="text-sm text-white/80">{t("dashboardCompany.marketingCampaignDesc")}</p>
                                                 </div>
                                                 <CardFooter className="flex justify-between p-4">
                                                     <Badge variant="outline" className="rounded-xl">
-                                                        New
+                                                        {t("dashboardCompany.new")}
                                                     </Badge>
                                                     <Button variant="ghost" size="sm" className="rounded-xl">
-                                                        Use Template
+                                                        {t("dashboardCompany.useTemplate")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
                                             <Card className="overflow-hidden rounded-3xl">
                                                 <div className="aspect-video bg-gradient-to-br from-green-500 to-teal-600 p-6 text-white">
-                                                    <h3 className="text-lg font-medium">Website Redesign</h3>
-                                                    <p className="text-sm text-white/80">Complete website design workflow</p>
+                                                    <h3 className="text-lg font-medium">{t("dashboardCompany.websiteRedesign")}</h3>
+                                                    <p className="text-sm text-white/80">{t("dashboardCompany.websiteRedesignDesc")}</p>
                                                 </div>
                                                 <CardFooter className="flex justify-between p-4">
                                                     <Badge variant="outline" className="rounded-xl">
-                                                        Featured
+                                                        {t("dashboardCompany.featured")}
                                                     </Badge>
                                                     <Button variant="ghost" size="sm" className="rounded-xl">
-                                                        Use Template
+                                                        {t("dashboardCompany.useTemplate")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
                                             <Card className="overflow-hidden rounded-3xl">
                                                 <div className="aspect-video bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white">
-                                                    <h3 className="text-lg font-medium">Product Launch</h3>
-                                                    <p className="text-sm text-white/80">Product launch campaign assets</p>
+                                                    <h3 className="text-lg font-medium">{t("dashboardCompany.productLaunch")}</h3>
+                                                    <p className="text-sm text-white/80">{t("dashboardCompany.productLaunchDesc")}</p>
                                                 </div>
                                                 <CardFooter className="flex justify-between p-4">
                                                     <Badge variant="outline" className="rounded-xl">
-                                                        Popular
+                                                        {t("dashboardCompany.popular")}
                                                     </Badge>
                                                     <Button variant="ghost" size="sm" className="rounded-xl">
-                                                        Use Template
+                                                        {t("dashboardCompany.useTemplate")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
@@ -1425,14 +1426,14 @@ export default function CompanyDashboardPagee() {
                                         >
                                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl font-bold">Learn & Grow</h2>
+                                                    <h2 className="text-3xl font-bold">{t("dashboardCompany.learnAndGrow")}</h2>
                                                     <p className="max-w-[600px] text-white/80">
-                                                        Expand your creative skills with tutorials, courses, and resources.
+                                                        {t("dashboardCompany.learnAndGrowDesc")}
                                                     </p>
                                                 </div>
                                                 <Button className="w-fit rounded-2xl bg-white text-emerald-700 hover:bg-white/90">
                                                     <Crown className="mr-2 h-4 w-4" />
-                                                    Upgrade to Pro
+                                                    {t("dashboardCompany.upgradeToPro")}
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -1441,37 +1442,37 @@ export default function CompanyDashboardPagee() {
                                     <div className="flex flex-wrap gap-3 mb-6">
                                         <Button variant="outline" className="rounded-2xl">
                                             <Play className="mr-2 h-4 w-4" />
-                                            All Tutorials
+                                            {t("dashboardCompany.allTutorials")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <BookOpen className="mr-2 h-4 w-4" />
-                                            Courses
+                                            {t("dashboardCompany.courses")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Lightbulb className="mr-2 h-4 w-4" />
-                                            Tips & Tricks
+                                            {t("dashboardCompany.tipsAndTricks")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <TrendingUp className="mr-2 h-4 w-4" />
-                                            Trending
+                                            {t("dashboardCompany.trending")}
                                         </Button>
                                         <Button variant="outline" className="rounded-2xl">
                                             <Bookmark className="mr-2 h-4 w-4" />
-                                            Saved
+                                            {t("dashboardCompany.saved")}
                                         </Button>
                                         <div className="flex-1"></div>
                                         <div className="relative w-full md:w-auto mt-3 md:mt-0">
                                             <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                                             <Input
                                                 type="search"
-                                                placeholder="Search tutorials..."
+                                                placeholder={t("dashboardCompany.searchTutorials")}
                                                 className="w-full rounded-2xl pl-9 md:w-[200px]"
                                             />
                                         </div>
                                     </div>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">Featured Tutorials</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.featuredTutorials")}</h2>
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                                             {tutorials.slice(0, 3).map((tutorial) => (
                                                 <motion.div key={tutorial.title} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
@@ -1510,7 +1511,7 @@ export default function CompanyDashboardPagee() {
                                                             </Badge>
                                                             <div className="flex items-center gap-1 text-sm text-foreground">
                                                                 <Eye className="h-4 w-4" />
-                                                                {tutorial.views} views
+                                                                {tutorial.views} {t("dashboardCompany.views")}
                                                             </div>
                                                         </CardFooter>
                                                     </Card>
@@ -1521,9 +1522,9 @@ export default function CompanyDashboardPagee() {
 
                                     <section className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-semibold">Popular Courses</h2>
+                                            <h2 className="text-2xl font-semibold">{t("dashboardCompany.popularCourses")}</h2>
                                             <Button variant="ghost" className="rounded-2xl">
-                                                View All
+                                                {t("dashboardCompany.viewAll")}
                                             </Button>
                                         </div>
                                         <div className="rounded-3xl border overflow-hidden">
@@ -1555,13 +1556,13 @@ export default function CompanyDashboardPagee() {
                                                                 </div>
                                                                 <div className="flex items-center gap-1 text-sm text-foreground">
                                                                     <Eye className="h-3 w-3" />
-                                                                    {tutorial.views} views
+                                                                    {tutorial.views} {t("dashboardCompany.views")}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Button variant="ghost" size="sm" className="rounded-xl">
-                                                                Watch Now
+                                                                {t("dashboardCompany.watchNow")}
                                                             </Button>
                                                         </div>
                                                     </motion.div>
@@ -1571,30 +1572,30 @@ export default function CompanyDashboardPagee() {
                                     </section>
 
                                     <section className="space-y-4">
-                                        <h2 className="text-2xl font-semibold">Learning Paths</h2>
+                                        <h2 className="text-2xl font-semibold">{t("dashboardCompany.learningPaths")}</h2>
                                         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                                             <Card className="overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300">
                                                 <CardHeader className="pb-2">
                                                     <div className="flex items-center justify-between">
-                                                        <Badge className="rounded-xl bg-blue-500">Beginner</Badge>
+                                                        <Badge className="rounded-xl bg-blue-500">{t("dashboardCompany.beginner")}</Badge>
                                                         <Award className="h-5 w-5 text-amber-500" />
                                                     </div>
-                                                    <CardTitle className="mt-2">UI/UX Design Fundamentals</CardTitle>
-                                                    <CardDescription>Master the basics of user interface and experience design</CardDescription>
+                                                    <CardTitle className="mt-2">{t("dashboardCompany.uiuxFundamentals")}</CardTitle>
+                                                    <CardDescription>{t("dashboardCompany.uiuxFundamentalsDesc")}</CardDescription>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between text-sm">
-                                                            <span>8 courses • 24 hours</span>
+                                                            <span>{t("dashboardCompany.coursesHours1")}</span>
                                                             <span>4.8 ★</span>
                                                         </div>
                                                         <Progress value={30} className="h-2 rounded-xl" />
-                                                        <p className="text-xs text-foreground">30% completed</p>
+                                                        <p className="text-xs text-foreground">{t("dashboardCompany.thirtyCompleted")}</p>
                                                     </div>
                                                 </CardContent>
                                                 <CardFooter>
                                                     <Button variant="secondary" className="w-full rounded-2xl">
-                                                        Continue Learning
+                                                        {t("dashboardCompany.continueLearning")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
@@ -1602,25 +1603,25 @@ export default function CompanyDashboardPagee() {
                                             <Card className="overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300">
                                                 <CardHeader className="pb-2">
                                                     <div className="flex items-center justify-between">
-                                                        <Badge className="rounded-xl bg-amber-500">Intermediate</Badge>
+                                                        <Badge className="rounded-xl bg-amber-500">{t("dashboardCompany.intermediate")}</Badge>
                                                         <Award className="h-5 w-5 text-amber-500" />
                                                     </div>
-                                                    <CardTitle className="mt-2">Digital Illustration Mastery</CardTitle>
-                                                    <CardDescription>Create stunning digital artwork and illustrations</CardDescription>
+                                                    <CardTitle className="mt-2">{t("dashboardCompany.digitalIllustration")}</CardTitle>
+                                                    <CardDescription>{t("dashboardCompany.digitalIllustrationDesc")}</CardDescription>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between text-sm">
-                                                            <span>12 courses • 36 hours</span>
+                                                            <span>{t("dashboardCompany.coursesHours2")}</span>
                                                             <span>4.9 ★</span>
                                                         </div>
                                                         <Progress value={0} className="h-2 rounded-xl" />
-                                                        <p className="text-xs text-foreground">Not started</p>
+                                                        <p className="text-xs text-foreground">{t("dashboardCompany.notStarted")}</p>
                                                     </div>
                                                 </CardContent>
                                                 <CardFooter>
                                                     <Button variant="secondary" className="w-full rounded-2xl">
-                                                        Start Learning
+                                                        {t("dashboardCompany.startLearning")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
@@ -1628,25 +1629,25 @@ export default function CompanyDashboardPagee() {
                                             <Card className="overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300">
                                                 <CardHeader className="pb-2">
                                                     <div className="flex items-center justify-between">
-                                                        <Badge className="rounded-xl bg-red-500">Advanced</Badge>
+                                                        <Badge className="rounded-xl bg-red-500">{t("dashboardCompany.advanced")}</Badge>
                                                         <Award className="h-5 w-5 text-amber-500" />
                                                     </div>
-                                                    <CardTitle className="mt-2">Motion Graphics & Animation</CardTitle>
-                                                    <CardDescription>Create professional motion graphics and animations</CardDescription>
+                                                    <CardTitle className="mt-2">{t("dashboardCompany.motionGraphics")}</CardTitle>
+                                                    <CardDescription>{t("dashboardCompany.motionGraphicsDesc")}</CardDescription>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between text-sm">
-                                                            <span>10 courses • 30 hours</span>
+                                                            <span>{t("dashboardCompany.coursesHours3")}</span>
                                                             <span>4.7 ★</span>
                                                         </div>
                                                         <Progress value={0} className="h-2 rounded-xl" />
-                                                        <p className="text-xs text-foreground">Not started</p>
+                                                        <p className="text-xs text-foreground">{t("dashboardCompany.notStarted")}</p>
                                                     </div>
                                                 </CardContent>
                                                 <CardFooter>
                                                     <Button variant="secondary" className="w-full rounded-2xl">
-                                                        Start Learning
+                                                        {t("dashboardCompany.startLearning")}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>

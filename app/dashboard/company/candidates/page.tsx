@@ -167,7 +167,7 @@ export default function CandidatesPage() {
 
     const openMessageModal = (candidate: Candidate) => {
         setSelectedCandidate(candidate)
-        setMessageSubject(`Opportunity at our company`)
+        setMessageSubject(t('candidatesPage.opportunityAtCompany'))
         setMessageContent("")
         setMessageModalOpen(true)
     }
@@ -289,7 +289,7 @@ export default function CandidatesPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{t('navigation.candidates')}</h1>
-                        <p className="text-muted-foreground">Browse and search for potential candidates</p>
+                        <p className="text-muted-foreground">{t('candidatesPage.browseAndSearch')}</p>
                     </div>
                 </div>
             </motion.div>
@@ -299,7 +299,7 @@ export default function CandidatesPage() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Search candidates by name, skills..." 
+                        placeholder={t('candidatesPage.searchPlaceholder')} 
                         className="pl-10 rounded-xl border-violet-500/20 focus:border-violet-500/40"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -307,7 +307,7 @@ export default function CandidatesPage() {
                 </div>
                 <Button variant="outline" className="rounded-xl border-violet-500/30 hover:bg-violet-500/10">
                     <Filter className="h-4 w-4 mr-2" />
-                    Filters
+                    {t('candidatesPage.filters')}
                 </Button>
             </div>
 
@@ -319,14 +319,14 @@ export default function CandidatesPage() {
                         className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                     >
                         <Sparkles className="h-4 w-4 mr-2" />
-                        AI Sessions ({sessions.length})
+                        {t('candidatesPage.aiSessions')} ({sessions.length})
                     </TabsTrigger>
                     <TabsTrigger 
                         value="all" 
                         className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                     >
                         <Users className="h-4 w-4 mr-2" />
-                        All Candidates ({candidates.length})
+                        {t('candidatesPage.allCandidates')} ({candidates.length})
                     </TabsTrigger>
                 </TabsList>
 
@@ -342,16 +342,16 @@ export default function CandidatesPage() {
                                 <div className="p-4 rounded-2xl bg-violet-500/10 mb-4">
                                     <Sparkles className="h-10 w-10 text-violet-500" />
                                 </div>
-                                <h3 className="text-lg font-semibold mb-2">No AI search sessions yet</h3>
+                                <h3 className="text-lg font-semibold mb-2">{t('candidatesPage.noAiSessionsYet')}</h3>
                                 <p className="text-muted-foreground max-w-md">
-                                    Use the AI assistant to search for candidates. Each search session will be saved here with all matching candidates.
+                                    {t('candidatesPage.useAiAssistantDesc')}
                                 </p>
                                 <Button 
                                     className="mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600"
                                     onClick={() => router.push("/dashboard/company?ai=true")}
                                 >
                                     <MessageSquare className="h-4 w-4 mr-2" />
-                                    Open AI Assistant
+                                    {t('candidatesPage.openAiAssistant')}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -385,7 +385,7 @@ export default function CandidatesPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <Badge variant="outline" className="border-violet-500/30 bg-violet-500/10">
-                                                        {session.candidates.length} candidate{session.candidates.length !== 1 ? "s" : ""}
+                                                        {session.candidates.length} {session.candidates.length !== 1 ? t('candidatesPage.candidatesPlural') : t('candidatesPage.candidate')}
                                                     </Badge>
                                                     {expandedSessions.has(session.sessionId) ? (
                                                         <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -410,7 +410,7 @@ export default function CandidatesPage() {
                                                     ))}
                                                     {session.requiredSkills.length > 6 && (
                                                         <Badge variant="outline" className="text-xs">
-                                                            +{session.requiredSkills.length - 6} more
+                                                            +{session.requiredSkills.length - 6} {t('candidatesPage.more')}
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -452,7 +452,7 @@ export default function CandidatesPage() {
                                                                                         getMatchColor(candidate.matchPercentage)
                                                                                     )}
                                                                                 >
-                                                                                    {candidate.matchPercentage}% Match
+                                                                                {candidate.matchPercentage}% {t('candidatesPage.match')}
                                                                                 </Badge>
                                                                             </div>
                                                                         </div>
@@ -513,11 +513,11 @@ export default function CandidatesPage() {
                         <div className="p-4 rounded-2xl bg-violet-500/10 mb-4">
                             <Users className="h-10 w-10 text-violet-500" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No candidates found</h3>
+                        <h3 className="text-lg font-semibold mb-2">{t('candidatesPage.noCandidatesFound')}</h3>
                         <p className="text-muted-foreground max-w-md">
                             {searchTerm 
-                                ? `No candidates match "${searchTerm}". Try a different search term.`
-                                : "No students have registered yet. Check back later!"}
+                                ? t('candidatesPage.noCandidatesMatchSearch', { search: searchTerm })
+                                : t('candidatesPage.noStudentsRegistered')}
                         </p>
                     </CardContent>
                 </Card>
@@ -550,7 +550,7 @@ export default function CandidatesPage() {
                                                     getMatchColor(candidate.matchPercentage)
                                                 )}
                                             >
-                                                {candidate.matchPercentage}% Match
+                                                {candidate.matchPercentage}% {t('candidatesPage.match')}
                                             </Badge>
                                         </div>
                                     </div>
@@ -602,7 +602,7 @@ export default function CandidatesPage() {
                                                 onClick={() => viewProfile(candidate.id)}
                                             >
                                                 <User className="h-3.5 w-3.5 mr-1.5" />
-                                                View Profile
+                                                {t('candidatesPage.viewProfile')}
                                             </Button>
                                             <Button 
                                                 size="sm" 
@@ -611,7 +611,7 @@ export default function CandidatesPage() {
                                                 onClick={() => openMessageModal(candidate)}
                                             >
                                                 <Mail className="h-3.5 w-3.5 mr-1.5" />
-                                                Message
+                                                {t('candidatesPage.messageBtn')}
                                             </Button>
                                         </div>
                                         <Button 
@@ -621,7 +621,7 @@ export default function CandidatesPage() {
                                             onClick={() => openInterviewModal(candidate)}
                                         >
                                             <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                                            Invite to Interview
+                                            {t('candidatesPage.inviteToInterview')}
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -656,8 +656,8 @@ export default function CandidatesPage() {
                                         <Mail className="h-5 w-5 text-violet-500" />
                                     </div>
                                     <div>
-                                        <h2 className="font-semibold">Send Message</h2>
-                                        <p className="text-sm text-muted-foreground">to {selectedCandidate.name}</p>
+                                        <h2 className="font-semibold">{t('candidatesPage.sendMessage')}</h2>
+                                        <p className="text-sm text-muted-foreground">{t('candidatesPage.to')} {selectedCandidate.name}</p>
                                     </div>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => setMessageModalOpen(false)}>
@@ -667,20 +667,20 @@ export default function CandidatesPage() {
                             
                             <div className="p-4 space-y-4">
                                 <div className="space-y-2">
-                                    <Label>Subject</Label>
+                                    <Label>{t('candidatesPage.subject')}</Label>
                                     <Input 
                                         value={messageSubject}
                                         onChange={(e) => setMessageSubject(e.target.value)}
-                                        placeholder="Subject of your message"
+                                        placeholder={t('candidatesPage.subjectPlaceholder')}
                                         className="rounded-xl"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Message</Label>
+                                    <Label>{t('candidatesPage.messageLabel')}</Label>
                                     <Textarea 
                                         value={messageContent}
                                         onChange={(e) => setMessageContent(e.target.value)}
-                                        placeholder="Write your message here..."
+                                        placeholder={t('candidatesPage.messagePlaceholder')}
                                         className="rounded-xl min-h-[150px] resize-none"
                                     />
                                 </div>
@@ -688,7 +688,7 @@ export default function CandidatesPage() {
                             
                             <div className="flex gap-2 p-4 border-t border-border">
                                 <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setMessageModalOpen(false)}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </Button>
                                 <Button 
                                     className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600"
@@ -696,7 +696,7 @@ export default function CandidatesPage() {
                                     disabled={!messageContent.trim() || isSending}
                                 >
                                     {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-                                    Send Message
+                                    {t('candidatesPage.sendMessageBtn')}
                                 </Button>
                             </div>
                         </motion.div>
@@ -727,8 +727,8 @@ export default function CandidatesPage() {
                                         <Calendar className="h-5 w-5 text-green-500" />
                                     </div>
                                     <div>
-                                        <h2 className="font-semibold">Schedule Interview</h2>
-                                        <p className="text-sm text-muted-foreground">with {selectedCandidate.name}</p>
+                                        <h2 className="font-semibold">{t('candidatesPage.scheduleInterview')}</h2>
+                                        <p className="text-sm text-muted-foreground">{t('candidatesPage.with')} {selectedCandidate.name}</p>
                                     </div>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => setInterviewModalOpen(false)}>
@@ -738,18 +738,18 @@ export default function CandidatesPage() {
                             
                             <div className="p-4 space-y-4">
                                 <div className="space-y-2">
-                                    <Label>Position Title</Label>
+                                    <Label>{t('candidatesPage.positionTitle')}</Label>
                                     <Input 
                                         value={interviewPosition}
                                         onChange={(e) => setInterviewPosition(e.target.value)}
-                                        placeholder="e.g., Frontend Developer Intern"
+                                        placeholder={t('candidatesPage.positionTitlePlaceholder')}
                                         className="rounded-xl"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Date</Label>
+                                        <Label>{t('candidatesPage.date')}</Label>
                                         <Input 
                                             type="date"
                                             value={interviewDate}
@@ -759,7 +759,7 @@ export default function CandidatesPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Time</Label>
+                                        <Label>{t('candidatesPage.time')}</Label>
                                         <Input 
                                             type="time"
                                             value={interviewTime}
@@ -771,22 +771,22 @@ export default function CandidatesPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Duration</Label>
+                                        <Label>{t('candidatesPage.duration')}</Label>
                                         <Select value={interviewDuration} onValueChange={setInterviewDuration}>
                                             <SelectTrigger className="rounded-xl">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="15">15 minutes</SelectItem>
-                                                <SelectItem value="30">30 minutes</SelectItem>
-                                                <SelectItem value="45">45 minutes</SelectItem>
-                                                <SelectItem value="60">1 hour</SelectItem>
-                                                <SelectItem value="90">1.5 hours</SelectItem>
+                                                <SelectItem value="15">{t('candidatesPage.minutes15')}</SelectItem>
+                                                <SelectItem value="30">{t('candidatesPage.minutes30')}</SelectItem>
+                                                <SelectItem value="45">{t('candidatesPage.minutes45')}</SelectItem>
+                                                <SelectItem value="60">{t('candidatesPage.hour1')}</SelectItem>
+                                                <SelectItem value="90">{t('candidatesPage.hours1_5')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Interview Type</Label>
+                                        <Label>{t('candidatesPage.interviewType')}</Label>
                                         <Select value={interviewType} onValueChange={setInterviewType}>
                                             <SelectTrigger className="rounded-xl">
                                                 <SelectValue />
@@ -794,17 +794,17 @@ export default function CandidatesPage() {
                                             <SelectContent>
                                                 <SelectItem value="video">
                                                     <span className="flex items-center gap-2">
-                                                        <Video className="h-3.5 w-3.5" /> Video Call
+                                                        <Video className="h-3.5 w-3.5" /> {t('candidatesPage.videoCall')}
                                                     </span>
                                                 </SelectItem>
                                                 <SelectItem value="in-person">
                                                     <span className="flex items-center gap-2">
-                                                        <MapPin className="h-3.5 w-3.5" /> In-Person
+                                                        <MapPin className="h-3.5 w-3.5" /> {t('candidatesPage.inPerson')}
                                                     </span>
                                                 </SelectItem>
                                                 <SelectItem value="phone">
                                                     <span className="flex items-center gap-2">
-                                                        <Clock className="h-3.5 w-3.5" /> Phone Call
+                                                        <Clock className="h-3.5 w-3.5" /> {t('candidatesPage.phoneCall')}
                                                     </span>
                                                 </SelectItem>
                                             </SelectContent>
@@ -813,11 +813,11 @@ export default function CandidatesPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Notes (optional)</Label>
+                                    <Label>{t('candidatesPage.notesOptional')}</Label>
                                     <Textarea 
                                         value={interviewNotes}
                                         onChange={(e) => setInterviewNotes(e.target.value)}
-                                        placeholder="Any additional information for the candidate..."
+                                        placeholder={t('candidatesPage.notesPlaceholder')}
                                         className="rounded-xl min-h-[80px] resize-none"
                                     />
                                 </div>
@@ -825,7 +825,7 @@ export default function CandidatesPage() {
                             
                             <div className="flex gap-2 p-4 border-t border-border">
                                 <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setInterviewModalOpen(false)}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </Button>
                                 <Button 
                                     className="flex-1 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
@@ -833,7 +833,7 @@ export default function CandidatesPage() {
                                     disabled={!interviewDate || !interviewTime || isSending}
                                 >
                                     {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-                                    Send Invitation
+                                    {t('candidatesPage.sendInvitation')}
                                 </Button>
                             </div>
                         </motion.div>

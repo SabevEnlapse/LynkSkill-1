@@ -36,6 +36,7 @@ import {
 } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
+import { useTranslation } from "@/lib/i18n"
 
 /* ----------------------------------------------------
    TYPES
@@ -86,6 +87,7 @@ function computeProgress(start: string | null, end: string | null): number {
    MAIN COMPONENT
 ---------------------------------------------------- */
 export function AssignmentsTabContent() {
+  const { t } = useTranslation()
   const router = useRouter()
 
   const [projects, setProjects] = useState<ApiProject[]>([])
@@ -111,14 +113,14 @@ export function AssignmentsTabContent() {
       const data = await res.json()
 
       if (!Array.isArray(data)) {
-        setError("Invalid API response")
+        setError(t("assignments.invalidApiResponse"))
         setProjects([])
       } else {
         setProjects(data)
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load assignments"
+        err instanceof Error ? err.message : t("assignments.failedToLoad")
       )
     }
 
@@ -190,7 +192,7 @@ export function AssignmentsTabContent() {
       <div className="text-center py-12">
         <div className="text-destructive text-lg font-medium">Error: {error}</div>
         <Button onClick={handleRefresh} className="mt-4 rounded-2xl">
-          Try Again
+          {t('common.tryAgain')}
         </Button>
       </div>
     )
@@ -198,7 +200,7 @@ export function AssignmentsTabContent() {
   if (filteredProjects.length === 0)
     return (
       <div className="text-center py-12">
-        <div className="text-muted-foreground text-lg">No matching assignments.</div>
+        <div className="text-muted-foreground text-lg">{t('assignments.noMatching')}</div>
       </div>
     )
 
@@ -215,7 +217,7 @@ export function AssignmentsTabContent() {
           onClick={() => setFilter("all")}
         >
           <Layers className="mr-2 h-4 w-4" />
-          All Assignments
+          {t('assignments.allAssignments')}
         </Button>
 
         <Button
@@ -224,7 +226,7 @@ export function AssignmentsTabContent() {
           onClick={() => setFilter("recent")}
         >
           <Clock className="mr-2 h-4 w-4" />
-          Recent
+          {t('common.recent')}
         </Button>
 
         <div className="flex-1" />
@@ -232,7 +234,7 @@ export function AssignmentsTabContent() {
         <div className="relative w-full md:w-auto mt-3 md:mt-0">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search..."
+            placeholder={t('common.search') + '...'}
             className="w-full rounded-2xl pl-9"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -249,7 +251,7 @@ export function AssignmentsTabContent() {
           <RefreshCw
             className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
           />
-          Refresh
+          {t('common.refresh')}
         </Button>
       </div>
 
@@ -284,7 +286,7 @@ export function AssignmentsTabContent() {
                     setSelected(proj)
                   }}
                   className="absolute right-2 bottom-2 z-20 p-2 rounded-xl bg-background/70 border"
-                  title="Quick View"
+                  title={t("assignments.quickView")}
                 >
                   <Eye className="w-4 h-4" />
                 </button>
@@ -309,7 +311,7 @@ export function AssignmentsTabContent() {
                 <CardContent className="space-y-3 relative z-10">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
-                      <span className="font-medium">Company:</span>
+                      <span className="font-medium">{t('assignments.company')}:</span>
                       <span className="ml-1">
                         {proj.internship.company?.name ?? "Unknown"}
                       </span>
@@ -317,7 +319,7 @@ export function AssignmentsTabContent() {
 
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-2" />
-                      <span className="font-medium">Student:</span>
+                      <span className="font-medium">{t('assignments.student')}:</span>
                       <span className="ml-1 truncate">{proj.student.name}</span>
                     </div>
                   </div>
@@ -325,7 +327,7 @@ export function AssignmentsTabContent() {
                   <div className="pt-2 border-t">
                     <div className="flex items-center text-xs">
                       <Clock className="w-4 h-4 mr-2" />
-                      <span className="font-medium">Period:</span>
+                      <span className="font-medium">{t('assignments.period')}:</span>
                       <span className="ml-1">
                         {proj.internship.startDate
                           ? safeDate(proj.internship.startDate)!.toLocaleDateString()
@@ -352,7 +354,7 @@ export function AssignmentsTabContent() {
                   <div className="absolute inset-0 bg-background/70 backdrop-blur-md flex items-center justify-center rounded-3xl z-50">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Redirecting...
+                      {t('assignments.redirecting')}
                     </div>
                   </div>
                 )}
@@ -374,10 +376,10 @@ export function AssignmentsTabContent() {
               </div>
               <div>
                 <DialogTitle className="text-2xl font-bold">
-                  Assignment Details
+                  {t('assignments.assignmentDetails')}
                 </DialogTitle>
                 <p className="text-sm text-muted-foreground">
-                  Complete project information
+                  {t('assignments.completeProjectInfo')}
                 </p>
               </div>
             </div>
@@ -390,7 +392,7 @@ export function AssignmentsTabContent() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="text-xs text-muted-foreground mb-1 uppercase">
-                      Internship Position
+                      {t('assignments.internshipPosition')}
                     </div>
                     <h3 className="text-xl font-bold mb-1">
                       {selected.internship.title}
@@ -418,7 +420,7 @@ export function AssignmentsTabContent() {
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="h-4 w-4" />
                     <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Student
+                      {t('assignments.student')}
                     </div>
                   </div>
                   <div className="font-semibold text-lg">
@@ -433,7 +435,7 @@ export function AssignmentsTabContent() {
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="h-4 w-4" />
                     <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Duration
+                      {t('assignments.duration')}
                     </div>
                   </div>
 
@@ -443,7 +445,7 @@ export function AssignmentsTabContent() {
                       : "N/A"}
                   </div>
 
-                  <div className="text-xs text-muted-foreground my-1">to</div>
+                  <div className="text-xs text-muted-foreground my-1">{t('assignments.to')}</div>
 
                   <div className="font-semibold text-sm">
                     {selected.internship.endDate
@@ -455,7 +457,7 @@ export function AssignmentsTabContent() {
                 <div className="p-4 rounded-xl border bg-accent/5">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="h-4 w-4" />
-                    <div className="text-xs">Started On</div>
+                    <div className="text-xs">{t('assignments.startedOn')}</div>
                   </div>
 
                   <div className="font-semibold">
@@ -466,7 +468,7 @@ export function AssignmentsTabContent() {
                 <div className="p-4 rounded-xl border bg-accent/5">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-4 w-4" />
-                    <div className="text-xs">Progress</div>
+                    <div className="text-xs">{t('assignments.progress')}</div>
                   </div>
 
                   <div className="font-semibold text-2xl">
@@ -488,7 +490,7 @@ export function AssignmentsTabContent() {
               onClick={() => setSelected(null)}
               className="rounded-2xl px-6"
             >
-              Close
+              {t('common.close')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 interface ReviewModalProps {
     open: boolean
@@ -37,6 +38,7 @@ export function ReviewModal({
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const { t } = useTranslation()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -70,7 +72,7 @@ export function ReviewModal({
             })
 
             if (res.ok) {
-                toast.success("Review submitted successfully!")
+                toast.success(t('reviewModal.submitSuccess'))
                 onSuccess?.()
                 onClose()
                 setRating(0)
@@ -78,17 +80,17 @@ export function ReviewModal({
                 setContent("")
             } else {
                 const data = await res.json()
-                toast.error(data.error || "Failed to submit review")
+                toast.error(data.error || t('reviewModal.failedToSubmit'))
             }
         } catch (error) {
             console.error("Error submitting review:", error)
-            toast.error("Something went wrong")
+            toast.error(t('errors.somethingWentWrong'))
         } finally {
             setIsSubmitting(false)
         }
     }
 
-    const ratingLabels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"]
+    const ratingLabels = ["", t('reviewModal.poor'), t('reviewModal.fair'), t('reviewModal.good'), t('reviewModal.veryGood'), t('reviewModal.excellent')]
 
     return (
         <AnimatePresence>
@@ -123,8 +125,8 @@ export function ReviewModal({
                                     <Star className="h-6 w-6 text-amber-500" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold text-foreground">Leave a Review</h2>
-                                    <p className="text-sm text-muted-foreground">Share your experience</p>
+                                    <h2 className="text-xl font-bold text-foreground">{t('reviewModal.leaveReview')}</h2>
+                                    <p className="text-sm text-muted-foreground">{t('reviewModal.shareExperience')}</p>
                                 </div>
                             </div>
                         </div>
@@ -144,7 +146,7 @@ export function ReviewModal({
 
                             {/* Star Rating */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Your Rating</label>
+                                <label className="text-sm font-medium text-foreground">{t('reviewModal.yourRating')}</label>
                                 <div className="flex items-center gap-2">
                                     <div className="flex gap-1">
                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -177,7 +179,7 @@ export function ReviewModal({
 
                             {/* Review Title */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Review Title</label>
+                                <label className="text-sm font-medium text-foreground">{t('reviewModal.reviewTitle')}</label>
                                 <Input
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
@@ -189,11 +191,11 @@ export function ReviewModal({
 
                             {/* Review Content */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Your Review</label>
+                                <label className="text-sm font-medium text-foreground">{t('reviewModal.yourReview')}</label>
                                 <Textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    placeholder="Tell us about your internship experience, what you learned, the work environment, mentorship quality..."
+                                    placeholder={t('reviewModal.reviewPlaceholder')}
                                     className="rounded-xl min-h-[120px] resize-none"
                                     maxLength={1000}
                                 />
@@ -213,7 +215,7 @@ export function ReviewModal({
                                 ) : (
                                     <Sparkles className="h-5 w-5 mr-2" />
                                 )}
-                                {isSubmitting ? "Submitting..." : "Submit Review"}
+                                {isSubmitting ? t('reviewModal.submitting') : t('reviewModal.submitReview')}
                             </Button>
                         </form>
                     </motion.div>

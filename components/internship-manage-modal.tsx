@@ -40,27 +40,28 @@ import {
 import { format, formatDistanceToNow, isValid, parseISO, startOfDay } from "date-fns"
 import { cn } from "@/lib/utils"
 import { LocationPicker, type LocationData } from "@/components/location-picker"
+import { useTranslation } from "@/lib/i18n"
 
 // Safe date formatting helper
-const safeFormatDate = (dateValue: string | Date | null | undefined, formatStr: string): string => {
-    if (!dateValue) return "Not set"
+const safeFormatDate = (dateValue: string | Date | null | undefined, formatStr: string, notSetLabel: string = "Not set"): string => {
+    if (!dateValue) return notSetLabel
     try {
         const date = typeof dateValue === 'string' ? parseISO(dateValue) : dateValue
-        if (!isValid(date)) return "Not set"
+        if (!isValid(date)) return notSetLabel
         return format(date, formatStr)
     } catch {
-        return "Not set"
+        return notSetLabel
     }
 }
 
-const safeFormatDistance = (dateValue: string | Date | number | null | undefined): string => {
-    if (!dateValue) return "Unknown"
+const safeFormatDistance = (dateValue: string | Date | number | null | undefined, unknownLabel: string = "Unknown"): string => {
+    if (!dateValue) return unknownLabel
     try {
         const date = typeof dateValue === 'string' ? parseISO(dateValue) : new Date(dateValue)
-        if (!isValid(date)) return "Unknown"
+        if (!isValid(date)) return unknownLabel
         return formatDistanceToNow(date, { addSuffix: true })
     } catch {
-        return "Unknown"
+        return unknownLabel
     }
 }
 
@@ -83,6 +84,7 @@ interface InternshipManageModalProps {
 }
 
 export function InternshipManageModal({ open, onClose, internship, onUpdate }: InternshipManageModalProps) {
+    const { t } = useTranslation()
     const [activeView, setActiveView] = useState<"overview" | "applications" | "edit">("overview")
     const [isLoading, setIsLoading] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
@@ -207,11 +209,11 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                 onUpdate?.()
             } else {
                 const err = await res.json()
-                alert(err.message || "Failed to update internship")
+                alert(err.message || t("manageInternship.failedToUpdate"))
             }
         } catch (error) {
             console.error(error)
-            alert("Failed to update internship")
+            alert(t("manageInternship.failedToUpdate"))
         } finally {
             setIsSaving(false)
         }
@@ -329,7 +331,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         ))}
                                         {skillsArray.length > 4 && (
                                             <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 text-white/70">
-                                                +{skillsArray.length - 4} more
+                                                +{skillsArray.length - 4} {t("manageInternship.more")}
                                             </span>
                                         )}
                                     </div>
@@ -349,7 +351,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <ChevronRight className="h-4 w-4 text-white/50 group-hover:translate-x-0.5 transition-transform" />
                                 </div>
                                 <p className="text-3xl font-bold text-white">{applications.length}</p>
-                                <p className="text-xs text-white/60 mt-1">Total Applicants</p>
+                                <p className="text-xs text-white/60 mt-1">{t("manageInternship.totalApplicants")}</p>
                             </button>
 
                             {/* Pending */}
@@ -364,7 +366,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     )}
                                 </div>
                                 <p className="text-3xl font-bold text-amber-100">{pendingCount}</p>
-                                <p className="text-xs text-amber-200/60 mt-1">Pending Review</p>
+                                <p className="text-xs text-amber-200/60 mt-1">{t("manageInternship.pendingReview")}</p>
                             </div>
 
                             {/* Approved */}
@@ -373,7 +375,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <CheckCircle className="h-5 w-5 text-emerald-300" />
                                 </div>
                                 <p className="text-3xl font-bold text-emerald-100">{approvedCount}</p>
-                                <p className="text-xs text-emerald-200/60 mt-1">Approved</p>
+                                <p className="text-xs text-emerald-200/60 mt-1">{t("manageInternship.approved")}</p>
                             </div>
 
                             {/* Days Remaining or Salary */}
@@ -394,7 +396,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     }
                                 </p>
                                 <p className="text-xs text-white/60 mt-1">
-                                    {internship.paid ? "Monthly Salary" : "Days Left to Apply"}
+                                    {internship.paid ? t("manageInternship.monthlySalary") : t("manageInternship.daysLeftToApply")}
                                 </p>
                             </div>
                         </div>
@@ -404,9 +406,9 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                 {/* Navigation Tabs */}
                 <div className="flex items-center gap-1 px-6 py-3 border-b bg-muted/30">
                     {[
-                        { id: "overview", label: "Overview", icon: Eye },
-                        { id: "applications", label: "Applications", icon: Users, badge: pendingCount },
-                        { id: "edit", label: "Edit Details", icon: Edit3 },
+                        { id: "overview", label: t("manageInternship.overview"), icon: Eye },
+                        { id: "applications", label: t("manageInternship.applications"), icon: Users, badge: pendingCount },
+                        { id: "edit", label: t("manageInternship.editDetails"), icon: Edit3 },
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -444,28 +446,28 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="p-4 rounded-2xl bg-muted/50 border border-border">
                                         <CalendarIcon className="h-5 w-5 text-purple-500 mb-2" />
-                                        <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t("manageInternship.startDate")}</p>
                                         <p className="font-semibold text-sm">
-                                            {safeFormatDate(internship.applicationStart, "MMM d, yyyy")}
+                                            {safeFormatDate(internship.applicationStart, "MMM d, yyyy", t("manageInternship.notSet"))}
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-muted/50 border border-border">
                                         <CalendarIcon className="h-5 w-5 text-blue-500 mb-2" />
-                                        <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t("manageInternship.endDate")}</p>
                                         <p className="font-semibold text-sm">
-                                            {safeFormatDate(internship.applicationEnd, "MMM d, yyyy")}
+                                            {safeFormatDate(internship.applicationEnd, "MMM d, yyyy", t("manageInternship.notSet"))}
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/20">
                                         <Timer className="h-5 w-5 text-cyan-500 mb-2" />
-                                        <p className="text-xs text-muted-foreground mb-1">Duration</p>
-                                        <p className="font-semibold text-sm">{internship.duration || "Flexible"}</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t("manageInternship.duration")}</p>
+                                        <p className="font-semibold text-sm">{internship.duration || t("manageInternship.flexible")}</p>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
                                         <DollarSign className="h-5 w-5 text-emerald-500 mb-2" />
-                                        <p className="text-xs text-muted-foreground mb-1">Compensation</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{t("manageInternship.compensation")}</p>
                                         <p className="font-semibold text-sm">
-                                            {internship.paid ? `$${internship.salary}/month` : "Unpaid"}
+                                            {internship.paid ? `$${internship.salary}/${t("manageInternship.month")}` : t("manageInternship.unpaid")}
                                         </p>
                                     </div>
                                 </div>
@@ -474,10 +476,10 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="space-y-3">
                                     <h3 className="font-semibold flex items-center gap-2 text-lg">
                                         <FileText className="h-5 w-5 text-purple-500" />
-                                        Description
+                                        {t("manageInternship.description")}
                                     </h3>
                                     <div className="p-5 rounded-2xl bg-muted/50 border text-sm leading-relaxed text-muted-foreground">
-                                        {internship.description || "No description provided."}
+                                        {internship.description || t("manageInternship.noDescriptionProvided")}
                                     </div>
                                 </div>
 
@@ -486,7 +488,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <div className="space-y-3">
                                         <h3 className="font-semibold flex items-center gap-2 text-lg">
                                             <GraduationCap className="h-5 w-5 text-blue-500" />
-                                            Qualifications
+                                            {t("manageInternship.qualifications")}
                                         </h3>
                                         <div className="p-5 rounded-2xl bg-muted/50 border text-sm leading-relaxed text-muted-foreground">
                                             {internship.qualifications}
@@ -498,7 +500,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="flex items-center justify-between pt-4 border-t text-sm text-muted-foreground">
                                     <span className="flex items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-muted-foreground" />
-                                        Posted {safeFormatDistance(internship.createdAt)}
+                                        {t("manageInternship.posted")} {safeFormatDistance(internship.createdAt, t("manageInternship.unknown"))}
                                     </span>
                                     <Button 
                                         variant="ghost" 
@@ -506,7 +508,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         className="gap-2 text-primary hover:text-primary/80"
                                         onClick={() => setActiveView("edit")}
                                     >
-                                        Edit Internship
+                                        {t("manageInternship.editInternship")}
                                         <ArrowRight className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -540,22 +542,22 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         <div className="h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-5 border border-purple-500/30">
                                             <Users className="h-10 w-10 text-purple-500" />
                                         </div>
-                                        <h3 className="font-semibold text-lg mb-2">No Applications Yet</h3>
+                                        <h3 className="font-semibold text-lg mb-2">{t("manageInternship.noApplicationsYet")}</h3>
                                         <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                            When students apply for this internship, their applications will appear here for you to review.
+                                            {t("manageInternship.noApplicationsDescription")}
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {/* Filter Pills */}
                                         <div className="flex items-center gap-2 mb-4">
-                                            <span className="text-sm text-muted-foreground">Filter:</span>
+                                            <span className="text-sm text-muted-foreground">{t("manageInternship.filter")}:</span>
                                             <div className="flex gap-1">
                                                 {[
-                                                    { label: "All", count: applications.length },
-                                                    { label: "Pending", count: pendingCount },
-                                                    { label: "Approved", count: approvedCount },
-                                                    { label: "Rejected", count: rejectedCount },
+                                                    { label: t("manageInternship.all"), count: applications.length },
+                                                    { label: t("manageInternship.pending"), count: pendingCount },
+                                                    { label: t("manageInternship.approvedFilter"), count: approvedCount },
+                                                    { label: t("manageInternship.rejected"), count: rejectedCount },
                                                 ].map(filter => (
                                                     <button
                                                         key={filter.label}
@@ -596,13 +598,13 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
 
                                                         {/* Info */}
                                                         <div>
-                                                            <p className="font-semibold text-base">{app.student.name || "Student"}</p>
+                                                            <p className="font-semibold text-base">{app.student.name || t("manageInternship.student")}</p>
                                                             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                                                                 <Mail className="h-3.5 w-3.5" />
                                                                 {app.student.email}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground mt-1">
-                                                                Applied {safeFormatDistance(app.createdAt)}
+                                                                {t("manageInternship.applied")} {safeFormatDistance(app.createdAt, t("manageInternship.unknown"))}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -618,7 +620,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                                     onClick={() => handleApplicationAction(app.id, "REJECTED")}
                                                                 >
                                                                     <UserX className="h-4 w-4" />
-                                                                    Reject
+                                                                    {t("manageInternship.reject")}
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
@@ -626,7 +628,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                                     onClick={() => handleApplicationAction(app.id, "APPROVED")}
                                                                 >
                                                                     <UserCheck className="h-4 w-4" />
-                                                                    Approve
+                                                                    {t("manageInternship.approve")}
                                                                 </Button>
                                                             </>
                                                         ) : (
@@ -637,9 +639,9 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                                     : "bg-red-500/10 text-red-600 border-red-500/30"
                                                             )}>
                                                                 {app.status === "APPROVED" ? (
-                                                                    <><CheckCircle className="h-4 w-4 mr-1.5" /> Approved</>
+                                                                    <><CheckCircle className="h-4 w-4 mr-1.5" /> {t("manageInternship.approvedBadge")}</>
                                                                 ) : (
-                                                                    <><X className="h-4 w-4 mr-1.5" /> Rejected</>
+                                                                    <><X className="h-4 w-4 mr-1.5" /> {t("manageInternship.rejectedBadge")}</>
                                                                 )}
                                                             </Badge>
                                                         )}
@@ -664,12 +666,12 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="space-y-2">
                                     <Label className="flex items-center gap-2 text-sm font-medium">
                                         <Briefcase className="h-4 w-4 text-purple-500" />
-                                        Job Title
+                                        {t("manageInternship.jobTitle")}
                                     </Label>
                                     <Input
                                         value={formValues.title}
                                         onChange={e => updateField("title", e.target.value)}
-                                        placeholder="e.g., Software Engineering Intern"
+                                        placeholder={t("manageInternship.jobTitlePlaceholder")}
                                         className="h-12 rounded-xl border-2 focus:border-purple-500 transition-colors"
                                     />
                                 </div>
@@ -678,7 +680,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-4 space-y-2">
                                     <Label className="flex items-center gap-2 text-sm font-semibold">
                                         <MapPin className="h-4 w-4 text-blue-500" />
-                                        Internship Location
+                                        {t("manageInternship.internshipLocation")}
                                     </Label>
                                     <LocationPicker
                                         value={typeof formValues.location === 'object' ? formValues.location : { address: formValues.location as string, latitude: 0, longitude: 0 }}
@@ -692,7 +694,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-medium">
                                             <CalendarIcon className="h-4 w-4 text-cyan-500" />
-                                            Applications Open
+                                            {t("manageInternship.applicationsOpen")}
                                         </Label>
                                         <Popover>
                                             <PopoverTrigger asChild>
@@ -707,7 +709,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                     {formValues.applicationStart ? (
                                                         format(formValues.applicationStart, "PPP")
                                                     ) : (
-                                                        <span>Pick start date</span>
+                                                        <span>{t("manageInternship.pickStartDate")}</span>
                                                     )}
                                                 </Button>
                                             </PopoverTrigger>
@@ -725,7 +727,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-medium">
                                             <CalendarIcon className="h-4 w-4 text-purple-500" />
-                                            Applications Close
+                                            {t("manageInternship.applicationsClose")}
                                         </Label>
                                         <Popover>
                                             <PopoverTrigger asChild>
@@ -740,7 +742,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                     {formValues.applicationEnd ? (
                                                         format(formValues.applicationEnd, "PPP")
                                                     ) : (
-                                                        <span>Pick end date</span>
+                                                        <span>{t("manageInternship.pickEndDate")}</span>
                                                     )}
                                                 </Button>
                                             </PopoverTrigger>
@@ -762,24 +764,24 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-medium">
                                             <Timer className="h-4 w-4 text-cyan-500" />
-                                            Duration (Optional)
+                                            {t("manageInternship.durationOptional")}
                                         </Label>
                                         <Input
                                             value={formValues.duration}
                                             onChange={e => updateField("duration", e.target.value)}
-                                            placeholder="e.g., 3 months, 6 months"
+                                            placeholder={t("manageInternship.durationPlaceholder")}
                                             className="h-12 rounded-xl border-2 focus:border-cyan-500 transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-medium">
                                             <Award className="h-4 w-4 text-purple-500" />
-                                            Skills (comma separated)
+                                            {t("manageInternship.skillsCommaSeparated")}
                                         </Label>
                                         <Input
                                             value={formValues.skills}
                                             onChange={e => updateField("skills", e.target.value)}
-                                            placeholder="e.g., React, Node.js, Python"
+                                            placeholder={t("manageInternship.skillsPlaceholder")}
                                             className="h-12 rounded-xl border-2 focus:border-purple-500 transition-colors"
                                         />
                                     </div>
@@ -789,12 +791,12 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="space-y-2">
                                     <Label className="flex items-center gap-2 text-sm font-medium">
                                         <FileText className="h-4 w-4 text-purple-500" />
-                                        Description
+                                        {t("manageInternship.description")}
                                     </Label>
                                     <Textarea
                                         value={formValues.description}
                                         onChange={e => updateField("description", e.target.value)}
-                                        placeholder="Describe the internship role, responsibilities, and what the intern will learn..."
+                                        placeholder={t("manageInternship.descriptionPlaceholder")}
                                         className="min-h-[120px] rounded-xl border-2 focus:border-purple-500 resize-none transition-colors"
                                     />
                                 </div>
@@ -803,12 +805,12 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                 <div className="space-y-2">
                                     <Label className="flex items-center gap-2 text-sm font-medium">
                                         <GraduationCap className="h-4 w-4 text-blue-500" />
-                                        Qualifications
+                                        {t("manageInternship.qualifications")}
                                     </Label>
                                     <Textarea
                                         value={formValues.qualifications}
                                         onChange={e => updateField("qualifications", e.target.value)}
-                                        placeholder="List required or preferred qualifications..."
+                                        placeholder={t("manageInternship.qualificationsPlaceholder")}
                                         className="min-h-[80px] rounded-xl border-2 focus:border-blue-500 resize-none transition-colors"
                                     />
                                 </div>
@@ -825,9 +827,9 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         <div>
                                             <Label htmlFor="paid" className="flex items-center gap-2 cursor-pointer font-medium">
                                                 <DollarSign className="h-4 w-4 text-emerald-500" />
-                                                This is a Paid Internship
+                                                {t("manageInternship.paidInternship")}
                                             </Label>
-                                            <p className="text-xs text-muted-foreground mt-0.5">Enable to set monthly compensation</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{t("manageInternship.enableCompensation")}</p>
                                         </div>
                                     </div>
 
@@ -840,14 +842,14 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                                 className="overflow-hidden"
                                             >
                                                 <div className="pt-3 border-t border-dashed">
-                                                    <Label className="text-sm font-medium mb-2 block">Monthly Salary (USD)</Label>
+                                                    <Label className="text-sm font-medium mb-2 block">{t("manageInternship.monthlySalaryUSD")}</Label>
                                                     <div className="relative">
                                                         <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                                         <Input
                                                             type="number"
                                                             value={formValues.salary}
                                                             onChange={e => updateField("salary", e.target.value)}
-                                                            placeholder="e.g., 1500"
+                                                            placeholder={t("manageInternship.salaryPlaceholder")}
                                                             className="h-12 pl-10 rounded-xl border-2 focus:border-emerald-500 transition-colors"
                                                         />
                                                     </div>
@@ -869,10 +871,10 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         <div>
                                             <Label htmlFor="requiresCoverLetter" className="flex items-center gap-2 cursor-pointer font-medium">
                                                 <ScrollText className="h-4 w-4 text-indigo-500" />
-                                                Require Cover Letter
+                                                {t("manageInternship.requireCoverLetter")}
                                             </Label>
                                             <p className="text-xs text-muted-foreground mt-0.5">
-                                                Students must write a cover letter when applying
+                                                {t("manageInternship.coverLetterDescription")}
                                             </p>
                                         </div>
                                     </div>
@@ -885,7 +887,7 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         onClick={() => setActiveView("overview")}
                                         className="text-muted-foreground"
                                     >
-                                        Cancel
+                                        {t("manageInternship.cancel")}
                                     </Button>
                                     <Button
                                         onClick={handleSave}
@@ -895,12 +897,12 @@ export function InternshipManageModal({ open, onClose, internship, onUpdate }: I
                                         {isSaving ? (
                                             <>
                                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                                Saving...
+                                                {t("manageInternship.saving")}
                                             </>
                                         ) : (
                                             <>
                                                 <Save className="h-4 w-4" />
-                                                Save Changes
+                                                {t("manageInternship.saveChanges")}
                                             </>
                                         )}
                                     </Button>

@@ -3,15 +3,18 @@
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/lib/i18n"
 
 interface DashboardHeroProps {
   userType: "Student" | "Company"
 }
 
 export function DashboardHero({ userType: _userType }: DashboardHeroProps) {
+  const { t } = useTranslation()
+
   return (
     <section>
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -19,18 +22,18 @@ export function DashboardHero({ userType: _userType }: DashboardHeroProps) {
       >
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
-            <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Link Early</Badge>
-            <h2 className="text-3xl font-bold">Welcome to LynkSkill</h2>
+            <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">{t('landing.linkEarly')}</Badge>
+            <h2 className="text-3xl font-bold">{t('landing.welcomeToLynkSkill')}</h2>
             <p className="max-w-[600px] text-white/80">
-              The best place to unleash your creativity, improve your skills and find your talents.
+              {t('dashboard.hero.description')}
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">Explore Plans</Button>
+              <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">{t('landing.explorePlans')}</Button>
               <Button
                 variant="outline"
                 className="rounded-2xl bg-transparent border-white text-white hover:bg-white/10"
               >
-                Take a Tour
+                {t('dashboard.hero.takeATour')}
               </Button>
             </div>
           </div>
@@ -48,7 +51,7 @@ export function DashboardHero({ userType: _userType }: DashboardHeroProps) {
             </motion.div>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
     </section>
   )
 }

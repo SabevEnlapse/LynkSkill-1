@@ -2,41 +2,17 @@
 
 import { motion } from "framer-motion"
 import { CheckCircle2 } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
-const faqs = [
-    {
-        question: "Is LynkSkill free for students?",
-        answer:
-            "Yes! LynkSkill is completely free for students. We believe in making career opportunities accessible to everyone.",
-    },
-    {
-        question: "How do I create a portfolio?",
-        answer:
-            "Once you sign up, you'll have access to our portfolio builder. Simply add your projects, skills, and experiences using our intuitive interface.",
-    },
-    {
-        question: "Are all companies verified?",
-        answer:
-            "Absolutely. We thoroughly vet every company on our platform to ensure they're legitimate and provide quality internship experiences.",
-    },
-    {
-        question: "Can I apply to multiple internships?",
-        answer:
-            "Yes! You can apply to as many internships as you'd like. Our one-click application system makes it quick and easy.",
-    },
-    {
-        question: "How does the matching algorithm work?",
-        answer:
-            "Our AI analyzes your skills, interests, and career goals to recommend internships that are the best fit for you.",
-    },
-    {
-        question: "Can I share my achievements?",
-        answer:
-            "Yes! The Experience Hub lets you post your achievements, milestones, and experiences to inspire others and build your professional story.",
-    },
-]
+const faqKeys = ["q1", "q2", "q3", "q4", "q5", "q6"] as const
 
 export function FAQSection() {
+    const { t } = useTranslation()
+
+    const faqs = faqKeys.map((key) => ({
+        question: t(`landing.faq.${key}.question`),
+        answer: t(`landing.faq.${key}.answer`),
+    }))
     return (
         <section className="relative py-16 md:py-32 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
@@ -48,13 +24,13 @@ export function FAQSection() {
                     className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20"
                 >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                        Frequently Asked{" "}
+                        {t("landing.faq.title")}{" "}
                         <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              Questions
+              {t("landing.faq.titleHighlight")}
             </span>
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-                        Got questions? We&apos;ve got answers. Here are some of the most common questions we receive.
+                        {t("landing.faq.subtitle")}
                     </p>
                 </motion.div>
 

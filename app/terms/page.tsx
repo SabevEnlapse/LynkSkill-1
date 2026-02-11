@@ -1,8 +1,13 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Scale, FileText, Shield, AlertCircle } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 export default function TermsPage() {
+    const { t } = useTranslation()
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-6">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -14,8 +19,8 @@ export default function TermsPage() {
                             <Scale className="w-12 h-12 text-primary" />
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-balance">Terms of Service</h1>
-                    <p className="text-muted-foreground text-lg">Last updated: January 2025</p>
+                    <h1 className="text-4xl font-bold text-balance">{t("terms.title")}</h1>
+                    <p className="text-muted-foreground text-lg">{t("terms.lastUpdated")}</p>
                 </div>
 
                 {/* AGREEMENT TO TERMS */}
@@ -23,14 +28,12 @@ export default function TermsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <FileText className="w-5 h-5" />
-                            Agreement to Terms
+                            {t("terms.agreementToTerms")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 leading-relaxed text-muted-foreground">
                         <p>
-                            By accessing and using LynkSkill (“the Platform”), you confirm that you have read, understood,
-                            and agree to be bound by these Terms of Service. If you do not agree with any part of these Terms,
-                            you must discontinue use of the Platform immediately.
+                            {t("terms.agreementToTermsText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -40,18 +43,16 @@ export default function TermsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Shield className="w-5 h-5" />
-                            User Responsibilities
+                            {t("terms.userResponsibilities")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 leading-relaxed">
 
                         {/* Account Registration */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-2">Account Registration</h3>
+                            <h3 className="font-semibold text-lg mb-2">{t("terms.accountRegistration")}</h3>
                             <p className="text-muted-foreground">
-                                You agree to provide accurate, current, and complete information during registration. You are
-                                responsible for maintaining the confidentiality of your account credentials and for all activities
-                                conducted under your account.
+                                {t("terms.accountRegistrationText")}
                             </p>
                         </div>
 
@@ -59,13 +60,13 @@ export default function TermsPage() {
 
                         {/* Acceptable Use */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-2">Acceptable Use</h3>
+                            <h3 className="font-semibold text-lg mb-2">{t("terms.acceptableUse")}</h3>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                <li>You will not use the Platform for any unlawful or unauthorized purpose</li>
-                                <li>You will not upload, distribute, or transmit malicious code or harmful software</li>
-                                <li>You will not attempt to gain unauthorized access to systems, accounts, or sensitive data</li>
-                                <li>You will not misrepresent your identity, age, or company details</li>
-                                <li>You will not share or publish illegal, harmful, discriminatory, or sexualized content</li>
+                                <li>{t("terms.acceptableUse1")}</li>
+                                <li>{t("terms.acceptableUse2")}</li>
+                                <li>{t("terms.acceptableUse3")}</li>
+                                <li>{t("terms.acceptableUse4")}</li>
+                                <li>{t("terms.acceptableUse5")}</li>
                             </ul>
                         </div>
 
@@ -73,12 +74,9 @@ export default function TermsPage() {
 
                         {/* Company Verification */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-2">Company Verification</h3>
+                            <h3 className="font-semibold text-lg mb-2">{t("terms.companyVerification")}</h3>
                             <p className="text-muted-foreground">
-                                Companies using LynkSkill must provide accurate and verifiable information including legal
-                                identifiers (EIK/BULSTAT). Providing false or misleading data may result in suspension,
-                                permanent removal, or reporting to Bulgarian authorities under applicable laws, including
-                                <strong> Article 313 of the Bulgarian Penal Code</strong>.
+                                {t("terms.companyVerificationText")}
                             </p>
                         </div>
 
@@ -86,11 +84,9 @@ export default function TermsPage() {
 
                         {/* Student Information */}
                         <div>
-                            <h3 className="font-semibold text-lg mb-2">Student Information and Misrepresentation</h3>
+                            <h3 className="font-semibold text-lg mb-2">{t("terms.studentInformation")}</h3>
                             <p className="text-muted-foreground">
-                                Students must provide accurate personal and age information. Deliberately falsifying identity,
-                                age, or school details may result in account suspension and notification to educational
-                                institutions or guardians.
+                                {t("terms.studentInformationText")}
                             </p>
                         </div>
                     </CardContent>
@@ -99,14 +95,11 @@ export default function TermsPage() {
                 {/* INTELLECTUAL PROPERTY */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Intellectual Property</CardTitle>
+                        <CardTitle>{t("terms.intellectualProperty")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            All trademarks, branding, UI components, platform design, and original content are the intellectual
-                            property of LynkSkill and are protected under Bulgarian copyright law, EU directives, and
-                            international intellectual property treaties. Unauthorized reproduction or distribution is strictly
-                            prohibited.
+                            {t("terms.intellectualPropertyText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -114,13 +107,11 @@ export default function TermsPage() {
                 {/* LIMITATION OF LIABILITY */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Limitation of Liability</CardTitle>
+                        <CardTitle>{t("terms.limitationOfLiability")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill is not responsible for indirect, incidental, or consequential damages, including loss
-                            of data, profits, goodwill, or business opportunities. LynkSkill is not an employer and is not
-                            liable for any internship, training, or work-related outcomes or disputes between users.
+                            {t("terms.limitationOfLiabilityText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -128,13 +119,11 @@ export default function TermsPage() {
                 {/* TERMINATION */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Termination</CardTitle>
+                        <CardTitle>{t("terms.termination")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill may suspend or terminate accounts without prior notice if users violate these Terms,
-                            provide false information, engage in harmful or illegal activity, or refuse identity, age,
-                            or company verification.
+                            {t("terms.terminationText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -142,12 +131,11 @@ export default function TermsPage() {
                 {/* GOVERNING LAW */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Governing Law</CardTitle>
+                        <CardTitle>{t("terms.governingLaw")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            These Terms are governed by Bulgarian legislation, EU regulations, GDPR, the Bulgarian Personal
-                            Data Protection Act (ZZD), and the Electronic Trade Act (ZET).
+                            {t("terms.governingLawText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -155,12 +143,11 @@ export default function TermsPage() {
                 {/* CHANGES TO TERMS */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Changes to Terms</CardTitle>
+                        <CardTitle>{t("terms.changesToTerms")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            LynkSkill may update these Terms at any time. Significant changes will be announced on the
-                            Platform. Continued use after changes constitutes acceptance of the revised Terms.
+                            {t("terms.changesToTermsText")}
                         </p>
                     </CardContent>
                 </Card>
@@ -170,12 +157,12 @@ export default function TermsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <AlertCircle className="w-5 h-5" />
-                            Contact Us
+                            {t("terms.contactUs")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="leading-relaxed">
                         <p className="text-muted-foreground">
-                            For legal inquiries, contact us at{" "}
+                            {t("terms.contactUsText")}{" "}
                             <a href="mailto:lynkskillweb@gmail.com" className="text-primary underline underline-offset-4">
                                 lynkskillweb@gmail.com
                             </a>

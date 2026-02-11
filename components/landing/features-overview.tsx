@@ -3,35 +3,30 @@
 import {motion, useScroll, useTransform} from "framer-motion"
 import { Target, Zap, Shield, TrendingUp } from "lucide-react"
 import {useEffect} from "react";
+import { useTranslation } from "@/lib/i18n"
 
-const features = [
+const featuresMeta = [
     {
         icon: <Target className="w-6 h-6 md:w-8 md:h-8" />,
-        title: "Smart Matching",
-        description:
-            "AI-powered algorithm connects you with the perfect internship opportunities based on your skills and interests.",
+        key: "smartMatching",
         gradient: "from-purple-600 to-blue-600",
         iconBg: "from-purple-500 to-blue-500",
     },
     {
         icon: <Zap className="w-6 h-6 md:w-8 md:h-8" />,
-        title: "Instant Applications",
-        description: "Apply to multiple positions with one click. Your portfolio and credentials are always ready to go.",
+        key: "instantApplications",
         gradient: "from-blue-600 to-cyan-600",
         iconBg: "from-blue-500 to-cyan-500",
     },
     {
         icon: <Shield className="w-6 h-6 md:w-8 md:h-8" />,
-        title: "Verified Companies",
-        description: "All partner companies are thoroughly vetted to ensure legitimate opportunities and safe experiences.",
+        key: "verifiedCompanies",
         gradient: "from-cyan-600 to-purple-600",
         iconBg: "from-cyan-500 to-purple-500",
     },
     {
         icon: <TrendingUp className="w-6 h-6 md:w-8 md:h-8" />,
-        title: "Career Growth",
-        description:
-            "Track your progress, gain insights, and watch your professional journey unfold with detailed analytics.",
+        key: "careerGrowth",
         gradient: "from-purple-600 to-pink-600",
         iconBg: "from-purple-500 to-pink-500",
     },
@@ -39,8 +34,15 @@ const features = [
 
 export function FeaturesOverview() {
 
+    const { t } = useTranslation()
     const { scrollY } = useScroll()
     useTransform(scrollY, [0, 500], [0, 150])
+
+    const features = featuresMeta.map((f) => ({
+        ...f,
+        title: t(`landing.features.${f.key}.title`),
+        description: t(`landing.features.${f.key}.description`),
+    }))
 
     useEffect(() => {
         const handleMouseMove = () => {
@@ -58,7 +60,7 @@ export function FeaturesOverview() {
                 animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
             >
-                <span className="text-sm text-muted-foreground font-medium">Scroll to explore</span>
+                <span className="text-sm text-muted-foreground font-medium">{t("landing.features.scrollToExplore")}</span>
                 <motion.div
                     className="w-8 h-12 border-2 border-white/30 rounded-full flex items-start justify-center p-2 hover:border-white/50 transition-colors duration-300"
                     whileHover={{ scale: 1.1 }}
@@ -108,7 +110,7 @@ export function FeaturesOverview() {
                 >
 
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                        Why Choose{" "}
+                        {t("landing.features.title")}{" "}
                         <motion.span
                             className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent"
                             animate={{
@@ -128,8 +130,7 @@ export function FeaturesOverview() {
                         ?
                     </h2>
                     <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto text-balance leading-relaxed">
-                        We&apos;ve built the most comprehensive platform for student-business connections, packed with features
-                        designed to accelerate your career.
+                        {t("landing.features.subtitle")}
                     </p>
                 </motion.div>
 

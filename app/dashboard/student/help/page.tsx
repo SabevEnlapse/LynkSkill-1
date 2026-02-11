@@ -23,94 +23,101 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-const faqCategories = [
+function useStudentFaqCategories() {
+    const { t } = useTranslation()
+    return [
     {
         id: "getting-started",
-        label: "Getting Started",
+        label: t('help.gettingStarted'),
         icon: Rocket,
         questions: [
             {
-                q: "How do I create my profile?",
-                a: "After signing up, you'll be guided through an onboarding process. Fill in your personal information, add your skills, and upload a profile photo. You can always edit your profile later from the Settings page."
+                q: t('help.studentFaq.howCreateProfile'),
+                a: t('help.studentFaq.howCreateProfileAnswer')
             },
             {
-                q: "How do I find internships?",
-                a: "Navigate to the 'Internships' section from the sidebar. You can browse all available internships, use filters to narrow down your search, and save interesting opportunities for later."
+                q: t('help.studentFaq.howFindInternships'),
+                a: t('help.studentFaq.howFindInternshipsAnswer')
             },
             {
-                q: "What is the AI Mode?",
-                a: "AI Mode is our intelligent assistant that helps you build your portfolio and find matching internships. It analyzes your skills and preferences to provide personalized recommendations."
+                q: t('help.studentFaq.whatIsAiMode'),
+                a: t('help.studentFaq.whatIsAiModeAnswer')
             },
         ]
     },
     {
         id: "applications",
-        label: "Applications",
+        label: t('help.applications'),
         icon: Briefcase,
         questions: [
             {
-                q: "How do I apply for an internship?",
-                a: "Click on any internship card to view details, then click 'Apply Now'. You may need to complete your portfolio first. Some internships may have additional requirements like assignments."
+                q: t('help.studentFaq.howApply'),
+                a: t('help.studentFaq.howApplyAnswer')
             },
             {
-                q: "Can I withdraw my application?",
-                a: "Yes, you can withdraw your application from the 'Applied' section as long as it hasn't been processed yet. Go to your applied internships and click the withdraw button."
+                q: t('help.studentFaq.canWithdraw'),
+                a: t('help.studentFaq.canWithdrawAnswer')
             },
             {
-                q: "How do I track my application status?",
-                a: "All your applications are visible in the 'Applied' section. You'll see status indicators showing whether your application is pending, approved, or rejected."
+                q: t('help.studentFaq.howTrackStatus'),
+                a: t('help.studentFaq.howTrackStatusAnswer')
             },
         ]
     },
     {
         id: "portfolio",
-        label: "Portfolio",
+        label: t('help.portfolioCategory'),
         icon: Star,
         questions: [
             {
-                q: "How do I build my portfolio?",
-                a: "Go to the Portfolio section and add your projects, skills, education, and work experience. Use AI Mode for an interactive way to build your portfolio through conversation."
+                q: t('help.studentFaq.howBuildPortfolio'),
+                a: t('help.studentFaq.howBuildPortfolioAnswer')
             },
             {
-                q: "What should I include in my portfolio?",
-                a: "Include your best projects, relevant skills, education background, and any work experience. Add descriptions, links, and media to showcase your abilities."
+                q: t('help.studentFaq.whatIncludePortfolio'),
+                a: t('help.studentFaq.whatIncludePortfolioAnswer')
             },
             {
-                q: "Can companies see my portfolio?",
-                a: "Yes, when you apply for internships, companies can view your portfolio. You can control visibility settings in Privacy settings."
+                q: t('help.studentFaq.canCompaniesSee'),
+                a: t('help.studentFaq.canCompaniesSeeAnswer')
             },
         ]
     },
     {
         id: "account",
-        label: "Account & Security",
+        label: t('help.accountAndSecurity'),
         icon: Shield,
         questions: [
             {
-                q: "How do I change my password?",
-                a: "Go to Settings > Profile > Change Password. You'll need to enter your current password and then your new password twice to confirm."
+                q: t('help.studentFaq.howChangePassword'),
+                a: t('help.studentFaq.howChangePasswordAnswer')
             },
             {
-                q: "How do I enable two-factor authentication?",
-                a: "Navigate to Settings > Privacy > Two-Factor Authentication. Follow the setup wizard to add an extra layer of security to your account."
+                q: t('help.studentFaq.howEnable2fa'),
+                a: t('help.studentFaq.howEnable2faAnswer')
             },
             {
-                q: "How do I delete my account?",
-                a: "Contact our support team to request account deletion. We'll process your request within 30 days and remove all your personal data."
+                q: t('help.studentFaq.howDeleteAccount'),
+                a: t('help.studentFaq.howDeleteAccountAnswer')
             },
         ]
     },
 ]
 
-const quickLinks = [
-    { label: "Student Guide", href: "/dashboard/student/help/student-guide", icon: GraduationCap },
-    { label: "Company Guide", href: "/dashboard/student/help/company-guide", icon: Building2 },
-    { label: "Privacy Policy", href: "/privacy", icon: Shield },
-    { label: "Terms of Service", href: "/terms", icon: FileQuestion },
+function useQuickLinks() {
+    const { t } = useTranslation()
+    return [
+    { label: t('help.studentGuide'), href: "/dashboard/student/help/student-guide", icon: GraduationCap },
+    { label: t('help.companyGuide'), href: "/dashboard/student/help/company-guide", icon: Building2 },
+    { label: t('help.privacyPolicy'), href: "/privacy", icon: Shield },
+    { label: t('help.termsOfService'), href: "/terms", icon: FileQuestion },
 ]
+}
 
 export default function HelpPage() {
     const { t } = useTranslation()
+    const faqCategories = useStudentFaqCategories()
+    const quickLinks = useQuickLinks()
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState("getting-started")
     const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" })
@@ -144,14 +151,14 @@ export default function HelpPage() {
                 throw new Error(data.error || 'Failed to send message')
             }
             
-            toast.success("Message sent!", {
-                description: "We'll get back to you within 24 hours.",
+            toast.success(t('help.messageSent'), {
+                description: t('help.weWillGetBack'),
             })
             
             setContactForm({ name: "", email: "", message: "" })
         } catch (error) {
-            toast.error("Failed to send message", {
-                description: error instanceof Error ? error.message : "Please try again later.",
+            toast.error(t('help.failedToSendMessage'), {
+                description: error instanceof Error ? error.message : t('help.pleaseTryAgainLater'),
             })
         } finally {
             setIsSending(false)
@@ -176,7 +183,7 @@ export default function HelpPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold">{t('navigation.help')}</h1>
-                            <p className="text-muted-foreground">Find answers and get support</p>
+                            <p className="text-muted-foreground">{t('help.findAnswersAndSupport')}</p>
                         </div>
                     </div>
 
@@ -184,7 +191,7 @@ export default function HelpPage() {
                     <div className="relative max-w-xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                            placeholder="Search for help..."
+                            placeholder={t('help.searchForHelp')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-12 h-12 rounded-xl bg-background/50 border-border/50 focus:border-violet-500/50"
@@ -226,7 +233,7 @@ export default function HelpPage() {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Book className="h-4 w-4 text-violet-500" />
-                                FAQ Categories
+                                {t('help.faqCategories')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-2">
@@ -263,10 +270,10 @@ export default function HelpPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileQuestion className="h-5 w-5 text-violet-500" />
-                                Frequently Asked Questions
+                                {t('help.frequentlyAskedQuestions')}
                             </CardTitle>
                             <CardDescription>
-                                Find quick answers to common questions
+                                {t('help.findQuickAnswers')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -308,8 +315,8 @@ export default function HelpPage() {
                                         ) : (
                                             <div className="text-center py-12">
                                                 <FileQuestion className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-muted-foreground">No results found for &ldquo;{searchQuery}&rdquo;</p>
-                                                <p className="text-sm text-muted-foreground mt-1">Try different keywords or contact support</p>
+                                                <p className="text-muted-foreground">{t('help.noResultsFor', { query: searchQuery })}</p>
+                                                <p className="text-sm text-muted-foreground mt-1">{t('help.tryDifferentKeywords')}</p>
                                             </div>
                                         )}
                                     </motion.div>
@@ -352,19 +359,19 @@ export default function HelpPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <MessageCircle className="h-5 w-5 text-violet-500" />
-                                Contact Support
+                                {t('help.contactSupport')}
                             </CardTitle>
                             <CardDescription>
-                                Can&apos;t find what you&apos;re looking for? Send us a message.
+                                {t('help.cantFindAnswer')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-6 md:grid-cols-2">
                                 <form onSubmit={handleContactSubmit} className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Name</label>
+                                        <label className="text-sm font-medium">{t('help.name')}</label>
                                         <Input
-                                            placeholder="Your name"
+                                            placeholder={t('help.yourName')}
                                             value={contactForm.name}
                                             onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
                                             required
@@ -372,7 +379,7 @@ export default function HelpPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Email</label>
+                                        <label className="text-sm font-medium">{t('help.email')}</label>
                                         <Input
                                             type="email"
                                             placeholder="your@email.com"
@@ -383,9 +390,9 @@ export default function HelpPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Message</label>
+                                        <label className="text-sm font-medium">{t('help.message')}</label>
                                         <Textarea
-                                            placeholder="How can we help you?"
+                                            placeholder={t('help.howCanWeHelp')}
                                             value={contactForm.message}
                                             onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
                                             required
@@ -398,11 +405,11 @@ export default function HelpPage() {
                                         disabled={isSending}
                                     >
                                         {isSending ? (
-                                            <>Sending...</>
+                                            <>{t('help.sending')}</>
                                         ) : (
                                             <>
                                                 <Send className="h-4 w-4 mr-2" />
-                                                Send Message
+                                                {t('help.sendMessage')}
                                             </>
                                         )}
                                     </Button>
@@ -412,28 +419,28 @@ export default function HelpPage() {
                                     <div className="p-4 rounded-xl bg-muted/50">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Mail className="h-4 w-4 text-violet-500" />
-                                            Email Us
+                                            {t('help.emailUs')}
                                         </h4>
                                         <a href="mailto:lynkskillweb@gmail.com" className="text-sm text-violet-600 dark:text-violet-400 hover:underline">lynkskillweb@gmail.com</a>
-                                        <p className="text-xs text-muted-foreground mt-1">We respond within 24 hours</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{t('help.weRespondWithin24h')}</p>
                                     </div>
 
                                     <div className="p-4 rounded-xl bg-muted/50">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Phone className="h-4 w-4 text-violet-500" />
-                                            Call Us
+                                            {t('help.callUs')}
                                         </h4>
                                         <a href="tel:+359885031865" className="text-sm text-violet-600 dark:text-violet-400 hover:underline">+359 885 031 865</a>
-                                        <p className="text-xs text-muted-foreground mt-1">Mon-Fri, 9:00 AM - 6:00 PM EET</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{t('help.monFri9to6')}</p>
                                     </div>
 
                                     <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20">
                                         <h4 className="font-medium mb-2 flex items-center gap-2">
                                             <Sparkles className="h-4 w-4 text-violet-500" />
-                                            Pro Tip
+                                            {t('help.proTip')}
                                         </h4>
                                         <p className="text-sm text-muted-foreground">
-                                            Use AI Mode to get instant answers to common questions about internships and applications!
+                                            {t('help.proTipStudent')}
                                         </p>
                                     </div>
                                 </div>

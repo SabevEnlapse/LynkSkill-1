@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { useDashboard } from "@/lib/dashboard-context"
+import { useTranslation } from "@/lib/i18n"
 
 type GroupedExperience = {
     id: string
@@ -37,6 +38,7 @@ interface CommunityHighlightsProps {
 
 export function CommunityHighlights({ setActiveTab, userType = "Student" }: CommunityHighlightsProps) {
     const router = useRouter()
+    const { t } = useTranslation()
     
     const handleNavigateToExperience = () => {
         if (setActiveTab) {
@@ -97,19 +99,19 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
             >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-bold text-balance">Community Highlights</h2>
+                        <h2 className="text-3xl font-bold text-balance">{t('communityHighlights.title')}</h2>
                         <p className="max-w-[600px] text-pretty">
-                            Discover the latest creative work and achievements shared by our community.
+                            {t('communityHighlights.description')}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
                             <Sparkles className="h-4 w-4" />
-                            <span className="text-sm font-medium">{experiences.length} Submissions</span>
+                            <span className="text-sm font-medium">{experiences.length} {t('communityHighlights.submissions')}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
                             <TrendingUp className="h-4 w-4" />
-                            <span className="text-sm font-medium">Recent Activity</span>
+                            <span className="text-sm font-medium">{t('communityHighlights.recentActivity')}</span>
                         </div>
                     </div>
                 </div>
@@ -121,7 +123,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--experience-accent)] text-white text-sm font-bold">
                         1
                     </div>
-                    <h3 className="text-xl font-semibold">Latest Submissions</h3>
+                    <h3 className="text-xl font-semibold">{t('communityHighlights.latestSubmissions')}</h3>
                 </div>
 
                 {loading ? (
@@ -144,8 +146,8 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                 <Users className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <div>
-                                <h4 className="font-medium">No community files yet</h4>
-                                <p className="text-sm text-muted-foreground">Community submissions will appear here when available</p>
+                                <h4 className="font-medium">{t('communityHighlights.noCommunityFiles')}</h4>
+                                <p className="text-sm text-muted-foreground">{t('communityHighlights.communityWillAppear')}</p>
                             </div>
                         </div>
                     </Card>
@@ -203,7 +205,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                                         variant="outline"
                                                         className="rounded-xl text-xs bg-[var(--experience-accent)]/10 text-[var(--experience-accent)] border-[var(--experience-accent)]/20"
                                                     >
-                                                        Bulk Upload
+                                                        {t('communityHighlights.bulkUpload')}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="outline" className="rounded-xl text-xs">
@@ -219,10 +221,10 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                                 <h4 className="font-medium text-sm truncate group-hover:text-[var(--experience-accent)] transition-colors">
                                                     {exp.isBulk
                                                         ? `${exp.files.length} Files`
-                                                        : firstFile.url.split("/").pop()?.split(".")[0] || "Untitled"}
+                                                        : firstFile.url.split("/").pop()?.split(".")[0] || t('communityHighlights.untitled')}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {exp.isBulk ? "Click to view all files" : "Community submission"}
+                                                    {exp.isBulk ? t('communityHighlights.clickToViewAll') : t('communityHighlights.communitySubmission')}
                                                 </p>
                                             </div>
 
@@ -231,7 +233,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                                     {exp.uploader?.image ? (
                                                         <img
                                                             src={exp.uploader.image || "/placeholder.svg"}
-                                                            alt={exp.uploader?.name || "Anonymous"}
+                                                            alt={exp.uploader?.name || t('communityHighlights.anonymous')}
                                                             className="h-full w-full object-cover rounded-full"
                                                         />
                                                     ) : (
@@ -241,7 +243,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                                     )}
                                                 </Avatar>
 
-                                                <span className="text-xs text-muted-foreground">{exp.uploader?.name || "Anonymous"}</span>
+                                                <span className="text-xs text-muted-foreground">{exp.uploader?.name || t('communityHighlights.anonymous')}</span>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -268,7 +270,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                 File: <strong>{selectedFile?.url.split("/").pop()}</strong>
                             </p>
                             <Button onClick={startScan} className="w-full">
-                                Start Scan
+                                {t('communityHighlights.startScan')}
                             </Button>
                         </div>
                     )}
@@ -276,31 +278,31 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                     {scanStatus === "scanning" && (
                         <div className="space-y-3">
                             <Progress value={scanProgress} />
-                            <p className="text-sm text-muted-foreground">Scanning for viruses...</p>
+                            <p className="text-sm text-muted-foreground">{t('communityHighlights.scanningForViruses')}</p>
                         </div>
                     )}
 
                     {scanStatus === "safe" && (
                         <div className="flex flex-col items-center gap-3 text-green-600">
                             <ShieldCheck className="h-8 w-8" />
-                            <p className="text-sm">No threats detected. File is safe.</p>
+                            <p className="text-sm">{t('communityHighlights.noThreatsDetected')}</p>
                         </div>
                     )}
 
                     {scanStatus === "danger" && (
                         <div className="flex flex-col items-center gap-3 text-red-600">
                             <ShieldAlert className="h-8 w-8" />
-                            <p className="text-sm">Warning: Suspicious content detected! Download at your own risk.</p>
+                            <p className="text-sm">{t('communityHighlights.suspiciousContent')}</p>
                         </div>
                     )}
 
                     <DialogFooter className="flex justify-between">
                         <Button variant="outline" onClick={() => setSelectedFile(null)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         {scanStatus === "safe" && (
                             <Button onClick={confirmDownload} className="bg-green-600 hover:bg-green-700">
-                                Download
+                                {t('communityHighlights.download')}
                             </Button>
                         )}
                     </DialogFooter>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n'
 import { CoverLetterModal } from "@/components/cover-letter-modal"
 
 interface ApplyButtonProps {
@@ -28,6 +29,7 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
     const [showCoverLetterModal, setShowCoverLetterModal] = useState(false)
     const [portfolioChecked, setPortfolioChecked] = useState(false)
     const router = useRouter()
+    const { t } = useTranslation()
 
     const handleApply = async () => {
         setIsApplying(true)
@@ -64,7 +66,7 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
             setIsApplying(false)
         } catch (err) {
             console.error(err)
-            alert("An error occurred while checking your portfolio")
+            alert(t('apply.errorCheckingPortfolio'))
             setIsApplying(false)
         }
     }
@@ -88,11 +90,11 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
                 onApplied?.()
             } else {
                 const data = await res.json()
-                alert(data.error || "Failed to apply")
+                alert(data.error || t('apply.failedToApply'))
             }
         } catch (err) {
             console.error(err)
-            alert("An error occurred while applying")
+            alert(t('apply.errorApplying'))
         } finally {
             setIsApplying(false)
         }
@@ -109,12 +111,12 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
                 {isApplying ? (
                     <>
                         <Loader2 className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin shrink-0" />
-                        <span className="truncate">Applying...</span>
+                        <span className="truncate">{t('apply.applying')}</span>
                     </>
                 ) : (
                     <>
                         <CheckCircle2 className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                        <span className="truncate">Apply Now</span>
+                        <span className="truncate">{t('apply.applyNow')}</span>
                     </>
                 )}
             </Button>
@@ -126,11 +128,10 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
                             <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
                                 <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
                             </div>
-                            <DialogTitle className="text-lg sm:text-xl leading-tight">Complete Your Portfolio First</DialogTitle>
+                            <DialogTitle className="text-lg sm:text-xl leading-tight">{t('apply.completePortfolioFirst')}</DialogTitle>
                         </div>
                         <DialogDescription className="text-sm sm:text-base leading-relaxed pt-2">
-                            Before applying to internships, you need to add at least some information to your portfolio. This helps
-                            companies learn more about you and increases your chances of getting accepted.
+                            {t('apply.completePortfolioDescription')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 pt-2">
@@ -139,7 +140,7 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
                             onClick={() => setShowIncompleteModal(false)}
                             className="w-full sm:w-auto rounded-lg sm:rounded-xl py-2.5 sm:py-2"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             onClick={() => {
@@ -148,7 +149,7 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
                             }}
                             className="w-full sm:w-auto rounded-lg sm:rounded-xl bg-gradient-to-r text-foreground from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 py-2.5 sm:py-2"
                         >
-                            Go to Portfolio
+                            {t('apply.goToPortfolio')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

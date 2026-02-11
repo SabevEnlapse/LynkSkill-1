@@ -34,6 +34,7 @@ import {
 import { toast } from "sonner"
 import { RoleBadge } from "./role-badge"
 import { EditMemberModal } from "./edit-member-modal"
+import { useTranslation } from "@/lib/i18n"
 
 interface Member {
   id: string
@@ -63,6 +64,7 @@ interface MemberListProps {
 }
 
 export function MemberList({ members, companyId: _companyId, onUpdate, canManageMembers = false }: MemberListProps) {
+  const { t } = useTranslation()
   const [removeMember, setRemoveMember] = React.useState<Member | null>(null)
   const [editMember, setEditMember] = React.useState<Member | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -78,15 +80,15 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to remove member")
+        throw new Error(data.error || t("team.failedToRemoveMember"))
       }
 
-      toast.success("Member removed", {
-        description: `${removeMember.name} has been removed from the team`,
+      toast.success(t("team.memberRemoved"), {
+        description: `${removeMember.name} ${t("team.hasBeenRemovedFromTeam")}`,
       })
       onUpdate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove member")
+      toast.error(err instanceof Error ? err.message : t("team.failedToRemoveMember"))
     } finally {
       setLoading(false)
       setRemoveMember(null)
@@ -99,9 +101,9 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
         <CardContent className="pt-6">
           <div className="text-center py-8">
             <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No team members yet</h3>
+            <h3 className="text-lg font-medium">{t("team.noMembers")}</h3>
             <p className="text-muted-foreground mt-1">
-              Invite members to start building your team
+              {t("team.inviteMembersToStart")}
             </p>
           </div>
         </CardContent>
@@ -113,7 +115,7 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Active Members</CardTitle>
+          <CardTitle className="text-lg">{t("team.activeMembers")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -147,7 +149,7 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
 
                   {member.extraPermissions.length > 0 && (
                     <Badge variant="outline" className="text-xs">
-                      +{member.extraPermissions.length} extra
+                      +{member.extraPermissions.length} {t("team.extra")}
                     </Badge>
                   )}
 
@@ -159,15 +161,15 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t("team.actions")}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setEditMember(member)}>
                           <Shield className="h-4 w-4 mr-2" />
-                          Change Role
+                          {t("team.changeRole")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditMember(member)}>
                           <Settings className="h-4 w-4 mr-2" />
-                          Edit Permissions
+                          {t("team.editPermissions")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -175,7 +177,7 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
                           onClick={() => setRemoveMember(member)}
                         >
                           <UserMinus className="h-4 w-4 mr-2" />
-                          Remove from Team
+                          {t("team.removeFromTeam")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -191,21 +193,20 @@ export function MemberList({ members, companyId: _companyId, onUpdate, canManage
       <AlertDialog open={!!removeMember} onOpenChange={() => setRemoveMember(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogTitle>{t("team.removeTeamMember")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove{" "}
-              <span className="font-medium">{removeMember?.name}</span> from the
-              team? They will lose access to all company resources.
+              {t("team.confirmRemoveMember")}{" "}
+              <span className="font-medium">{removeMember?.name}</span> {t("team.fromTheTeam")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>{t("team.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemoveMember}
               disabled={loading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? "Removing..." : "Remove Member"}
+              {loading ? t("team.removing") : t("team.removeMember")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

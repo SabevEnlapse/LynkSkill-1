@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { z } from "zod"
 import { LocationPicker, type LocationData } from "@/components/location-picker"
+import { useTranslation } from "@/lib/i18n"
 
 // Dynamically import heavy modal components for better initial load performance
 const StudentPolicyModal = dynamic(
@@ -42,6 +43,7 @@ const CompanyPolicyModal = dynamic(
     { loading: () => null }
 )
 
+// Note: Zod schema messages are static and can't use t() - they're just fallback messages
 const companySchema = z.object({
     companyEik: z
         .string()
@@ -57,20 +59,20 @@ const companySchema = z.object({
 const ROLE_OPTIONS = [
     {
         value: "student" as const,
-        title: "Student",
-        description: "Access learning resources, track progress, and connect with peers",
+        titleKey: "onboarding.roleStudent",
+        descriptionKey: "onboarding.roleStudentDesc",
         icon: GraduationCap,
     },
     {
         value: "company" as const,
-        title: "Company",
-        description: "Manage teams and post internships",
+        titleKey: "onboarding.roleCompany",
+        descriptionKey: "onboarding.roleCompanyDesc",
         icon: Building2,
     },
     {
         value: "team_member" as const,
-        title: "Team Member",
-        description: "Join an existing company with an invitation code",
+        titleKey: "onboarding.roleTeamMember",
+        descriptionKey: "onboarding.roleTeamMemberDesc",
         icon: Users,
     },
 ] as const
@@ -78,6 +80,7 @@ const ROLE_OPTIONS = [
 export default function OnboardingPage() {
     const { user, isLoaded } = useUser()
     const router = useRouter()
+    const { t } = useTranslation()
     const [isPending, setIsPending] = React.useState(false)
     const [error, setError] = React.useState("")
     const [selectedRole, setSelectedRole] = React.useState<"student" | "company" | "team_member" | null>(null)
@@ -133,25 +136,25 @@ export default function OnboardingPage() {
         switch (field) {
             case "companyName":
                 if (value.length > 0 && value.length < 2) {
-                    newErrors.companyName = "Company name must be at least 2 characters"
+                    newErrors.companyName = t("onboarding.companyNameMinChars")
                 } else if (value.length > 100) {
-                    newErrors.companyName = "Company name is too long"
+                    newErrors.companyName = t("onboarding.companyNameTooLong")
                 } else {
                     delete newErrors.companyName
                 }
                 break
             case "companyDescription":
                 if (value.length > 0 && value.length < 10) {
-                    newErrors.companyDescription = "Description must be at least 10 characters"
+                    newErrors.companyDescription = t("onboarding.descriptionMinChars")
                 } else if (value.length > 2000) {
-                    newErrors.companyDescription = "Description is too long"
+                    newErrors.companyDescription = t("onboarding.descriptionTooLong")
                 } else {
                     delete newErrors.companyDescription
                 }
                 break
             case "companyLocation":
                 if (value.length > 0 && value.length < 2) {
-                    newErrors.companyLocation = "Location must be at least 2 characters"
+                    newErrors.companyLocation = t("onboarding.locationMinChars")
                 } else {
                     delete newErrors.companyLocation
                 }
@@ -205,14 +208,14 @@ export default function OnboardingPage() {
         // Check if date is in the future
         if (selectedDate > today) {
             setAgeValid(false)
-            setError("Date of birth cannot be in the future")
+            setError(t("onboarding.dobCannotBeFuture"))
             return
         }
 
         // Check if date is valid
         if (isNaN(selectedDate.getTime())) {
             setAgeValid(false)
-            setError("Please enter a valid date")
+            setError(t("onboarding.enterValidDate"))
             return
         }
 
@@ -221,7 +224,7 @@ export default function OnboardingPage() {
         hundredYearsAgo.setFullYear(today.getFullYear() - 100)
         if (selectedDate < hundredYearsAgo) {
             setAgeValid(false)
-            setError("Please enter a valid date of birth")
+            setError(t("onboarding.enterValidDob"))
             return
         }
 
@@ -231,14 +234,14 @@ export default function OnboardingPage() {
 
             if (age < 16) {
                 setAgeValid(false)
-                setError("According to Bulgarian law, you must be at least 16 years old to use this platform")
+                setError(t("onboarding.mustBe16Error"))
             } else {
                 setAgeValid(true)
                 setError("")
             }
         } catch (_err) {
             setAgeValid(false)
-            setError("Invalid date format")
+            setError(t("onboarding.invalidDateFormat"))
         }
     }
 
@@ -312,12 +315,12 @@ export default function OnboardingPage() {
                 setCompanyPreview(data.company)
             } else {
                 setCodeValid(false)
-                setError(data.error || "Invalid invitation code")
+                setError(data.error || t("onboarding.invalidInvitationCode"))
             }
         } catch (err) {
             console.error("Code validation error:", err)
             setCodeValid(false)
-            setError("Failed to validate code. Please try again.")
+            setError(t("onboarding.failedToValidateCode"))
         } finally {
             setCodeValidating(false)
         }
@@ -353,7 +356,7 @@ export default function OnboardingPage() {
                 } catch {
                     console.error("EIK API returned non-JSON response:", raw.slice(0, 200))
                     setCompanyValid(false)
-                    setError("Server returned invalid response")
+                    setError(t("onboarding.serverInvalidResponse"))
                     return
                 }
 
@@ -364,12 +367,12 @@ export default function OnboardingPage() {
                     setError("")
                 } else {
                     setCompanyValid(false)
-                    setError(data?.error || "EIK not found")
+                    setError(data?.error || t("onboarding.eikNotFoundError"))
                 }
             } catch (err) {
                 console.error("EIK validation error:", err)
                 setCompanyValid(false)
-                setError("Unexpected error")
+                setError(t("onboarding.unexpectedError"))
             }
         }, 500)
     }
@@ -400,13 +403,13 @@ export default function OnboardingPage() {
             if (!contentType || !contentType.includes("application/json")) {
                 const text = await res.text()
                 console.error("Non-JSON response:", text.substring(0, 200))
-                throw new Error("Server returned an invalid response. Check console for details.")
+                throw new Error(t("onboarding.serverInvalidResponse"))
             }
 
             const data = await res.json()
 
             if (!res.ok) {
-                throw new Error(data.error || "Failed to upload logo")
+                throw new Error(data.error || t("onboarding.failedToUploadLogo"))
             }
 
             // Store logo URL in state instead of DOM
@@ -414,7 +417,7 @@ export default function OnboardingPage() {
             console.log("✅ Logo uploaded successfully:", data.logoUrl)
         } catch (error) {
             console.error("Logo upload failed:", error)
-            setError(error instanceof Error ? error.message : "Logo upload failed. Please try again.")
+            setError(error instanceof Error ? error.message : t("onboarding.logoUploadFailed"))
             setLogoPreview(null)
             setLogoUrl(null)
         } finally {
@@ -426,12 +429,12 @@ export default function OnboardingPage() {
         setError("")
 
         if (!dob) {
-            setError("Please enter your date of birth")
+            setError(t("onboarding.pleaseEnterDob"))
             return
         }
 
         if (!ageValid) {
-            setError("According to Bulgarian law, you must be at least 16 years old to use this platform")
+            setError(t("onboarding.mustBe16Error"))
             return
         }
 
@@ -446,17 +449,17 @@ export default function OnboardingPage() {
                 setCreatedPortfolioId(res.createdPortfolioId)
                 setShowStudentPolicyModal(true)
             } else {
-                setError(res?.error || "Unknown error creating portfolio")
+                setError(res?.error || t("onboarding.unknownErrorPortfolio"))
             }
         } catch (err) {
             console.error(err)
-            setError("Error creating portfolio")
+            setError(t("onboarding.errorCreatingPortfolio"))
         }
     }
 
     const handleAcceptStudentPolicies = async () => {
         if (!createdPortfolioId) {
-            setError("Portfolio not created yet")
+            setError(t("onboarding.portfolioNotCreated"))
             return
         }
 
@@ -488,7 +491,7 @@ export default function OnboardingPage() {
             setShowStudentPolicyModal(false)
         } catch (err) {
             console.error("❌ handleAcceptStudentPolicies error:", err)
-            setError(err instanceof Error ? err.message : "Failed to accept policies")
+            setError(err instanceof Error ? err.message : t("onboarding.failedToAcceptPolicies"))
         }
     }
 
@@ -511,7 +514,7 @@ export default function OnboardingPage() {
         }
 
         if (!companyValid) {
-            setError("EIK not found in registry")
+            setError(t("onboarding.eikNotInRegistry"))
             return
         }
 
@@ -534,17 +537,17 @@ export default function OnboardingPage() {
                 setCreatedCompanyId(res.createdCompanyId)
                 setShowPolicyModal(true)
             } else {
-                setError(res?.error || "Unknown error creating company")
+                setError(res?.error || t("onboarding.unknownErrorCompany"))
             }
         } catch (err) {
             console.error(err)
-            setError("Error creating company")
+            setError(t("onboarding.errorCreatingCompany"))
         }
     }
 
     const handleAcceptPolicies = async () => {
         if (!createdCompanyId) {
-            setError("Company not created yet")
+            setError(t("onboarding.companyNotCreated"))
             return
         }
 
@@ -575,7 +578,7 @@ export default function OnboardingPage() {
             setShowPolicyModal(false)
         } catch (err) {
             console.error("❌ handleAcceptPolicies error:", err)
-            setError(err instanceof Error ? err.message : "Failed to accept policies")
+            setError(err instanceof Error ? err.message : t("onboarding.failedToAcceptPolicies"))
         }
     }
 
@@ -587,12 +590,12 @@ export default function OnboardingPage() {
         const role = formData.get("role")
 
         if (role === "student" && !studentPolicyAccepted) {
-            setError("You must accept the policy before continuing")
+            setError(t("onboarding.mustAcceptPolicy"))
             return
         }
 
         if (role === "company" && !policyAccepted) {
-            setError("You must accept the policy before continuing")
+            setError(t("onboarding.mustAcceptPolicy"))
             return
         }
 
@@ -612,7 +615,7 @@ export default function OnboardingPage() {
             }
         } catch (err) {
             console.error(err)
-            setError("An error occurred during onboarding")
+            setError(t("onboarding.errorDuringOnboarding"))
         } finally {
             setIsPending(false)
         }
@@ -657,9 +660,9 @@ export default function OnboardingPage() {
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-3xl font-bold text-foreground">Preparing your journey</h2>
+                        <h2 className="text-3xl font-bold text-foreground">{t("onboarding.preparingJourney")}</h2>
                         <p className="text-muted-foreground text-balance leading-relaxed">
-                            Setting up your personalized onboarding experience...
+                            {t("onboarding.settingUpExperience")}
                         </p>
                     </div>
 
@@ -718,20 +721,20 @@ export default function OnboardingPage() {
                     <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-700">
                         <Sparkles className="w-4 h-4 text-purple-400" />
                         <span className="text-sm font-semibold bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-                            Let&apos;s get you started
+                            {t("onboarding.letsGetStarted")}
                         </span>
                     </div>
                     
                     {/* Main heading with gradient */}
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '100ms' }}>
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95]">
-                            <span className="block text-foreground">Welcome to</span>
+                            <span className="block text-foreground">{t("onboarding.welcomeTo")}</span>
                             <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
                                 LynkSkill
                             </span>
                         </h1>
                         <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                            Choose your role to get started and unlock your potential in our community
+                            {t("onboarding.chooseRoleDescription")}
                         </p>
                     </div>
 
@@ -770,8 +773,8 @@ export default function OnboardingPage() {
 
                     <div className="space-y-6">
                         <div className="text-center space-y-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '300ms' }}>
-                            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Select Your Role</h2>
-                            <p className="text-muted-foreground text-lg">Choose the option that best describes you</p>
+                            <h2 className="text-3xl md:text-4xl font-bold text-foreground">{t("onboarding.selectYourRole")}</h2>
+                            <p className="text-muted-foreground text-lg">{t("onboarding.chooseBestOption")}</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-6">
                             {ROLE_OPTIONS.map((r, index) => {
@@ -802,22 +805,22 @@ export default function OnboardingPage() {
                                                 {isSelected && (
                                                     <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 px-3 py-1">
                                                         <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                                                        Selected
+                                                        {t("onboarding.selected")}
                                                     </Badge>
                                                 )}
                                             </div>
                                             <div className="space-y-2">
                                                 <CardTitle className={`text-2xl font-bold transition-colors duration-300 ${isSelected ? "bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent" : ""}`}>
-                                                    {r.title}
+                                                    {t(r.titleKey)}
                                                 </CardTitle>
                                                 <CardDescription className="leading-relaxed text-sm text-muted-foreground">
-                                                    {r.description}
+                                                    {t(r.descriptionKey)}
                                                 </CardDescription>
                                             </div>
                                             
                                             {/* Arrow indicator */}
                                             <div className={`flex items-center gap-2 text-sm font-medium transition-all duration-300 ${isSelected ? "text-purple-400 translate-x-1" : "text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1"}`}>
-                                                <span>Get started</span>
+                                                <span>{t("onboarding.getStarted")}</span>
                                                 <ArrowRight className="w-4 h-4" />
                                             </div>
                                         </CardHeader>
@@ -832,10 +835,10 @@ export default function OnboardingPage() {
                             <div className="text-center space-y-3 mb-10">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
                                     <GraduationCap className="w-4 h-4 text-purple-400" />
-                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Step 2 of 3</span>
+                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{t("onboarding.step2of3")}</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Student Information</h2>
-                                <p className="text-muted-foreground">Provide your details to create your portfolio</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">{t("onboarding.studentInformation")}</h2>
+                                <p className="text-muted-foreground">{t("onboarding.provideDetailsPortfolio")}</p>
                             </div>
 
                             <Card className="border border-border/50 overflow-hidden bg-background/80">
@@ -845,9 +848,9 @@ export default function OnboardingPage() {
                                             <GraduationCap className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-xl">Personal Details</CardTitle>
+                                            <CardTitle className="text-xl">{t("onboarding.personalDetails")}</CardTitle>
                                             <CardDescription>
-                                                All fields marked with <span className="text-purple-400 font-semibold"> * </span> are required
+                                                {t("onboarding.allFieldsMarkedWith")} <span className="text-purple-400 font-semibold"> * </span> {t("onboarding.areRequired")}
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -858,7 +861,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-5 h-5 text-purple-400" />
                                             <Label htmlFor="dob" className="font-semibold flex items-center gap-2">
-                                                Date of Birth <span className="text-destructive">*</span>
+                                                {t("onboarding.dateOfBirth")} <span className="text-destructive">*</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -876,7 +879,7 @@ export default function OnboardingPage() {
                                                 <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-semibold text-emerald-500">
-                                                        Age Verified: {calculatedAge} years old
+                                                        {t("onboarding.ageVerified")}: {calculatedAge} {t("onboarding.yearsOld")}
                                                     </p>
                                                 </div>
                                             </div>
@@ -887,15 +890,15 @@ export default function OnboardingPage() {
                                                     <XCircle className="w-6 h-6 text-destructive flex-shrink-0" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-red-400">Age Requirement Not Met</p>
+                                                    <p className="text-sm font-bold text-red-400">{t("onboarding.ageRequirementNotMet")}</p>
                                                     <p className="text-xs text-red-400/80">
-                                                        According to Bulgarian law, you must be at least 16 years old to use this platform
+                                                        {t("onboarding.mustBe16")}
                                                     </p>
                                                 </div>
                                             </div>
                                         )}
                                         <p className="text-sm text-muted-foreground leading-relaxed">
-                                            According to Bulgarian law, you must be at least 16 years old to create an account
+                                            {t("onboarding.mustBe16ToCreate")}
                                         </p>
                                     </div>
 
@@ -909,7 +912,7 @@ export default function OnboardingPage() {
                                             className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
                                         >
                                             <Shield className="mr-2 w-5 h-5" />
-                                            Proceed to Policy Agreement
+                                            {t("onboarding.proceedToPolicy")}
                                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     )}
@@ -920,9 +923,9 @@ export default function OnboardingPage() {
                                                 <CheckCircle className="w-5 h-5 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-sm text-purple-400 font-semibold">Policy Accepted</p>
+                                                <p className="text-sm text-purple-400 font-semibold">{t("onboarding.policyAccepted")}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    You&apos;re ready to complete your registration
+                                                    {t("onboarding.readyToComplete")}
                                                 </p>
                                             </div>
                                         </div>
@@ -937,10 +940,10 @@ export default function OnboardingPage() {
                             <div className="text-center space-y-3 mb-8">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
                                     <Building2 className="w-4 h-4 text-purple-400" />
-                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Step 2 of 3</span>
+                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{t("onboarding.step2of3")}</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Company Information</h2>
-                                <p className="text-muted-foreground">Provide your company details for verification</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">{t("onboarding.companyInformation")}</h2>
+                                <p className="text-muted-foreground">{t("onboarding.provideCompanyDetails")}</p>
                             </div>
 
                             <Card className="border border-white/10 overflow-hidden bg-background/80 backdrop-blur-sm">
@@ -950,9 +953,9 @@ export default function OnboardingPage() {
                                             <Building2 className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-xl">Company Details</CardTitle>
+                                            <CardTitle className="text-xl">{t("onboarding.companyDetails")}</CardTitle>
                                             <CardDescription className="text-sm">
-                                                All fields marked with <span className="text-purple-400 font-semibold"> * </span> are required
+                                                {t("onboarding.allFieldsMarkedWith")} <span className="text-purple-400 font-semibold"> * </span> {t("onboarding.areRequired")}
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -963,7 +966,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <Upload className="w-4 h-4 text-purple-400" />
                                             <Label htmlFor="companyLogo" className="text-base font-semibold flex items-center gap-2">
-                                                Company Logo <span className="text-red-400">*</span>
+                                                {t("onboarding.companyLogo")} <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <div className="flex flex-col md:flex-row items-start gap-4">
@@ -993,12 +996,12 @@ export default function OnboardingPage() {
                                                     <div className="flex items-center gap-2 mt-3 p-2 bg-purple-500/10 rounded-lg animate-pulse">
                                                         <div className="w-4 h-4 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
                                                         <span className="text-sm text-purple-400">
-                                                            Uploading your logo...
+                                                            {t("onboarding.uploadingLogo")}
                                                         </span>
                                                     </div>
                                                 )}
                                                 <p className="text-sm text-muted-foreground mt-2">
-                                                    Upload your company logo in PNG or JPG format (maximum 5MB)
+                                                    {t("onboarding.logoFormatHint")}
                                                 </p>
                                             </div>
                                             {logoPreview && !isUploadingLogo && (
@@ -1038,14 +1041,14 @@ export default function OnboardingPage() {
                                             onChange={(e) => handleEikChange(e.target.value)}
                                             required
                                             className="text-base h-12 border border-white/20 focus:border-purple-500 bg-background/50 transition-all duration-300 rounded-lg"
-                                            placeholder="Enter your company EIK number"
+                                            placeholder={t("onboarding.enterEikNumber")}
                                         />
                                         {companyValid === true && (
                                             <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg animate-in fade-in slide-in-from-top-3 duration-500">
                                                 <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-medium text-purple-400">
-                                                        EIK Verified Successfully
+                                                        {t("onboarding.eikVerified")}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1054,12 +1057,12 @@ export default function OnboardingPage() {
                                             <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-in fade-in slide-in-from-top-3 duration-500">
                                                 <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                                                 <div>
-                                                    <p className="text-sm font-medium text-red-400">EIK Not Found</p>
+                                                    <p className="text-sm font-medium text-red-400">{t("onboarding.eikNotFound")}</p>
                                                 </div>
                                             </div>
                                         )}
                                         <p className="text-sm text-muted-foreground">
-                                            Enter your 9-13 digit Bulgarian company identification number
+                                            {t("onboarding.eikDigitsHint")}
                                         </p>
                                     </div>
 
@@ -1069,7 +1072,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <Building2 className="w-4 h-4 text-purple-400" />
                                             <Label htmlFor="companyName" className="text-base font-semibold flex items-center gap-2">
-                                                Company Name <span className="text-red-400">*</span>
+                                                {t("onboarding.companyNameLabel")} <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -1088,7 +1091,7 @@ export default function OnboardingPage() {
                                                         ? "border-purple-500 focus:border-purple-500" 
                                                         : "border-white/20 focus:border-purple-500"
                                             }`}
-                                            placeholder="Enter your company's official name"
+                                            placeholder={t("onboarding.companyNamePlaceholder")}
                                         />
                                         {fieldErrors.companyName ? (
                                             <p className="text-sm text-red-400 flex items-center gap-1">
@@ -1098,11 +1101,11 @@ export default function OnboardingPage() {
                                         ) : companyName.length >= 2 ? (
                                             <p className="text-sm text-purple-400 flex items-center gap-1">
                                                 <CheckCircle className="w-4 h-4" />
-                                                Company name looks good
+                                                {t("onboarding.companyNameLooksGood")}
                                             </p>
                                         ) : (
                                             <p className="text-sm text-muted-foreground">
-                                                Provide your company&apos;s full legal name as registered
+                                                {t("onboarding.companyNameHint")}
                                             </p>
                                         )}
                                     </div>
@@ -1113,7 +1116,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <FileText className="w-4 h-4 text-purple-400" />
                                             <Label htmlFor="companyDescription" className="text-base font-semibold flex items-center gap-2">
-                                                Company Description <span className="text-red-400">*</span>
+                                                {t("onboarding.companyDescriptionLabel")} <span className="text-red-400">*</span>
                                             </Label>
                                         </div>
                                         <Textarea
@@ -1125,7 +1128,7 @@ export default function OnboardingPage() {
                                                 validateField("companyDescription", e.target.value)
                                             }}
                                             required
-                                            placeholder="Tell us about your company, what you do, and what makes you unique..."
+                                            placeholder={t("onboarding.companyDescriptionPlaceholder")}
                                             className={`min-h-28 text-base resize-none border bg-background/50 transition-all duration-300 rounded-lg ${
                                                 fieldErrors.companyDescription 
                                                     ? "border-red-500 focus:border-red-500" 
@@ -1143,11 +1146,11 @@ export default function OnboardingPage() {
                                             ) : companyDescription.length >= 10 ? (
                                                 <p className="text-sm text-purple-400 flex items-center gap-1">
                                                     <CheckCircle className="w-4 h-4" />
-                                                    Description looks good
+                                                    {t("onboarding.descriptionLooksGood")}
                                                 </p>
                                             ) : (
                                                 <p className="text-sm text-muted-foreground">
-                                                    Minimum 10 characters - help others understand your business
+                                                    {t("onboarding.descriptionHint")}
                                                 </p>
                                             )}
                                             <span className={`text-sm font-medium ${companyDescription.length >= 10 ? "text-purple-400" : "text-muted-foreground"}`}>
@@ -1167,14 +1170,14 @@ export default function OnboardingPage() {
                                                 </div>
                                                 <div>
                                                     <Label className="text-base font-semibold flex items-center gap-2">
-                                                        Company Location <span className="text-red-400">*</span>
+                                                        {t("onboarding.companyLocationLabel")} <span className="text-red-400">*</span>
                                                     </Label>
-                                                    <p className="text-xs text-muted-foreground">Where is your company headquartered?</p>
+                                                    <p className="text-xs text-muted-foreground">{t("onboarding.companyLocationHint")}</p>
                                                 </div>
                                             </div>
                                             {companyLocation.address.length >= 2 && !fieldErrors.companyLocation && (
                                                 <div className="flex items-center gap-1 text-xs text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-full">
-                                                    <CheckCircle className="w-3 h-3" /> Set
+                                                    <CheckCircle className="w-3 h-3" /> {t("onboarding.set")}
                                                 </div>
                                             )}
                                         </div>
@@ -1202,7 +1205,7 @@ export default function OnboardingPage() {
                                         <div className="flex items-center gap-2">
                                             <Globe className="w-4 h-4 text-purple-400" />
                                             <Label htmlFor="companyWebsite" className="text-base font-semibold">
-                                                Website <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                                                {t("onboarding.websiteLabel")} <span className="text-muted-foreground font-normal text-sm">({t("onboarding.optional")})</span>
                                             </Label>
                                         </div>
                                         <Input
@@ -1213,7 +1216,7 @@ export default function OnboardingPage() {
                                             className="text-base h-12 border border-white/20 focus:border-purple-500 bg-background/50 transition-all duration-300 rounded-lg"
                                         />
                                         <p className="text-sm text-muted-foreground">
-                                            Share your company website if you have one
+                                            {t("onboarding.websiteHint")}
                                         </p>
                                     </div>
 
@@ -1226,7 +1229,7 @@ export default function OnboardingPage() {
                                             className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 transition-all duration-300 rounded-xl"
                                         >
                                             <Shield className="mr-2 w-5 h-5" />
-                                            Proceed to Policy Agreement
+                                            {t("onboarding.proceedToPolicyAgreement")}
                                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     )}
@@ -1237,9 +1240,9 @@ export default function OnboardingPage() {
                                                 <CheckCircle className="w-5 h-5 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-sm text-purple-400 font-semibold">Policy Accepted</p>
+                                                <p className="text-sm text-purple-400 font-semibold">{t("onboarding.policyAccepted")}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    You&apos;re ready to complete your registration
+                                                    {t("onboarding.readyToComplete")}
                                                 </p>
                                             </div>
                                         </div>
@@ -1254,10 +1257,10 @@ export default function OnboardingPage() {
                             <div className="text-center space-y-3 mb-8">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
                                     <Users className="w-4 h-4 text-purple-400" />
-                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Step 2 of 2</span>
+                                    <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{t("onboarding.step2of2")}</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Join Your Team</h2>
-                                <p className="text-muted-foreground">Enter the invitation code provided by your company</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-foreground">{t("onboarding.joinYourTeam")}</h2>
+                                <p className="text-muted-foreground">{t("onboarding.enterInvitationCodeDesc")}</p>
                             </div>
 
                             <Card className="border border-white/10 overflow-hidden bg-background/80 backdrop-blur-sm">
@@ -1267,9 +1270,9 @@ export default function OnboardingPage() {
                                             <KeyRound className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-xl">Invitation Code</CardTitle>
+                                            <CardTitle className="text-xl">{t("onboarding.invitationCode")}</CardTitle>
                                             <CardDescription className="text-sm">
-                                                Enter the 16-character code in format XXXX-XXXX-XXXX-XXXX
+                                                {t("onboarding.invitationCodeFormat")}
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -1300,7 +1303,7 @@ export default function OnboardingPage() {
                                         {codeValidating && (
                                             <div className="flex items-center justify-center gap-2 p-3 bg-purple-500/10 rounded-lg animate-pulse">
                                                 <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
-                                                <span className="text-sm text-purple-400">Validating code...</span>
+                                                <span className="text-sm text-purple-400">{t("onboarding.validatingCode")}</span>
                                             </div>
                                         )}
 
@@ -1308,7 +1311,7 @@ export default function OnboardingPage() {
                                             <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl animate-in fade-in zoom-in duration-500">
                                                 <div className="flex items-center gap-2 mb-4">
                                                     <CheckCircle className="w-5 h-5 text-purple-400" />
-                                                    <span className="text-sm font-semibold text-purple-400">Valid Code - Company Found</span>
+                                                    <span className="text-sm font-semibold text-purple-400">{t("onboarding.validCodeCompanyFound")}</span>
                                                 </div>
                                                 <div className="flex items-start gap-4">
                                                     {companyPreview.logo ? (
@@ -1334,7 +1337,7 @@ export default function OnboardingPage() {
                                                         </div>
                                                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                                                             <Users className="w-4 h-4" />
-                                                            <span>{companyPreview.memberCount} team members</span>
+                                                            <span>{companyPreview.memberCount} {t("onboarding.teamMembers")}</span>
                                                         </div>
                                                         {companyPreview.description && (
                                                             <p className="text-sm text-muted-foreground mt-2 line-clamp-3 break-all overflow-hidden whitespace-normal">
@@ -1350,14 +1353,14 @@ export default function OnboardingPage() {
                                             <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-in fade-in slide-in-from-top-3 duration-500">
                                                 <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                                                 <div>
-                                                    <p className="text-sm font-medium text-red-400">Invalid Code</p>
-                                                    <p className="text-xs text-red-400/80">{error || "Please check your code and try again"}</p>
+                                                    <p className="text-sm font-medium text-red-400">{t("onboarding.invalidCode")}</p>
+                                                    <p className="text-xs text-red-400/80">{error || t("onboarding.checkCodeTryAgain")}</p>
                                                 </div>
                                             </div>
                                         )}
 
                                         <p className="text-sm text-muted-foreground text-center">
-                                            Ask your company administrator for the invitation code to join the team
+                                            {t("onboarding.askAdminForCode")}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -1392,7 +1395,7 @@ export default function OnboardingPage() {
                             <div className="flex items-start gap-3">
                                 <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-red-400 font-semibold text-sm">Error</p>
+                                    <p className="text-red-400 font-semibold text-sm">{t("common.error")}</p>
                                     <p className="text-red-400/80 text-sm mt-0.5">{error}</p>
                                 </div>
                             </div>
@@ -1415,12 +1418,12 @@ export default function OnboardingPage() {
                             {isPending ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                    {selectedRole === "team_member" ? "Joining Team..." : "Processing..."}
+                                    {selectedRole === "team_member" ? t("onboarding.joiningTeam") : t("onboarding.processing")}
                                 </>
                             ) : (
                                 <>
                                     <Sparkles className="w-4 h-4 mr-2" />
-                                    {selectedRole === "team_member" ? "Join Team" : "Complete Registration"}
+                                    {selectedRole === "team_member" ? t("onboarding.joinTeam") : t("onboarding.completeRegistration")}
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}

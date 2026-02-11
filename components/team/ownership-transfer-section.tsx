@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { formatDistanceToNow } from "date-fns"
+import { useTranslation } from "@/lib/i18n"
 
 interface Member {
   id: string
@@ -70,6 +71,7 @@ export function OwnershipTransferSection({
   companyId: _companyId,
   onUpdate,
 }: OwnershipTransferSectionProps) {
+  const { t } = useTranslation()
   const [pendingTransfer, setPendingTransfer] = React.useState<TransferRequest | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [initiateModalOpen, setInitiateModalOpen] = React.useState(false)
@@ -105,14 +107,14 @@ export function OwnershipTransferSection({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to cancel transfer")
+        throw new Error(data.error || t("team.failedToCancelTransfer"))
       }
 
-      toast.success("Transfer cancelled")
+      toast.success(t("team.transferCancelled"))
       setPendingTransfer(null)
       onUpdate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to cancel transfer")
+      toast.error(err instanceof Error ? err.message : t("team.failedToCancelTransfer"))
     } finally {
       setLoading(false)
     }
@@ -136,19 +138,18 @@ export function OwnershipTransferSection({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-500" />
-            Ownership Transfer
+            {t("team.ownershipTransfer")}
           </CardTitle>
           <CardDescription>
-            Transfer company ownership to another team member
+            {t("team.transferCompanyOwnership")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Danger Zone</AlertTitle>
+            <AlertTitle>{t("team.dangerZone")}</AlertTitle>
             <AlertDescription>
-              Transferring ownership will give full control of the company to another member.
-              This action requires multiple confirmations and cannot be easily undone.
+              {t("team.transferDangerWarning")}
             </AlertDescription>
           </Alert>
 
@@ -158,7 +159,7 @@ export function OwnershipTransferSection({
                 <div className="flex items-center justify-between mb-4">
                   <Badge variant="outline" className="text-amber-600 border-amber-300">
                     <Clock className="h-3 w-3 mr-1" />
-                    Transfer Pending
+                    {t("team.transferPending")}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
                     Expires {formatDistanceToNow(new Date(pendingTransfer.expiresAt), { addSuffix: true })}
@@ -167,22 +168,22 @@ export function OwnershipTransferSection({
 
                 <div className="flex items-center gap-4">
                   <div className="flex-1 text-center">
-                    <p className="text-sm text-muted-foreground">From</p>
+                    <p className="text-sm text-muted-foreground">{t("team.from")}</p>
                     <p className="font-medium">{pendingTransfer.from.name}</p>
                     <Badge variant="secondary" className="mt-1">
                       <Crown className="h-3 w-3 mr-1" />
-                      Owner
+                      {t("team.owner")}
                     </Badge>
                   </div>
 
                   <ArrowRight className="h-6 w-6 text-muted-foreground" />
 
                   <div className="flex-1 text-center">
-                    <p className="text-sm text-muted-foreground">To</p>
+                    <p className="text-sm text-muted-foreground">{t("team.to")}</p>
                     <p className="font-medium">{pendingTransfer.to.name}</p>
                     <Badge variant="outline" className="mt-1">
                       <Crown className="h-3 w-3 mr-1" />
-                      New Owner
+                      {t("team.newOwner")}
                     </Badge>
                   </div>
                 </div>
@@ -195,12 +196,12 @@ export function OwnershipTransferSection({
                       <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
                     )}
                     <span className={pendingTransfer.confirmedOnce ? "text-green-600" : ""}>
-                      First confirmation
+                      {t("team.firstConfirmation")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
-                    <span>Final confirmation</span>
+                    <span>{t("team.finalConfirmation")}</span>
                   </div>
                 </div>
               </div>
@@ -212,7 +213,7 @@ export function OwnershipTransferSection({
                   className="flex-1"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancel Transfer
+                  {t("team.cancelTransfer")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -221,7 +222,7 @@ export function OwnershipTransferSection({
                   }}
                   className="flex-1"
                 >
-                  Continue Transfer
+                  {t("team.continueTransfer")}
                 </Button>
               </div>
             </div>
@@ -229,8 +230,7 @@ export function OwnershipTransferSection({
             <div className="space-y-4">
               {eligibleMembers.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
-                  No eligible members to transfer ownership to.
-                  Invite team members first.
+                  {t("team.noEligibleMembers")}
                 </p>
               ) : (
                 <Button
@@ -239,7 +239,7 @@ export function OwnershipTransferSection({
                   onClick={() => setInitiateModalOpen(true)}
                 >
                   <Crown className="h-4 w-4 mr-2" />
-                  Transfer Ownership
+                  {t("team.transferOwnership")}
                 </Button>
               )}
             </div>
@@ -291,12 +291,13 @@ function InitiateTransferModal({
   members: Member[]
   onSuccess: () => void
 }) {
+  const { t } = useTranslation()
   const [selectedMember, setSelectedMember] = React.useState<string>("")
   const [loading, setLoading] = React.useState(false)
 
   const handleInitiate = async () => {
     if (!selectedMember) {
-      toast.error("Please select a member")
+      toast.error(t("team.pleaseSelectMember"))
       return
     }
 
@@ -313,16 +314,16 @@ function InitiateTransferModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to initiate transfer")
+        throw new Error(data.error || t("team.failedToInitiateTransfer"))
       }
 
-      toast.success("Transfer initiated", {
-        description: "Complete the confirmation steps to finalize the transfer",
+      toast.success(t("team.transferInitiated"), {
+        description: t("team.completeConfirmationSteps"),
       })
       setSelectedMember("")
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to initiate transfer")
+      toast.error(err instanceof Error ? err.message : t("team.failedToInitiateTransfer"))
     } finally {
       setLoading(false)
     }
@@ -334,10 +335,10 @@ function InitiateTransferModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-500" />
-            Transfer Ownership
+            {t("team.transferOwnership")}
           </DialogTitle>
           <DialogDescription>
-            Select the member who will become the new owner of this company.
+            {t("team.selectNewOwnerDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -345,16 +346,15 @@ function InitiateTransferModal({
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              After initiating, you&apos;ll need to complete two confirmation steps.
-              The transfer will expire after 24 hours if not completed.
+              {t("team.twoConfirmationStepsRequired")}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <Label>Select New Owner</Label>
+            <Label>{t("team.selectNewOwner")}</Label>
             <Select value={selectedMember} onValueChange={setSelectedMember}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a member" />
+                <SelectValue placeholder={t("team.selectAMember")} />
               </SelectTrigger>
               <SelectContent>
                 {members.map((member) => (
@@ -374,11 +374,11 @@ function InitiateTransferModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancel
+            {t("team.cancel")}
           </Button>
           <Button onClick={handleInitiate} disabled={loading || !selectedMember}>
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Initiate Transfer
+            {t("team.initiateTransfer")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -401,6 +401,7 @@ function ConfirmTransferModal({
   onSuccess: () => void
   onStepComplete: () => void
 }) {
+  const { t } = useTranslation()
   const [confirmationText, setConfirmationText] = React.useState("")
   const [confirmationCode, setConfirmationCode] = React.useState("")
   const [loading, setLoading] = React.useState(false)
@@ -419,14 +420,14 @@ function ConfirmTransferModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Confirmation failed")
+        throw new Error(data.error || t("team.confirmationFailed"))
       }
 
-      toast.success("First confirmation complete")
+      toast.success(t("team.firstConfirmationComplete"))
       setConfirmationText("")
       onStepComplete()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Confirmation failed")
+      toast.error(err instanceof Error ? err.message : t("team.confirmationFailed"))
     } finally {
       setLoading(false)
     }
@@ -447,13 +448,13 @@ function ConfirmTransferModal({
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Transfer failed")
+        throw new Error(data.error || t("team.transferFailed"))
       }
 
-      toast.success("Ownership transferred successfully!")
+      toast.success(t("team.transferSuccess"))
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Transfer failed")
+      toast.error(err instanceof Error ? err.message : t("team.transferFailed"))
     } finally {
       setLoading(false)
     }
@@ -465,12 +466,12 @@ function ConfirmTransferModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            {step === 1 ? "First Confirmation" : "Final Confirmation"}
+            {step === 1 ? t("team.firstConfirmation") : t("team.finalConfirmation")}
           </DialogTitle>
           <DialogDescription>
             {step === 1
-              ? "Type the new owner's name or email to confirm"
-              : "Enter the confirmation code and type 'TRANSFER OWNERSHIP' to complete"
+              ? t("team.typeNewOwnerNameToConfirm")
+              : t("team.enterCodeAndTypeTransfer")
             }
           </DialogDescription>
         </DialogHeader>
@@ -479,13 +480,13 @@ function ConfirmTransferModal({
           <div className="space-y-4">
             <Alert>
               <AlertDescription>
-                You are about to transfer ownership to <strong>{transfer.to.name}</strong>.
-                Type their name or email exactly to confirm.
+                {t("team.aboutToTransferTo")} <strong>{transfer.to.name}</strong>.
+                {t("team.typeNameOrEmailToConfirm")}
               </AlertDescription>
             </Alert>
 
             <div className="space-y-2">
-              <Label>Type the new owner&apos;s name or email</Label>
+              <Label>{t("team.typeNewOwnerNameOrEmail")}</Label>
               <Input
                 placeholder={transfer.to.name}
                 value={confirmationText}
@@ -496,11 +497,11 @@ function ConfirmTransferModal({
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                Cancel
+                {t("team.cancel")}
               </Button>
               <Button onClick={handleConfirmFirst} disabled={loading || !confirmationText}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Confirm
+                {t("team.confirm")}
               </Button>
             </DialogFooter>
           </div>
@@ -508,17 +509,16 @@ function ConfirmTransferModal({
           <div className="space-y-4">
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>This action cannot be undone</AlertTitle>
+              <AlertTitle>{t("team.actionCannotBeUndone")}</AlertTitle>
               <AlertDescription>
-                You are about to permanently transfer ownership.
-                You will become an Admin after this transfer.
+                {t("team.permanentTransferWarning")}
               </AlertDescription>
             </Alert>
 
             <div className="space-y-2">
-              <Label>Confirmation Code</Label>
+              <Label>{t("team.confirmationCode")}</Label>
               <Input
-                placeholder="Enter the code"
+                placeholder={t("team.enterTheCode")}
                 value={confirmationCode}
                 onChange={(e) => setConfirmationCode(e.target.value.toUpperCase())}
                 disabled={loading}
@@ -532,7 +532,7 @@ function ConfirmTransferModal({
             </div>
 
             <div className="space-y-2">
-              <Label>Type &quot;TRANSFER OWNERSHIP&quot; to confirm</Label>
+              <Label>{t("team.typeTransferOwnership")}</Label>
               <Input
                 placeholder="TRANSFER OWNERSHIP"
                 value={confirmationText}
@@ -543,7 +543,7 @@ function ConfirmTransferModal({
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                Cancel
+                {t("team.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -551,7 +551,7 @@ function ConfirmTransferModal({
                 disabled={loading || confirmationText !== "TRANSFER OWNERSHIP" || !confirmationCode}
               >
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Complete Transfer
+                {t("team.completeTransfer")}
               </Button>
             </DialogFooter>
           </div>

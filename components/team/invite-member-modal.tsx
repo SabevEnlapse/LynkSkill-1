@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { Loader2, UserPlus, Mail, Shield, Send, Sparkles } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslation } from "@/lib/i18n"
 
 interface InviteMemberModalProps {
   open: boolean
@@ -30,10 +31,10 @@ interface InviteMemberModalProps {
 }
 
 const DEFAULT_ROLES = [
-  { value: "ADMIN", label: "Admin", description: "Full access except ownership", color: "text-red-500 bg-red-500/10" },
-  { value: "HR_MANAGER", label: "HR Manager", description: "Manage internships & applications", color: "text-blue-500 bg-blue-500/10" },
-  { value: "HR_RECRUITER", label: "HR Recruiter", description: "View & manage applications", color: "text-emerald-500 bg-emerald-500/10" },
-  { value: "VIEWER", label: "Viewer", description: "Read-only access", color: "text-gray-500 bg-gray-500/10" },
+  { value: "ADMIN", labelKey: "team.roleAdmin", descKey: "team.adminDesc", color: "text-red-500 bg-red-500/10" },
+  { value: "HR_MANAGER", labelKey: "team.roleHRManager", descKey: "team.hrManagerDesc", color: "text-blue-500 bg-blue-500/10" },
+  { value: "HR_RECRUITER", labelKey: "team.roleHRRecruiter", descKey: "team.hrRecruiterDesc", color: "text-emerald-500 bg-emerald-500/10" },
+  { value: "VIEWER", labelKey: "team.roleViewer", descKey: "team.viewerDesc", color: "text-gray-500 bg-gray-500/10" },
 ]
 
 export function InviteMemberModal({
@@ -41,6 +42,7 @@ export function InviteMemberModal({
   onOpenChange,
   onSuccess,
 }: InviteMemberModalProps) {
+  const { t } = useTranslation()
   const [email, setEmail] = React.useState("")
   const [role, setRole] = React.useState<string>("VIEWER")
   const [loading, setLoading] = React.useState(false)
@@ -49,14 +51,14 @@ export function InviteMemberModal({
     e.preventDefault()
 
     if (!email) {
-      toast.error("Please enter an email address")
+      toast.error(t("team.pleaseEnterEmail"))
       return
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address")
+      toast.error(t("team.pleaseEnterValidEmail"))
       return
     }
 
@@ -72,11 +74,11 @@ export function InviteMemberModal({
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to send invitation")
+        throw new Error(data.error || t("team.failedToSendInvitation"))
       }
 
-      toast.success("Invitation sent!", {
-        description: `An invitation has been sent to ${email}`,
+      toast.success(t("team.invitationSent"), {
+        description: `${t("team.invitationSentTo")} ${email}`,
       })
 
       // Reset form
@@ -84,7 +86,7 @@ export function InviteMemberModal({
       setRole("VIEWER")
       onSuccess()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send invitation")
+      toast.error(err instanceof Error ? err.message : t("team.failedToSendInvitation"))
     } finally {
       setLoading(false)
     }
@@ -104,10 +106,10 @@ export function InviteMemberModal({
             <div>
               <DialogHeader className="p-0 space-y-0">
                 <DialogTitle className="text-white text-lg font-bold">
-                  Invite Team Member
+                  {t("team.inviteTeamMember")}
                 </DialogTitle>
                 <DialogDescription className="text-white/70 text-sm mt-0.5">
-                  They&apos;ll receive an email and in-app notification to join.
+                  {t("team.inviteDescription")}
                 </DialogDescription>
               </DialogHeader>
             </div>
@@ -119,7 +121,7 @@ export function InviteMemberModal({
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-1.5">
               <Mail className="h-3.5 w-3.5 text-indigo-500" />
-              Email Address
+              {t("team.emailAddress")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -139,21 +141,21 @@ export function InviteMemberModal({
           <div className="space-y-2">
             <Label htmlFor="role" className="text-sm font-semibold flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-indigo-500" />
-              Role
+              {t("team.role")}
             </Label>
             <Select value={role} onValueChange={setRole} disabled={loading}>
               <SelectTrigger className="h-11 border-border/60 focus:ring-indigo-500/30 focus:border-indigo-500 rounded-xl">
-                <SelectValue placeholder="Select a role" />
+                <SelectValue placeholder={t("team.selectARole")} />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
                 {DEFAULT_ROLES.map((r) => (
                   <SelectItem key={r.value} value={r.value} className="rounded-lg py-2.5">
                     <div className="flex items-center gap-2.5">
                       <Badge variant="secondary" className={`${r.color} text-[10px] px-1.5 py-0 font-semibold border-0`}>
-                        {r.label}
+                        {t(r.labelKey)}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {r.description}
+                        {t(r.descKey)}
                       </span>
                     </div>
                   </SelectItem>
@@ -165,7 +167,7 @@ export function InviteMemberModal({
               <div className="flex items-start gap-2 p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  <span className="font-medium text-foreground">{selectedRole.label}</span> — {selectedRole.description}. You can change this anytime after they join.
+                  <span className="font-medium text-foreground">{t(selectedRole.labelKey)}</span> — {t(selectedRole.descKey)}. {t("team.canChangeAnytime")}
                 </p>
               </div>
             )}
@@ -180,7 +182,7 @@ export function InviteMemberModal({
               disabled={loading}
               className="rounded-xl border-border/60"
             >
-              Cancel
+              {t("team.cancel")}
             </Button>
             <Button
               type="submit"
@@ -192,7 +194,7 @@ export function InviteMemberModal({
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              Send Invitation
+              {t("team.sendInvitation")}
             </Button>
           </DialogFooter>
         </form>
