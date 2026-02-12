@@ -239,9 +239,9 @@ export function InternshipFiltersComponent({
                                             className="mt-2"
                                         />
                                         <div className="flex justify-between mt-3 text-sm font-semibold">
-                                            <span className="px-2 py-1 rounded-lg bg-background border border-border/50">${localFilters.minSalary}</span>
+                                            <span className="px-2 py-1 rounded-lg bg-background border border-border/50">€{localFilters.minSalary}</span>
                                             <span className="text-muted-foreground">{t("filters.to")}</span>
-                                            <span className="px-2 py-1 rounded-lg bg-background border border-border/50">${localFilters.maxSalary}+</span>
+                                            <span className="px-2 py-1 rounded-lg bg-background border border-border/50">€{localFilters.maxSalary}+</span>
                                         </div>
                                     </div>
                                 </div>
