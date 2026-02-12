@@ -344,7 +344,7 @@ export function CompanyAIChat() {
                             {showSessionsSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
                             <span className="ml-2 hidden sm:inline">{t("ai.sessions")}</span>
                             {companySessions.length > 0 && (
-                                <Badge variant="secondary" className="ml-2 bg-violet-500/20 text-violet-600">
+                                <Badge variant="secondary" className="ml-2 bg-violet-500/20 text-foreground">
                                     {companySessions.length}
                                 </Badge>
                             )}

@@ -1112,7 +1112,17 @@
     "suggestionReact": "React developer with TypeScript experience",
     "suggestionPython": "Python data science intern",
     "suggestionDesign": "UI/UX design student",
-    "suggestionFullstack": "Full-stack developer"
+    "suggestionFullstack": "Full-stack developer",
+    "companyTitle": "AI Talent Scout",
+    "companyDescription": "Find perfect candidates with AI-powered search",
+    "yourNeeds": "Your Needs",
+    "searching": "Searching",
+    "candidates": "Candidates",
+    "tellMeYourNeeds": "Tell me what kind of talent you're looking for",
+    "messagesCount": "messages",
+    "matchingSkills": "Matching skills...",
+    "foundCandidates": "Found {count} candidates!",
+    "foundMatchingCandidates": "I found {count} matching candidates for you!"
   },
   "coverLetter": {
     "title": "Cover Letter",

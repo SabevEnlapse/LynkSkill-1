@@ -95,8 +95,19 @@ export function AIModeToggle() {
             </motion.div>
 
             <span className="relative z-10 whitespace-nowrap">
-                {isAIMode ? t('common.active') || "AI Active" : "AI Mode"}
+                {t('aiMode.title')}
             </span>
+
+            {/* Status badge: Beta or ON */}
+            {isAIMode ? (
+                <span className="relative z-10 px-1.5 py-0.5 text-[10px] font-bold leading-none uppercase tracking-wider rounded-md bg-green-500 text-white shadow-sm">
+                    ON
+                </span>
+            ) : (
+                <span className="relative z-10 px-1.5 py-0.5 text-[10px] font-bold leading-none uppercase tracking-wider rounded-md bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm">
+                    Beta
+                </span>
+            )}
 
             {/* Pulsing ring when active */}
             {isAIMode && (
