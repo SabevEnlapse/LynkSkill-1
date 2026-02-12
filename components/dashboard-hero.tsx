@@ -1,8 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { useTranslation } from "@/lib/i18n"
 
 interface DashboardHeroProps {
@@ -10,7 +7,7 @@ interface DashboardHeroProps {
 }
 
 export function DashboardHero({ userType: _userType }: DashboardHeroProps) {
-  const { t } = useTranslation()
+  const { t: _t } = useTranslation()
 
   return (
     <section>

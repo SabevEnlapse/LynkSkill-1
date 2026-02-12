@@ -27,7 +27,7 @@ export default function ApplyButton({ internshipId, internshipTitle, companyName
     const [isApplying, setIsApplying] = useState(false)
     const [showIncompleteModal, setShowIncompleteModal] = useState(false)
     const [showCoverLetterModal, setShowCoverLetterModal] = useState(false)
-    const [portfolioChecked, setPortfolioChecked] = useState(false)
+    const [_portfolioChecked, setPortfolioChecked] = useState(false)
     const router = useRouter()
     const { t } = useTranslation()
 

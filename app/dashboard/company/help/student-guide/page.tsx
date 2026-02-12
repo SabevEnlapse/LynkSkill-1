@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { 
-    GraduationCap, ArrowLeft, User, Briefcase, FileText, 
+    GraduationCap, ArrowLeft, User, FileText, 
     Search, Star, Send, MessageCircle, Calendar, Award,
     Sparkles, CheckCircle, BookOpen, Target, Lightbulb,
     TrendingUp, Clock, Bell, Heart

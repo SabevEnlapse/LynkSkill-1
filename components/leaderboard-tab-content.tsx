@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
-import { Trophy, Award, Medal, TrendingUp, Building2, Star, Sparkles, ThumbsUp } from "lucide-react"
+import { Trophy, Award, Medal, Building2, Star, Sparkles, ThumbsUp } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 
 interface StudentRank {

@@ -3,9 +3,9 @@
 import { motion } from "framer-motion"
 import { 
     Building2, ArrowLeft, Users, Briefcase, FileText, 
-    Search, Star, Send, MessageCircle, Calendar, Award,
-    Sparkles, CheckCircle, BookOpen, Target, Lightbulb,
-    TrendingUp, Settings, Bell, Shield, UserPlus, Eye,
+    Search, Star, MessageCircle, Calendar, Award,
+    Sparkles, CheckCircle, BookOpen, Lightbulb,
+    Bell, Shield,
     ClipboardCheck, BarChart3
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

@@ -126,17 +126,13 @@ export async function POST(request: Request) {
     // Generate new code with DB-checked uniqueness
     const newCode = await generateUniqueCompanyCode(prisma)
 
-    const updatedCompany = await prisma.company.update({
+    await prisma.company.update({
       where: { id: companyId },
       data: {
         invitationCode: newCode,
         lastCodeRegenAt: new Date(),
         codeUsageCount: 0, // Reset usage count
       },
-      select: {
-        invitationCode: true,
-        codeEnabled: true,
-      }
     })
 
     return NextResponse.json({

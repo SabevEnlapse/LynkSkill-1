@@ -18,7 +18,7 @@ export async function POST(
             scheduledAt, 
             duration = 30, 
             type = "video", 
-            location, 
+            location: _location, 
             notes,
             positionTitle 
         } = await req.json()
