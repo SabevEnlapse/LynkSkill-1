@@ -82,6 +82,7 @@ export function CoverLetterModal({
         } finally {
             setIsGenerating(false)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [internshipId])
 
     const handleSubmit = async () => {

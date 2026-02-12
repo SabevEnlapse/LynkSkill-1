@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowLeft, Mail, Calendar, Briefcase, FolderOpen, MapPin, Globe, Loader2, User, TrendingUp, Star, History, Sparkles, Clock, Search } from "lucide-react"
+import { ArrowLeft, Mail, Calendar, Briefcase, FolderOpen, Loader2, User, TrendingUp, Star, History, Sparkles, Clock, Search } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

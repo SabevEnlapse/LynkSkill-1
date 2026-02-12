@@ -518,7 +518,7 @@ export function SidebarNav({
                         <div className="flex items-center justify-between px-3 py-2">
                             <div className="flex items-center gap-3">
                                 <LynkSkillUserButton />
-                                <span className="text-sm font-medium">{t('dashboard.user')}</span>
+                                <span className="text-sm font-medium">{userName || companyName || t('dashboard.user')}</span>
                             </div>
                             <Button
                                 variant="ghost"

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { useTeamMemberPermissions } from "@/lib/team-member-permissions-context"
 import { useTranslation } from "@/lib/i18n"
@@ -30,7 +29,7 @@ const ROLE_DISPLAY_KEYS: Record<string, { labelKey: string; color: string; bgCol
 export default function TeamMemberDashboard() {
     const { t } = useTranslation()
     const { user, company, internships, applications } = useDashboard()
-    const { permissions, role, hasPermission, hasAnyPermission } = useTeamMemberPermissions()
+    const { permissions, role, hasPermission: _hasPermission, hasAnyPermission } = useTeamMemberPermissions()
 
     const roleInfoKey = ROLE_DISPLAY_KEYS[role] || ROLE_DISPLAY_KEYS.MEMBER
     const roleLabel = t(roleInfoKey.labelKey)

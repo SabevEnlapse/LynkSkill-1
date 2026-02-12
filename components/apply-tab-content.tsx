@@ -451,7 +451,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                     </div>
 
                     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {finalApplications.map((app, index) => {
+                            {finalApplications.map((app, _index) => {
                                 const statusConfig = getStatusConfig(app.status)
                                 const StatusIcon = statusConfig.icon
 

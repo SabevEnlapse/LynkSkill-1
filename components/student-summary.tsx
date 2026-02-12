@@ -1,6 +1,6 @@
 "use client"
 
-import { Award, Star, Building2, Trophy, TrendingUp, ThumbsUp } from "lucide-react"
+import { Award, Star, Building2, Trophy, ThumbsUp } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 
 interface Summary {
@@ -21,8 +21,9 @@ function formatNumber(num: number) {
 
 
 export function StudentSummary({ summary }: { summary: Summary | null }) {
-    if (!summary) return null
     const { t } = useTranslation()
+
+    if (!summary) return null
 
     // Use new metrics if available, fallback to legacy
     const skillScore = summary.avgSkillScore ?? Math.round((summary.avgGrade / 6) * 100)

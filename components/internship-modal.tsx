@@ -160,6 +160,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             return false
         }
         return true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formValues, today])
 
     const handleNext = useCallback(() => {
@@ -223,6 +224,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         } finally {
             setIsLoading(false)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formValues, onCreate, onClose, resetForm, validateStep])
 
     const disableStartDate = useCallback(

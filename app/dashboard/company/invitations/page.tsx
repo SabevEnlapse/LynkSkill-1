@@ -120,6 +120,7 @@ export default function InvitationsPage() {
     }
 
     fetchInvitation()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   const handleAccept = async () => {
@@ -247,7 +248,7 @@ export default function InvitationsPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2">{t('invitationsPage.welcomeToTeam')}</h2>
               <p className="text-muted-foreground mb-6">
-                {t('invitationsPage.youveJoined', { company: invitation?.company.name })} {t('invitationsPage.redirectingToDashboard')}
+                {t('invitationsPage.youveJoined', { company: invitation?.company.name ?? '' })} {t('invitationsPage.redirectingToDashboard')}
               </p>
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
@@ -268,6 +269,7 @@ export default function InvitationsPage() {
           {/* Company Logo/Avatar */}
           <div className="mx-auto mb-4">
             {invitation?.company.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={invitation.company.logo}
                 alt={invitation.company.name}
@@ -374,7 +376,7 @@ export default function InvitationsPage() {
 
           {/* Help Text */}
           <p className="text-xs text-center text-muted-foreground">
-            {t('invitationsPage.acceptDisclaimer', { company: invitation?.company.name })}
+            {t('invitationsPage.acceptDisclaimer', { company: invitation?.company.name ?? '' })}
           </p>
         </CardContent>
       </Card>

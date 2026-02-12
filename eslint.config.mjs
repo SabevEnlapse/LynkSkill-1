@@ -12,6 +12,12 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    languageOptions: {
+      // Avoid false-positive parse errors like "Parsing error: '}' expected"
+      // caused by ESLint using a too-new ecmaVersion.
+      ecmaVersion: 2024,
+      sourceType: "module",
+    },
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "warn",

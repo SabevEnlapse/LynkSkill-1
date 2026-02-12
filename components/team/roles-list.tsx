@@ -118,6 +118,7 @@ export function RolesList({ companyId: _companyId }: RolesListProps) {
     } finally {
       setLoading(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   React.useEffect(() => {

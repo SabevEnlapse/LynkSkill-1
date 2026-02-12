@@ -252,11 +252,6 @@ export function NotificationBell() {
         return notification.type === "TEAM_INVITATION" && notification.link
     }
 
-    // Check if notification has any link to navigate to
-    const hasLink = (notification: Notification) => {
-        return !!notification.link
-    }
-
     return (
         <>
             <DropdownMenu open={open} onOpenChange={setOpen}>

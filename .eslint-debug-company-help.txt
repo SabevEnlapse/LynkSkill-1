@@ -1,0 +1,204 @@
+2026-02-12T06:47:49.744Z eslint:cli CLI args: [ 'app/dashboard/company/help/page.tsx', '--debug', '--no-error-on-unmatched-pattern', '--ignore-pattern', '.next', '--ignore-pattern', 'out', '--ignore-pattern', 'dist' ]
+2026-02-12T06:47:49.745Z eslint:cli Using flat config? true
+2026-02-12T06:47:49.751Z eslint:cli Running on files
+2026-02-12T06:47:49.752Z eslint:eslint Using config loader LegacyConfigLoader
+2026-02-12T06:47:49.753Z eslint:eslint Using file patterns: app/dashboard/company/help/page.tsx
+2026-02-12T06:47:49.753Z eslint:eslint Deleting cache file at c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\.eslintcache
+2026-02-12T06:47:49.755Z eslint:config-loader Calculating config for file c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+2026-02-12T06:47:49.755Z eslint:config-loader Searching for eslint.config.js
+2026-02-12T06:47:49.757Z eslint:config-loader [Legacy]: Calculating config for c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+2026-02-12T06:47:49.757Z eslint:config-loader [Legacy]: Using config file c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\eslint.config.mjs and base path c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill
+2026-02-12T06:47:49.757Z eslint:config-loader Calculating config array from config file c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\eslint.config.mjs and base path c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill
+2026-02-12T06:47:49.759Z eslint:config-loader Loading config file c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\eslint.config.mjs
+2026-02-12T06:47:49.759Z eslint:config-loader Loading config from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\eslint.config.mjs
+2026-02-12T06:47:49.759Z eslint:config-loader Config file URL is file:///c:/Users/User8.DESKTOP-AIPEEVD/Desktop/LynkSkill/LynkSkill3/LynkSkill/eslint.config.mjs
+2026-02-12T06:47:49.834Z eslintrc:config-array-factory Loading {extends:"next/core-web-vitals"} relative to 
+2026-02-12T06:47:49.836Z eslintrc:config-array-factory package.json was not found: Cannot find module 'eslint-config-next/core-web-vitals/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder__.js
+2026-02-12T06:47:49.836Z eslintrc:config-array-factory Loaded: eslint-config-next/core-web-vitals (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js)
+2026-02-12T06:47:49.836Z eslintrc:config-array-factory Loading JS config file: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js
+2026-02-12T06:47:49.839Z eslintrc:config-array-factory Loading {extends:"c:\\Users\\User8.DESKTOP-AIPEEVD\\Desktop\\LynkSkill\\LynkSkill3\\LynkSkill\\node_modules\\eslint-config-next\\index.js"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js
+2026-02-12T06:47:49.840Z eslintrc:config-array-factory package.json was not found: Cannot find module 'c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js
+2026-02-12T06:47:49.840Z eslintrc:config-array-factory Loaded: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js)
+2026-02-12T06:47:49.840Z eslintrc:config-array-factory Loading JS config file: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:49.856Z eslintrc:config-array-factory Loading {extends:"plugin:react/recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:49.857Z eslintrc:config-array-factory Loading plugin "react" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:49.858Z eslintrc:config-array-factory Loaded: eslint-plugin-react@7.37.5 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js)
+2026-02-12T06:47:50.661Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js loaded in: 803ms
+2026-02-12T06:47:50.661Z eslintrc:config-array-factory Loading plugin "react" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js
+2026-02-12T06:47:50.662Z eslintrc:config-array-factory Loaded: eslint-plugin-react@7.37.5 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js)
+2026-02-12T06:47:50.662Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js loaded in: 0ms
+2026-02-12T06:47:50.662Z eslintrc:config-array-factory Loading {extends:"plugin:react-hooks/recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.662Z eslintrc:config-array-factory Loading plugin "react-hooks" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.664Z eslintrc:config-array-factory Loaded: eslint-plugin-react-hooks@5.2.0 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react-hooks\index.js)
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react-hooks\index.js loaded in: 2ms
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Loading plugin "react-hooks" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react-hooks\index.js
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Loaded: eslint-plugin-react-hooks@5.2.0 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react-hooks\index.js)
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react-hooks\index.js loaded in: 0ms
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Loading {extends:"plugin:@next/next/recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.666Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.668Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:50.780Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 112ms
+2026-02-12T06:47:50.780Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js
+2026-02-12T06:47:50.781Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:50.781Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 0ms
+2026-02-12T06:47:50.781Z eslintrc:config-array-factory Loading parser "./parser.js" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.782Z eslintrc:config-array-factory package.json was not found: Cannot find module './parser.js/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.782Z eslintrc:config-array-factory Loaded: ./parser.js (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\parser.js)
+2026-02-12T06:47:50.953Z eslintrc:config-array-factory Loading plugin "import" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:50.954Z eslintrc:config-array-factory Loaded: eslint-plugin-import@2.32.0 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-import\lib\index.js)
+2026-02-12T06:47:51.178Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-import\lib\index.js loaded in: 224ms
+2026-02-12T06:47:51.178Z eslintrc:config-array-factory Loading plugin "react" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:51.178Z eslintrc:config-array-factory Loaded: eslint-plugin-react@7.37.5 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js)
+2026-02-12T06:47:51.178Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-react\index.js loaded in: 0ms
+2026-02-12T06:47:51.178Z eslintrc:config-array-factory Loading plugin "jsx-a11y" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:51.180Z eslintrc:config-array-factory Loaded: eslint-plugin-jsx-a11y@6.10.2 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-jsx-a11y\lib\index.js)
+2026-02-12T06:47:51.777Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-plugin-jsx-a11y\lib\index.js loaded in: 597ms
+2026-02-12T06:47:51.779Z eslintrc:config-array-factory Loading parser "@typescript-eslint/parser" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\index.js
+2026-02-12T06:47:51.781Z eslintrc:config-array-factory Loaded: @typescript-eslint/parser@8.44.1 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\parser\dist\index.js)
+2026-02-12T06:47:52.667Z eslintrc:config-array-factory Loading {extends:"plugin:@next/next/core-web-vitals"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js
+2026-02-12T06:47:52.667Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\core-web-vitals.js
+2026-02-12T06:47:52.668Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:52.668Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 0ms
+2026-02-12T06:47:52.668Z eslintrc:config-array-factory Loading {extends:"plugin:@next/next/recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js
+2026-02-12T06:47:52.668Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js
+2026-02-12T06:47:52.669Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:52.669Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 0ms
+2026-02-12T06:47:52.669Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js
+2026-02-12T06:47:52.669Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:52.670Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 0ms
+2026-02-12T06:47:52.670Z eslintrc:config-array-factory Loading plugin "@next/next" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js
+2026-02-12T06:47:52.670Z eslintrc:config-array-factory Loaded: @next/eslint-plugin-next@15.4.6 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js)
+2026-02-12T06:47:52.670Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@next\eslint-plugin-next\dist\index.js loaded in: 0ms
+2026-02-12T06:47:52.670Z eslintrc:config-array-factory Loading {extends:"next/typescript"} relative to 
+2026-02-12T06:47:52.672Z eslintrc:config-array-factory package.json was not found: Cannot find module 'eslint-config-next/typescript/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder__.js
+2026-02-12T06:47:52.672Z eslintrc:config-array-factory Loaded: eslint-config-next/typescript (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\typescript.js)
+2026-02-12T06:47:52.673Z eslintrc:config-array-factory Loading JS config file: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\typescript.js
+2026-02-12T06:47:52.675Z eslintrc:config-array-factory Loading {extends:"plugin:@typescript-eslint/recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\typescript.js
+2026-02-12T06:47:52.675Z eslintrc:config-array-factory Loading plugin "@typescript-eslint" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint-config-next\typescript.js
+2026-02-12T06:47:52.677Z eslintrc:config-array-factory Loaded: @typescript-eslint/eslint-plugin@8.44.1 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js)
+2026-02-12T06:47:52.993Z eslint:rules Loading rule 'consistent-return' (remaining=291)
+2026-02-12T06:47:53.023Z eslint:rules Loading rule 'dot-notation' (remaining=290)
+2026-02-12T06:47:53.038Z eslint:rules Loading rule 'init-declarations' (remaining=289)
+2026-02-12T06:47:53.042Z eslint:rules Loading rule 'max-params' (remaining=288)
+2026-02-12T06:47:53.094Z eslint:rules Loading rule 'no-dupe-class-members' (remaining=287)
+2026-02-12T06:47:53.107Z eslint:rules Loading rule 'no-empty-function' (remaining=286)
+2026-02-12T06:47:53.149Z eslint:rules Loading rule 'no-invalid-this' (remaining=285)
+2026-02-12T06:47:53.153Z eslint:rules Loading rule 'no-loop-func' (remaining=284)
+2026-02-12T06:47:53.155Z eslint:rules Loading rule 'no-loss-of-precision' (remaining=283)
+2026-02-12T06:47:53.158Z eslint:rules Loading rule 'no-magic-numbers' (remaining=282)
+2026-02-12T06:47:53.210Z eslint:rules Loading rule 'no-restricted-imports' (remaining=281)
+2026-02-12T06:47:53.358Z eslint:rules Loading rule 'no-unused-expressions' (remaining=280)
+2026-02-12T06:47:53.366Z eslint:rules Loading rule 'no-useless-constructor' (remaining=279)
+2026-02-12T06:47:53.387Z eslint:rules Loading rule 'prefer-destructuring' (remaining=278)
+2026-02-12T06:47:53.527Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js loaded in: 850ms
+2026-02-12T06:47:53.527Z eslintrc:config-array-factory Loading {extends:"./configs/eslintrc/base"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js
+2026-02-12T06:47:53.528Z eslintrc:config-array-factory package.json was not found: Cannot find module './configs/eslintrc/base/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js
+2026-02-12T06:47:53.528Z eslintrc:config-array-factory Loaded: ./configs/eslintrc/base (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\base.js)
+2026-02-12T06:47:53.528Z eslintrc:config-array-factory Loading JS config file: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\base.js
+2026-02-12T06:47:53.529Z eslintrc:config-array-factory Loading parser "@typescript-eslint/parser" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\base.js
+2026-02-12T06:47:53.532Z eslintrc:config-array-factory Loaded: @typescript-eslint/parser@8.44.1 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\parser\dist\index.js)
+2026-02-12T06:47:53.532Z eslintrc:config-array-factory Loading plugin "@typescript-eslint" from c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\base.js
+2026-02-12T06:47:53.533Z eslintrc:config-array-factory Loaded: @typescript-eslint/eslint-plugin@8.44.1 (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js)
+2026-02-12T06:47:53.533Z eslintrc:config-array-factory Plugin c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js loaded in: 0ms
+2026-02-12T06:47:53.533Z eslintrc:config-array-factory Loading {extends:"./configs/eslintrc/eslint-recommended"} relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js
+2026-02-12T06:47:53.533Z eslintrc:config-array-factory package.json was not found: Cannot find module './configs/eslintrc/eslint-recommended/package.json'
+Require stack:
+- c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\index.js
+2026-02-12T06:47:53.534Z eslintrc:config-array-factory Loaded: ./configs/eslintrc/eslint-recommended (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\eslint-recommended.js)
+2026-02-12T06:47:53.534Z eslintrc:config-array-factory Loading JS config file: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\eslint-plugin\dist\configs\eslintrc\eslint-recommended.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: react
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin 'react relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: react-hooks
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin 'react-hooks relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: @next/next
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin '@next/next relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving parser 'undefined' relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: import
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin 'import relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: react
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin 'react relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating plugin: jsx-a11y
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Resolving plugin 'jsx-a11y relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.537Z eslintrc:flat-compat Translating environment: browser
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating environment: node
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Resolving parser 'undefined' relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugin: @next/next
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Resolving plugin '@next/next relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugin: @next/next
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Resolving plugin '@next/next relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Resolving parser 'undefined' relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugins: [object Object]
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Translating plugin: @typescript-eslint
+2026-02-12T06:47:53.542Z eslintrc:flat-compat Resolving plugin '@typescript-eslint relative to c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\__placeholder.js
+2026-02-12T06:47:53.543Z eslint:config-loader Config file c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\eslint.config.mjs is not empty
+2026-02-12T06:47:53.544Z eslint:eslint 1 files found in: 3791ms
+2026-02-12T06:47:53.544Z eslint:eslint Linting in single-thread mode.
+2026-02-12T06:47:53.544Z eslint:config-loader Looking up cached config for c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+2026-02-12T06:47:53.545Z eslint:config-loader [Legacy]: Looking up cached config for c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help
+2026-02-12T06:47:53.573Z eslint:rules Loading rule 'constructor-super' (remaining=277)
+2026-02-12T06:47:53.575Z eslint:rules Loading rule 'getter-return' (remaining=276)
+2026-02-12T06:47:53.576Z eslint:rules Loading rule 'no-class-assign' (remaining=275)
+2026-02-12T06:47:53.577Z eslint:rules Loading rule 'no-const-assign' (remaining=274)
+2026-02-12T06:47:53.579Z eslint:rules Loading rule 'no-dupe-args' (remaining=273)
+2026-02-12T06:47:53.580Z eslint:rules Loading rule 'no-dupe-keys' (remaining=272)
+2026-02-12T06:47:53.581Z eslint:rules Loading rule 'no-func-assign' (remaining=271)
+2026-02-12T06:47:53.582Z eslint:rules Loading rule 'no-import-assign' (remaining=270)
+2026-02-12T06:47:53.584Z eslint:rules Loading rule 'no-new-native-nonconstructor' (remaining=269)
+2026-02-12T06:47:53.585Z eslint:rules Loading rule 'no-new-symbol' (remaining=268)
+2026-02-12T06:47:53.586Z eslint:rules Loading rule 'no-obj-calls' (remaining=267)
+2026-02-12T06:47:53.588Z eslint:rules Loading rule 'no-redeclare' (remaining=266)
+2026-02-12T06:47:53.589Z eslint:rules Loading rule 'no-setter-return' (remaining=265)
+2026-02-12T06:47:53.591Z eslint:rules Loading rule 'no-this-before-super' (remaining=264)
+2026-02-12T06:47:53.592Z eslint:rules Loading rule 'no-undef' (remaining=263)
+2026-02-12T06:47:53.593Z eslint:rules Loading rule 'no-unreachable' (remaining=262)
+2026-02-12T06:47:53.594Z eslint:rules Loading rule 'no-unsafe-negation' (remaining=261)
+2026-02-12T06:47:53.596Z eslint:rules Loading rule 'no-var' (remaining=260)
+2026-02-12T06:47:53.597Z eslint:rules Loading rule 'no-with' (remaining=259)
+2026-02-12T06:47:53.598Z eslint:rules Loading rule 'prefer-const' (remaining=258)
+2026-02-12T06:47:53.601Z eslint:rules Loading rule 'prefer-rest-params' (remaining=257)
+2026-02-12T06:47:53.603Z eslint:rules Loading rule 'prefer-spread' (remaining=256)
+2026-02-12T06:47:53.604Z eslint:rules Loading rule 'no-array-constructor' (remaining=255)
+2026-02-12T06:47:53.605Z eslint:rules Loading rule 'no-unused-vars' (remaining=254)
+2026-02-12T06:47:53.636Z eslint:eslint-helpers File "c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx" read in 1 ms
+2026-02-12T06:47:53.636Z eslint:linter Linting code for c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx (pass 1)
+2026-02-12T06:47:53.637Z eslint:linter Verify
+2026-02-12T06:47:53.637Z eslint:linter With flat config: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+2026-02-12T06:47:53.638Z eslint:languages:js Parsing: c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+2026-02-12T06:47:53.701Z eslint:languages:js '}' expected.
+TSError: '}' expected.
+    at createError (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\typescript-estree\dist\node-utils.js:568:12)
+    at convertError (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\typescript-estree\dist\convert.js:51:41)
+    at astConverter (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\typescript-estree\dist\ast-converter.js:15:42)
+    at parseAndGenerateServices (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\typescript-estree\dist\parser.js:159:66)
+    at Object.parseForESLint (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\@typescript-eslint\parser\dist\parser.js:101:80)
+    at Object.parse (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint\lib\languages\js\index.js:270:15)
+    at ParserService.parseSync (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint\lib\services\parser-service.js:34:27)
+    at #flatVerifyWithoutProcessors (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint\lib\linter\linter.js:1846:38)
+    at Linter._verifyWithFlatConfigArrayAndWithoutProcessors (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint\lib\linter\linter.js:2189:43)
+    at Linter._verifyWithFlatConfigArray (c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\node_modules\eslint\lib\linter\linter.js:2292:15)
+2026-02-12T06:47:53.701Z eslint:linter Generating fixed text for c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx (pass 1)
+2026-02-12T06:47:53.702Z eslint:source-code-fixer Applying fixes
+2026-02-12T06:47:53.702Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-12T06:47:53.702Z eslint:eslint-helpers File "c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx" linted in 66 ms
+
+c:\Users\User8.DESKTOP-AIPEEVD\Desktop\LynkSkill\LynkSkill3\LynkSkill\app\dashboard\company\help\page.tsx
+  455:0  error  Parsing error: '}' expected
+
+✖ 1 problem (1 error, 0 warnings)
+

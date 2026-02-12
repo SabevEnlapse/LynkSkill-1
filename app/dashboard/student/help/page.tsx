@@ -103,6 +103,7 @@ function useStudentFaqCategories() {
         ]
     },
 ]
+}
 
 function useQuickLinks() {
     const { t } = useTranslation()

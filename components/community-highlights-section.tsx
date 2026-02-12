@@ -168,6 +168,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                                 {firstFile.url.match(/\.(mp4|mov|avi)$/) ? (
                                                     <video src={firstFile.url} className="h-full w-full object-cover" muted />
                                                 ) : (
+                                                    // eslint-disable-next-line @next/next/no-img-element
                                                     <img
                                                         src={firstFile.url || "/placeholder.svg"}
                                                         alt="Community file"
@@ -231,6 +232,7 @@ export function CommunityHighlights({ setActiveTab, userType = "Student" }: Comm
                                             <div className="flex items-center gap-2">
                                                 <Avatar className="h-6 w-6 border border-[var(--experience-accent)]/20">
                                                     {exp.uploader?.image ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
                                                         <img
                                                             src={exp.uploader.image || "/placeholder.svg"}
                                                             alt={exp.uploader?.name || t('communityHighlights.anonymous')}

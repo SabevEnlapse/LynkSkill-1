@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Clock, Building2, ArrowRight, Calendar, User, Target, CheckCircle2, AlertCircle, FileText, Eye, Upload, BarChart3, Sparkles } from "lucide-react"

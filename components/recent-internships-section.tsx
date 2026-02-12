@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { useState, useMemo, useCallback } from "react"
 import type { Internship } from "@/app/types"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ interface RecentAppsSectionProps {
     setActiveTab?: (tab: string) => void
 }
 
-export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsSectionProps) {
+export function RecentInternshipsSection({ userType, setActiveTab: _setActiveTab }: RecentAppsSectionProps) {
     const { t } = useTranslation()
     
     // Use centralized context - no more individual fetches
@@ -300,7 +300,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                         <AnimatePresence mode="popLayout">
                             {isLoading
                                 ? Array.from({ length: 6 }).map((_, i) => <InternshipCardSkeleton key={i} />)
-                                : displayedInternships.map((item, index) => {
+                                : displayedInternships.map((item, _index) => {
                                     const app = applications.find((a) => a.internshipId === item.id)
                                     const endDate = item.applicationEnd ? new Date(item.applicationEnd) : null
                                     const startTime = item.applicationStart ? new Date(item.applicationStart).getTime() : null

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Briefcase, Calendar, MapPin, DollarSign, Users, Clock, Building2, ChevronRight, Sparkles } from "lucide-react"
+import { Plus, Briefcase, Calendar, MapPin, DollarSign, Clock, ChevronRight, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

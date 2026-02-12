@@ -535,17 +535,6 @@
     "removeSaved": "Remove from saved",
     "savedOn": "Saved on"
   },
-  "settings": {
-    "title": "Settings",
-    "profile": "Profile Settings",
-    "notifications": "Notification Settings",
-    "privacy": "Privacy Settings",
-    "language": "Language",
-    "theme": "Theme",
-    "darkMode": "Dark Mode",
-    "lightMode": "Light Mode",
-    "system": "System"
-  },
   "auth": {
     "signIn": "Sign In",
     "signOut": "Sign Out",
@@ -1084,7 +1073,6 @@
     "comprehensiveAnalysis": "Get a comprehensive analysis of your portfolio",
     "noMessagesYet": "No messages yet. Start a conversation!",
     "askLinky": "Ask Linky anything about your portfolio...",
-    "linkyTyping": "Linky is typing...",
     "quickQuestion1": "How can I improve my bio?",
     "quickQuestion2": "What skills should I add?",
     "quickQuestion3": "Give me project ideas",
@@ -1667,6 +1655,10 @@
     "negotiable": "Negotiable"
   },
   "settings": {
+    "title": "Settings",
+    "profile": "Profile Settings",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
     "manageCompanyPreferences": "Manage your company preferences",
     "manageAccountPreferences": "Manage your account preferences",
     "saving": "Saving...",

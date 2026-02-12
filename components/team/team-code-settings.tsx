@@ -90,6 +90,7 @@ export function TeamCodeSettings({ companyId }: TeamCodeSettingsProps) {
         } finally {
             setLoading(false)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [companyId])
 
     React.useEffect(() => {

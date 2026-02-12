@@ -964,6 +964,7 @@ export function DesignaliCreative() {
                         <motion.div key={post.title} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
                           <Card className="overflow-hidden rounded-3xl">
                             <div className="aspect-[4/3] overflow-hidden bg-muted">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={post.image || "/placeholder.svg"}
                                 alt={post.title}

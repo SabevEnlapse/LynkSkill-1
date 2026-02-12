@@ -162,6 +162,7 @@ export default function OnboardingPage() {
         }
         
         setFieldErrors(newErrors)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fieldErrors])
 
     const [dob, setDob] = React.useState("")

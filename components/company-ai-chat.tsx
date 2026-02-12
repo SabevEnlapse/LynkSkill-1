@@ -10,7 +10,6 @@ import {
     Loader2, 
     User,
     Target,
-    RefreshCw,
     Search,
     Zap,
     Users,
@@ -45,7 +44,7 @@ export function CompanyAIChat() {
         setStudentMatches,
         chatPhase,
         setChatPhase,
-        clearMessages,
+        clearMessages: _clearMessages,
         sendWelcomeMessage,
         welcomeSent,
         currentSessionId,
@@ -59,7 +58,7 @@ export function CompanyAIChat() {
     const [isTyping, setIsTyping] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [searchStatus, setSearchStatus] = useState("")
-    const [lastSearchQuery, setLastSearchQuery] = useState("")
+    const [_lastSearchQuery, setLastSearchQuery] = useState("")
     const [showSessionsSidebar, setShowSessionsSidebar] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -169,7 +168,7 @@ export function CompanyAIChat() {
     }
 
     // Callback when search is triggered from AI message
-    const onSearchTriggered = async (criteria: { skills: string[]; roleType: string; field: string }) => {
+    const onSearchTriggered = async (_criteria: { skills: string[]; roleType: string; field: string }) => {
         setIsSearching(true)
         setSearchStatus(t("ai.searchingDatabase"))
         

@@ -949,6 +949,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                                                 <FileVideo className="h-6 w-6 text-[var(--experience-accent)]" />
                                               </div>
                                           ) : (
+                                              // eslint-disable-next-line @next/next/no-img-element
                                               <img
                                                   src={url || "/placeholder.svg"}
                                                   alt={`Experience ${i + 1}`}
@@ -1400,6 +1401,7 @@ export default function ExperienceTabContent({ highlightProjectId }: ExperienceT
                             </p>
                           </div>
                       ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                               src={url || "/placeholder.svg"}
                               alt={`Media ${i + 1}`}

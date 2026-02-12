@@ -103,6 +103,7 @@ function useCompanyFaqCategories() {
         ]
     },
 ]
+}
 
 function useQuickLinks() {
     const { t } = useTranslation()
